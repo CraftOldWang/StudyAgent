@@ -145,6 +145,7 @@ public class ElasticsearchChunkIndexer {
         try {
             HttpResponse<String> response = httpClient.send(headRequest, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() == 200) {
+                validateExistingIndexDimensions();
                 return;
             }
             if (response.statusCode() != 404) {
@@ -175,6 +176,25 @@ public class ElasticsearchChunkIndexer {
         embedding.put("similarity", "cosine");
 
         request("PUT", "/" + properties.chunkIndex(), mapping.toString());
+    }
+
+    private void validateExistingIndexDimensions() {
+        JsonNode mapping = request("GET", "/" + properties.chunkIndex() + "/_mapping", null);
+        JsonNode embedding = mapping.path(properties.chunkIndex())
+                .path("mappings")
+                .path("properties")
+                .path("embedding");
+        if (embedding.isMissingNode()) {
+            throw new BusinessException("Elasticsearch 索引缺少 embedding 字段: " + properties.chunkIndex());
+        }
+        int actualDimensions = embedding.path("dims").asInt(-1);
+        if (actualDimensions != properties.vectorDimensions()) {
+            throw new BusinessException("Elasticsearch 索引向量维度与应用配置不一致: index="
+                    + properties.chunkIndex()
+                    + ", actual=" + actualDimensions
+                    + ", expected=" + properties.vectorDimensions()
+                    + "。请删除旧索引或改用新的 study-agent.elasticsearch.chunk-index 后重启应用。");
+        }
     }
 
     private ObjectNode termQuery(String field, Long value) {

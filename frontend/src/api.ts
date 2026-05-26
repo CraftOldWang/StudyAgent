@@ -1,5 +1,6 @@
 import type {
   ApiResponse,
+  EntityId,
   KnowledgeBase,
   KnowledgeDocument,
   LearningSessionResponse,
@@ -51,7 +52,7 @@ export const api = {
     });
   },
   updateKnowledgeBase(
-    knowledgeBaseId: number,
+    knowledgeBaseId: EntityId,
     payload: { name?: string; description?: string; status?: string }
   ) {
     return request<KnowledgeBase>(`/api/knowledge-bases/${knowledgeBaseId}`, {
@@ -59,15 +60,15 @@ export const api = {
       body: JSON.stringify(payload)
     });
   },
-  deleteKnowledgeBase(knowledgeBaseId: number) {
+  deleteKnowledgeBase(knowledgeBaseId: EntityId) {
     return request<void>(`/api/knowledge-bases/${knowledgeBaseId}`, {
       method: "DELETE"
     });
   },
-  listDocuments(knowledgeBaseId: number) {
+  listDocuments(knowledgeBaseId: EntityId) {
     return request<KnowledgeDocument[]>(`/api/knowledge-bases/${knowledgeBaseId}/documents`);
   },
-  uploadFile(knowledgeBaseId: number, file: File) {
+  uploadFile(knowledgeBaseId: EntityId, file: File) {
     const formData = new FormData();
     formData.set("knowledgeBaseId", String(knowledgeBaseId));
     formData.set("file", file);
@@ -76,19 +77,19 @@ export const api = {
       body: formData
     });
   },
-  ragAnswer(knowledgeBaseId: number, question: string) {
+  ragAnswer(knowledgeBaseId: EntityId, question: string) {
     return request<RagAnswer>("/api/chat/rag", {
       method: "POST",
       body: JSON.stringify({ knowledgeBaseId, question })
     });
   },
-  ragSearch(knowledgeBaseIds: number[], question: string) {
+  ragSearch(knowledgeBaseIds: EntityId[], question: string) {
     return request<RagSearchResult>("/api/chat/rag/search", {
       method: "POST",
       body: JSON.stringify({ knowledgeBaseIds, question })
     });
   },
-  createLearningSession(message: string, knowledgeBaseIds: number[]) {
+  createLearningSession(message: string, knowledgeBaseIds: EntityId[]) {
     return request<LearningSessionResponse>("/api/learning/sessions", {
       method: "POST",
       body: JSON.stringify({ message, knowledgeBaseIds })
@@ -102,14 +103,14 @@ export const api = {
     return request<ReviewCard[]>(`/api/review/cards/due?limit=${limit}`);
   },
   createReviewCard(payload: {
-    knowledgeBaseId?: number;
-    documentId?: number;
-    sessionId?: number;
+    knowledgeBaseId?: EntityId;
+    documentId?: EntityId;
+    sessionId?: EntityId;
     front: string;
     back: string;
     tags?: string[];
-    sourceMessageId?: number;
-    sourceChunkIds?: number[];
+    sourceMessageId?: EntityId;
+    sourceChunkIds?: EntityId[];
   }) {
     return request<ReviewCard>("/api/review/cards", {
       method: "POST",
@@ -117,7 +118,7 @@ export const api = {
     });
   },
   updateReviewCard(
-    cardId: number,
+    cardId: EntityId,
     payload: { front?: string; back?: string; tags?: string[]; status?: string }
   ) {
     return request<ReviewCard>(`/api/review/cards/${cardId}`, {
@@ -125,12 +126,12 @@ export const api = {
       body: JSON.stringify(payload)
     });
   },
-  deleteReviewCard(cardId: number) {
+  deleteReviewCard(cardId: EntityId) {
     return request<void>(`/api/review/cards/${cardId}`, {
       method: "DELETE"
     });
   },
-  submitReview(cardId: number, rating: "AGAIN" | "HARD" | "GOOD" | "EASY") {
+  submitReview(cardId: EntityId, rating: "AGAIN" | "HARD" | "GOOD" | "EASY") {
     return request<ReviewSubmitResponse>(`/api/review/cards/${cardId}/reviews`, {
       method: "POST",
       body: JSON.stringify({ rating })
@@ -139,7 +140,7 @@ export const api = {
 };
 
 export async function streamLearningAgent(
-  sessionId: number,
+  sessionId: EntityId,
   message: string,
   onEvent: (eventName: string, data: unknown) => void
 ): Promise<void> {

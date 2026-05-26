@@ -22,6 +22,7 @@ import { api, streamLearningAgent } from "./api";
 import type {
   AgentEvent,
   ChatMessage,
+  EntityId,
   KnowledgeBase,
   KnowledgeDocument,
   RagReference,
@@ -64,7 +65,7 @@ function App() {
   const [toast, setToast] = useState("");
   const [error, setError] = useState("");
   const [knowledgeBases, setKnowledgeBases] = useState<KnowledgeBase[]>([]);
-  const [selectedKbId, setSelectedKbId] = useState<number | null>(null);
+  const [selectedKbId, setSelectedKbId] = useState<EntityId | null>(null);
   const [documents, setDocuments] = useState<KnowledgeDocument[]>([]);
   const [editingKb, setEditingKb] = useState<KnowledgeBase | null>(null);
   const [showKbForm, setShowKbForm] = useState(false);
@@ -72,15 +73,15 @@ function App() {
   const [kbDescription, setKbDescription] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  const [agentKbIds, setAgentKbIds] = useState<number[]>([]);
-  const [agentSessionId, setAgentSessionId] = useState<number | null>(null);
+  const [agentKbIds, setAgentKbIds] = useState<EntityId[]>([]);
+  const [agentSessionId, setAgentSessionId] = useState<EntityId | null>(null);
   const [agentMessages, setAgentMessages] = useState<ChatMessage[]>([]);
   const [agentEvents, setAgentEvents] = useState<AgentEvent[]>([]);
   const [agentInput, setAgentInput] = useState("");
   const [agentStreaming, setAgentStreaming] = useState(false);
   const [agentDraft, setAgentDraft] = useState("");
 
-  const [ragKbId, setRagKbId] = useState<number | null>(null);
+  const [ragKbId, setRagKbId] = useState<EntityId | null>(null);
   const [ragQuestion, setRagQuestion] = useState("");
   const [ragMode, setRagMode] = useState<"answer" | "search">("answer");
   const [ragAnswer, setRagAnswer] = useState("");
@@ -91,7 +92,7 @@ function App() {
   const [reviewFilter, setReviewFilter] = useState("");
   const [showCardForm, setShowCardForm] = useState(false);
   const [editingCard, setEditingCard] = useState<ReviewCard | null>(null);
-  const [cardKbId, setCardKbId] = useState<number | null>(null);
+  const [cardKbId, setCardKbId] = useState<EntityId | null>(null);
   const [cardFront, setCardFront] = useState("");
   const [cardBack, setCardBack] = useState("");
   const [cardTags, setCardTags] = useState("");
@@ -166,7 +167,7 @@ function App() {
     }
   }
 
-  async function loadDocuments(knowledgeBaseId: number) {
+  async function loadDocuments(knowledgeBaseId: EntityId) {
     const docs = await runTask(() => api.listDocuments(knowledgeBaseId));
     if (docs) {
       setDocuments(docs);
@@ -246,7 +247,7 @@ function App() {
     }
   }
 
-  function toggleAgentKb(id: number) {
+  function toggleAgentKb(id: EntityId) {
     setAgentKbIds((current) =>
       current.includes(id) ? current.filter((item) => item !== id) : [...current, id]
     );
@@ -611,7 +612,7 @@ function App() {
 
 interface KnowledgeViewProps {
   knowledgeBases: KnowledgeBase[];
-  selectedKbId: number | null;
+  selectedKbId: EntityId | null;
   selectedKb: KnowledgeBase | null;
   documents: KnowledgeDocument[];
   showKbForm: boolean;
@@ -619,7 +620,7 @@ interface KnowledgeViewProps {
   kbName: string;
   kbDescription: string;
   selectedFile: File | null;
-  onSelectKb: (id: number) => void;
+  onSelectKb: (id: EntityId) => void;
   onOpenCreateKb: () => void;
   onOpenEditKb: (kb: KnowledgeBase) => void;
   onArchiveKb: (kb: KnowledgeBase) => void;
@@ -714,7 +715,7 @@ function KnowledgeView(props: KnowledgeViewProps) {
               上传到
               <select
                 value={props.selectedKbId ?? ""}
-                onChange={(event) => props.onSelectKb(Number(event.target.value))}
+                onChange={(event) => props.onSelectKb(event.target.value)}
               >
                 {props.knowledgeBases.map((kb) => (
                   <option value={kb.id} key={kb.id}>
@@ -798,14 +799,14 @@ function DocumentTable({ documents }: { documents: KnowledgeDocument[] }) {
 
 interface AgentViewProps {
   knowledgeBases: KnowledgeBase[];
-  selectedIds: number[];
+  selectedIds: EntityId[];
   messages: ChatMessage[];
   events: AgentEvent[];
   input: string;
   streaming: boolean;
   draft: string;
-  sessionId: number | null;
-  onToggleKb: (id: number) => void;
+  sessionId: EntityId | null;
+  onToggleKb: (id: EntityId) => void;
   onInputChange: (value: string) => void;
   onSubmit: (event: FormEvent) => void;
   onReset: () => void;
@@ -890,13 +891,13 @@ function AgentView(props: AgentViewProps) {
 
 interface RagViewProps {
   knowledgeBases: KnowledgeBase[];
-  ragKbId: number | null;
+  ragKbId: EntityId | null;
   question: string;
   mode: "answer" | "search";
   answer: string;
   references: RagReference[];
   running: boolean;
-  onKbChange: (id: number) => void;
+  onKbChange: (id: EntityId) => void;
   onQuestionChange: (value: string) => void;
   onModeChange: (mode: "answer" | "search") => void;
   onSubmit: (event: FormEvent) => void;
@@ -915,7 +916,7 @@ function RagView(props: RagViewProps) {
         <form className="form" onSubmit={props.onSubmit}>
           <label>
             知识库
-            <select value={props.ragKbId ?? ""} onChange={(event) => props.onKbChange(Number(event.target.value))}>
+            <select value={props.ragKbId ?? ""} onChange={(event) => props.onKbChange(event.target.value)}>
               {props.knowledgeBases.map((kb) => (
                 <option key={kb.id} value={kb.id}>
                   {kb.name}
@@ -992,7 +993,7 @@ interface ReviewViewProps {
   filter: string;
   showForm: boolean;
   editingCard: ReviewCard | null;
-  cardKbId: number | null;
+  cardKbId: EntityId | null;
   cardFront: string;
   cardBack: string;
   cardTags: string;
@@ -1001,7 +1002,7 @@ interface ReviewViewProps {
   onOpenCreate: () => void;
   onOpenEdit: (card: ReviewCard) => void;
   onCancel: () => void;
-  onKbChange: (id: number) => void;
+  onKbChange: (id: EntityId) => void;
   onFrontChange: (value: string) => void;
   onBackChange: (value: string) => void;
   onTagsChange: (value: string) => void;
@@ -1031,7 +1032,7 @@ function ReviewView(props: ReviewViewProps) {
           <form className="form compact" onSubmit={props.onSubmit}>
             <label>
               关联知识库
-              <select value={props.cardKbId ?? ""} onChange={(event) => props.onKbChange(Number(event.target.value))}>
+              <select value={props.cardKbId ?? ""} onChange={(event) => props.onKbChange(event.target.value)}>
                 {props.knowledgeBases.map((kb) => (
                   <option value={kb.id} key={kb.id}>
                     {kb.name}

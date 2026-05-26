@@ -17,7 +17,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +32,6 @@ public class DocumentProcessingService {
     private final ElasticsearchChunkIndexer elasticsearchChunkIndexer;
     private final DocumentStatusService documentStatusService;
 
-    @Transactional
     public void process(Long documentId) {
         Document document = documentMapper.selectById(documentId);
         if (document == null) {
@@ -78,6 +76,7 @@ public class DocumentProcessingService {
                 if (i % 3 == 0) {
                     currentParentChunkId = chunk.getId();
                     chunk.setParentChunkId(currentParentChunkId);
+                    documentChunkMapper.updateById(chunk);
                 }
 
                 float[] embedding = embeddingService.embed(content);

@@ -4,9 +4,11 @@ export interface ApiResponse<T> {
   data: T;
 }
 
+export type EntityId = string;
+
 export interface KnowledgeBase {
-  id: number;
-  userId: number;
+  id: EntityId;
+  userId: EntityId;
   name: string;
   description?: string | null;
   status: "ACTIVE" | "ARCHIVED" | "DELETED" | string;
@@ -15,9 +17,9 @@ export interface KnowledgeBase {
 }
 
 export interface KnowledgeDocument {
-  id: number;
-  knowledgeBaseId: number;
-  fileId: number;
+  id: EntityId;
+  knowledgeBaseId: EntityId;
+  fileId: EntityId;
   title: string;
   sourceType: string;
   parseStatus: string;
@@ -28,16 +30,16 @@ export interface KnowledgeDocument {
 }
 
 export interface UploadResult {
-  fileId: number;
-  documentId: number;
+  fileId: EntityId;
+  documentId: EntityId;
   status: string;
 }
 
 export interface RagReference {
-  chunkId: number;
-  documentId: number;
-  knowledgeBaseId: number;
-  parentChunkId?: number | null;
+  chunkId: EntityId;
+  documentId: EntityId;
+  knowledgeBaseId: EntityId;
+  parentChunkId?: EntityId | null;
   chunkIndex: number;
   documentTitle: string;
   content: string;
@@ -56,16 +58,16 @@ export interface RagSearchResult {
 }
 
 export interface LearningSessionResponse {
-  sessionId: number;
-  agentRunId: number;
+  sessionId: EntityId;
+  agentRunId: EntityId;
   status: string;
 }
 
 export interface ReviewCard {
-  id: number;
-  knowledgeBaseId?: number | null;
-  documentId?: number | null;
-  sessionId?: number | null;
+  id: EntityId;
+  knowledgeBaseId?: EntityId | null;
+  documentId?: EntityId | null;
+  sessionId?: EntityId | null;
   front: string;
   back: string;
   tagsJson?: string | null;
@@ -82,8 +84,8 @@ export interface ReviewCard {
 }
 
 export interface ReviewRecord {
-  id: number;
-  cardId: number;
+  id: EntityId;
+  cardId: EntityId;
   rating: string;
   reviewedAt: string;
   scheduledDaysBefore: number;
