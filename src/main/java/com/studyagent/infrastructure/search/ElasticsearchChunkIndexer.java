@@ -34,13 +34,20 @@ public class ElasticsearchChunkIndexer {
     }
 
     public String index(IndexedChunk chunk) {
+        if (chunk.embedding().length != properties.vectorDimensions()) {
+            throw new BusinessException("Embedding 维度与 Elasticsearch 配置不一致: actual="
+                    + chunk.embedding().length + ", expected=" + properties.vectorDimensions());
+        }
         ObjectNode body = objectMapper.createObjectNode();
         body.put("chunk_id", chunk.chunkId());
         body.put("document_id", chunk.documentId());
         body.put("knowledge_base_id", chunk.knowledgeBaseId());
         body.put("user_id", chunk.userId());
+        putNullableLong(body, "parent_chunk_id", chunk.parentChunkId());
         body.put("chunk_index", chunk.chunkIndex());
+        body.put("document_title", chunk.documentTitle());
         body.put("content", chunk.content());
+        body.put("metadata_json", chunk.metadataJson());
         ArrayNode embedding = body.putArray("embedding");
         for (float value : chunk.embedding()) {
             embedding.add(value);
@@ -57,7 +64,7 @@ public class ElasticsearchChunkIndexer {
         request("POST", "/" + properties.chunkIndex() + "/_delete_by_query?refresh=true", root.toString());
     }
 
-    public List<SearchHitChunk> search(Long userId, List<Long> knowledgeBaseIds, float[] queryVector, int topK) {
+    public List<SearchHitChunk> vectorSearch(Long userId, List<Long> knowledgeBaseIds, float[] queryVector, int topK) {
         ObjectNode root = objectMapper.createObjectNode();
         root.put("size", topK);
         root.put("_source", true);
@@ -80,19 +87,53 @@ public class ElasticsearchChunkIndexer {
         must.add(terms);
 
         JsonNode response = request("POST", "/" + properties.chunkIndex() + "/_search", root.toString());
-        List<SearchHitChunk> hits = new ArrayList<>();
-        for (JsonNode hit : response.path("hits").path("hits")) {
-            JsonNode source = hit.path("_source");
-            hits.add(new SearchHitChunk(
-                    source.path("chunk_id").asLong(),
-                    source.path("document_id").asLong(),
-                    source.path("knowledge_base_id").asLong(),
-                    source.path("chunk_index").asInt(),
-                    source.path("content").asText(),
-                    hit.path("_score").asDouble()
-            ));
+        return readHits(response);
+    }
+
+    public List<SearchHitChunk> bm25Search(Long userId, List<Long> knowledgeBaseIds, String query, int topK) {
+        ObjectNode root = objectMapper.createObjectNode();
+        root.put("size", topK);
+        root.put("_source", true);
+        ObjectNode bool = root.putObject("query").putObject("bool");
+        ArrayNode must = bool.putArray("must");
+        ObjectNode match = objectMapper.createObjectNode();
+        match.putObject("match").putObject("content").put("query", query);
+        must.add(match);
+        addScopeFilter(bool.putArray("filter"), userId, knowledgeBaseIds);
+
+        JsonNode response = request("POST", "/" + properties.chunkIndex() + "/_search", root.toString());
+        return readHits(response);
+    }
+
+    public List<SearchHitChunk> searchByChunkIds(Long userId, List<Long> chunkIds) {
+        if (chunkIds == null || chunkIds.isEmpty()) {
+            return List.of();
         }
-        return hits;
+        ObjectNode root = objectMapper.createObjectNode();
+        root.put("size", chunkIds.size());
+        root.put("_source", true);
+        ObjectNode bool = root.putObject("query").putObject("bool");
+        ArrayNode filter = bool.putArray("filter");
+        filter.add(termQuery("user_id", userId));
+        ObjectNode terms = objectMapper.createObjectNode();
+        ArrayNode ids = terms.putObject("terms").putArray("chunk_id");
+        for (Long chunkId : chunkIds) {
+            ids.add(chunkId);
+        }
+        filter.add(terms);
+
+        JsonNode response = request("POST", "/" + properties.chunkIndex() + "/_search", root.toString());
+        return readHits(response);
+    }
+
+    private void addScopeFilter(ArrayNode filter, Long userId, List<Long> knowledgeBaseIds) {
+        filter.add(termQuery("user_id", userId));
+        ObjectNode terms = objectMapper.createObjectNode();
+        ArrayNode ids = terms.putObject("terms").putArray("knowledge_base_id");
+        for (Long knowledgeBaseId : knowledgeBaseIds) {
+            ids.add(knowledgeBaseId);
+        }
+        filter.add(terms);
     }
 
     private void ensureIndex() {
@@ -122,8 +163,11 @@ public class ElasticsearchChunkIndexer {
         propertiesNode.putObject("document_id").put("type", "long");
         propertiesNode.putObject("knowledge_base_id").put("type", "long");
         propertiesNode.putObject("user_id").put("type", "long");
+        propertiesNode.putObject("parent_chunk_id").put("type", "long");
         propertiesNode.putObject("chunk_index").put("type", "integer");
+        propertiesNode.putObject("document_title").put("type", "keyword");
         propertiesNode.putObject("content").put("type", "text").put("analyzer", "standard");
+        propertiesNode.putObject("metadata_json").put("type", "keyword").put("index", false);
         ObjectNode embedding = propertiesNode.putObject("embedding");
         embedding.put("type", "dense_vector");
         embedding.put("dims", properties.vectorDimensions());
@@ -137,6 +181,36 @@ public class ElasticsearchChunkIndexer {
         ObjectNode root = objectMapper.createObjectNode();
         root.putObject("term").put(field, value);
         return root;
+    }
+
+    private List<SearchHitChunk> readHits(JsonNode response) {
+        List<SearchHitChunk> hits = new ArrayList<>();
+        for (JsonNode hit : response.path("hits").path("hits")) {
+            JsonNode source = hit.path("_source");
+            hits.add(new SearchHitChunk(
+                    source.path("chunk_id").asLong(),
+                    source.path("document_id").asLong(),
+                    source.path("knowledge_base_id").asLong(),
+                    source.path("user_id").asLong(),
+                    source.path("parent_chunk_id").isMissingNode() || source.path("parent_chunk_id").isNull()
+                            ? null
+                            : source.path("parent_chunk_id").asLong(),
+                    source.path("chunk_index").asInt(),
+                    source.path("document_title").asText(null),
+                    source.path("content").asText(),
+                    source.path("metadata_json").asText("{}"),
+                    hit.path("_score").asDouble()
+            ));
+        }
+        return hits;
+    }
+
+    private void putNullableLong(ObjectNode body, String field, Long value) {
+        if (value == null) {
+            body.putNull(field);
+            return;
+        }
+        body.put(field, value);
     }
 
     private JsonNode request(String method, String path, String body) {

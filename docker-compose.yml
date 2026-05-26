@@ -78,6 +78,8 @@ services:
     image: apache/rocketmq:5.3.2
     container_name: study-agent-rocketmq-namesrv
     command: sh mqnamesrv
+    environment:
+      JAVA_OPT_EXT: -Xms256m -Xmx256m
     ports:
       - "9876:9876"
     volumes:
@@ -85,22 +87,37 @@ services:
     networks:
       - study-agent-net
 
+  rocketmq-init:
+    image: apache/rocketmq:5.3.2
+    container_name: study-agent-rocketmq-init
+    user: root
+    command: sh -c "mkdir -p /home/rocketmq/logs /home/rocketmq/store && chown -R 3000:3000 /home/rocketmq/logs /home/rocketmq/store"
+    volumes:
+      - rocketmq-broker-store:/home/rocketmq/store
+      - rocketmq-broker-logs:/home/rocketmq/logs
+    networks:
+      - study-agent-net
+
   rocketmq-broker:
     image: apache/rocketmq:5.3.2
     container_name: study-agent-rocketmq-broker
-    command: sh mqbroker -n rocketmq-namesrv:9876 -c /home/rocketmq/conf/broker.conf
+    command: sh mqbroker -n rocketmq-namesrv:9876 --enable-proxy -c /home/rocketmq/rocketmq-5.3.2/conf/broker.conf
     environment:
       JAVA_OPT_EXT: -server -Xms512m -Xmx512m -Xmn256m
+      NAMESRV_ADDR: rocketmq-namesrv:9876
     ports:
       - "10909:10909"
       - "10911:10911"
       - "10912:10912"
     volumes:
-      - ./docker/rocketmq/broker.conf:/home/rocketmq/conf/broker.conf
+      - ./docker/rocketmq/broker.conf:/home/rocketmq/rocketmq-5.3.2/conf/broker.conf
       - rocketmq-broker-store:/home/rocketmq/store
       - rocketmq-broker-logs:/home/rocketmq/logs
     depends_on:
-      - rocketmq-namesrv
+      rocketmq-init:
+        condition: service_completed_successfully
+      rocketmq-namesrv:
+        condition: service_started
     networks:
       - study-agent-net
 

@@ -1,10 +1,11 @@
 package com.studyagent.modules.rag.interfaces;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import java.util.List;
 
 public record ChatRequest(
-        @NotNull Long knowledgeBaseId,
+        Long knowledgeBaseId,
+        List<Long> knowledgeBaseIds,
         @NotBlank String question
 ) {
 }

@@ -61,19 +61,24 @@ public class DocumentProcessingService {
             }
 
             updateStatus(document, "PARSED", "INDEXING", null);
+            Long currentParentChunkId = null;
             for (int i = 0; i < chunks.size(); i++) {
                 String content = chunks.get(i);
                 DocumentChunk chunk = new DocumentChunk();
                 chunk.setDocumentId(document.getId());
                 chunk.setKnowledgeBaseId(document.getKnowledgeBaseId());
                 chunk.setUserId(document.getUserId());
-                chunk.setParentChunkId(null);
+                chunk.setParentChunkId(currentParentChunkId);
                 chunk.setChunkIndex(i);
                 chunk.setContent(content);
                 chunk.setTokenCount(estimateTokenCount(content));
-                chunk.setMetadataJson("{}");
+                chunk.setMetadataJson(chunkMetadata(document, i, chunks.size()));
                 chunk.setCreatedAt(LocalDateTime.now());
                 documentChunkMapper.insert(chunk);
+                if (i % 3 == 0) {
+                    currentParentChunkId = chunk.getId();
+                    chunk.setParentChunkId(currentParentChunkId);
+                }
 
                 float[] embedding = embeddingService.embed(content);
                 String esDocId = elasticsearchChunkIndexer.index(new IndexedChunk(
@@ -81,8 +86,11 @@ public class DocumentProcessingService {
                         chunk.getDocumentId(),
                         chunk.getKnowledgeBaseId(),
                         chunk.getUserId(),
+                        chunk.getParentChunkId(),
                         chunk.getChunkIndex(),
+                        document.getTitle(),
                         chunk.getContent(),
+                        chunk.getMetadataJson(),
                         embedding
                 ));
                 chunk.setEsDocId(esDocId);
@@ -116,5 +124,23 @@ public class DocumentProcessingService {
 
     private int estimateTokenCount(String content) {
         return Math.max(1, content.length() / 2);
+    }
+
+    private String chunkMetadata(Document document, int chunkIndex, int totalChunks) {
+        return """
+                {"documentTitle":"%s","sourceType":"%s","chunkIndex":%d,"totalChunks":%d}
+                """.formatted(
+                escapeJson(document.getTitle()),
+                escapeJson(document.getSourceType()),
+                chunkIndex,
+                totalChunks
+        ).trim();
+    }
+
+    private String escapeJson(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 }

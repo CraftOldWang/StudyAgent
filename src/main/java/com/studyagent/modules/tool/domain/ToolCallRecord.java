@@ -1,0 +1,24 @@
+package com.studyagent.modules.tool.domain;
+
+import com.baomidou.mybatisplus.annotation.TableName;
+import java.time.LocalDateTime;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@TableName("tool_call_records")
+public class ToolCallRecord {
+    private Long id;
+    private Long agentRunId;
+    private Long sessionId;
+    private Long userId;
+    private String toolName;
+    private String argumentsJson;
+    private String resultSummary;
+    private String status;
+    private Boolean permissionChecked;
+    private LocalDateTime createdAt;
+    private LocalDateTime finishedAt;
+    private String errorMessage;
+}

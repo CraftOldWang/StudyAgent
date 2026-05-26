@@ -11,6 +11,7 @@ import lombok.Setter;
 public class UploadSession {
     private Long id;
     private Long userId;
+    private Long knowledgeBaseId;
     private String fileMd5;
     private String filename;
     private String contentType;
@@ -18,6 +19,8 @@ public class UploadSession {
     private Integer totalChunks;
     private Integer uploadedChunks;
     private Long fileSize;
+    private Long completedFileId;
+    private Long completedDocumentId;
     private String status;
     private LocalDateTime expiresAt;
     private LocalDateTime createdAt;

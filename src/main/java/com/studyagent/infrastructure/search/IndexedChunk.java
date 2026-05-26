@@ -5,8 +5,11 @@ public record IndexedChunk(
         Long documentId,
         Long knowledgeBaseId,
         Long userId,
+        Long parentChunkId,
         Integer chunkIndex,
+        String documentTitle,
         String content,
+        String metadataJson,
         float[] embedding
 ) {
 }

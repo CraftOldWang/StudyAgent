@@ -12,6 +12,7 @@ public class FileRecord {
     private Long id;
     private Long userId;
     private String md5;
+    private String sha256;
     private String bucket;
     private String objectKey;
     private String filename;

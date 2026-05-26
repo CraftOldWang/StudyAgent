@@ -69,6 +69,14 @@ knowledgeBaseId=<id>
 file=<file>
 ```
 
+### 文件去重预检
+
+```http
+GET /api/files/dedup?md5=<file-md5>&sha256=<file-sha256>
+```
+
+返回 `duplicated=true` 时，前端可以直接提示秒传命中。
+
 ### 初始化分片上传
 
 ```http
@@ -79,10 +87,13 @@ knowledgeBaseId=<id>
 filename=<filename>
 contentType=<content-type>
 md5=<file-md5>
+sha256=<file-sha256>
 fileSize=<bytes>
 chunkSize=<bytes>
 totalChunks=<count>
 ```
+
+若同一用户、知识库和 MD5 已存在未过期的 `UPLOADING` 会话，会直接返回旧的 `uploadSessionId` 和已上传分片数量，用于断点续传。
 
 ### 上传分片
 
@@ -94,6 +105,14 @@ chunk=<chunk-file>
 ```
 
 `chunkIndex` 从 0 开始。
+
+### 查询分片上传状态
+
+```http
+GET /api/files/multipart/{uploadSessionId}
+```
+
+返回 Redis Bitmap 还原出的 `uploadedChunkIndexes` 和 `missingChunkIndexes`，前端可据此续传缺失分片。
 
 ### 完成分片上传
 
@@ -119,7 +138,5 @@ Content-Type: application/json
 
 ## 5. 当前实现边界
 
-- 向量化当前使用本地 deterministic hash embedding，方便无模型密钥时完成端到端验证。后续可替换成 Spring AI Alibaba embedding provider。
-- RAG 回答当前是检索式摘要，不调用大模型生成。后续接入 LLM 后可以保留引用片段作为上下文。
-- 分片合并当前为了 MVP 从 RustFS 读取分片到内存合并，适合本地验证；生产化应改为 S3 multipart upload 或服务端 compose。
-- 暂未实现完整 Agent、SSE、工具审计、上下文压缩和 FSRS，这些属于下一阶段。
+- 分片完成时会顺序读取 RustFS 临时分片并以流式方式写入最终对象，避免把完整大文件一次性放入 JVM 内存；生产化可继续演进为 S3 multipart upload 或服务端 compose。
+- 用户体系仍使用默认用户 `1` 做本地验证，后续接入登录后需要把上传会话和文件记录绑定真实用户。

@@ -9,6 +9,7 @@ public record InitMultipartUploadRequest(
         @NotBlank String filename,
         String contentType,
         @NotBlank String md5,
+        String sha256,
         @Min(1) long fileSize,
         @Min(1) int chunkSize,
         @Min(1) int totalChunks

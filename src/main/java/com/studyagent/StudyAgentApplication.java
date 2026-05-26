@@ -1,5 +1,6 @@
 package com.studyagent;
 
+import com.studyagent.common.config.AiModelProperties;
 import com.studyagent.common.config.ElasticsearchProperties;
 import com.studyagent.common.config.ObjectStorageProperties;
 import com.studyagent.common.config.RagProperties;
@@ -12,9 +13,13 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @SpringBootApplication
 @MapperScan({
         "com.studyagent.modules.storage.infrastructure",
-        "com.studyagent.modules.knowledge.infrastructure"
+        "com.studyagent.modules.knowledge.infrastructure",
+        "com.studyagent.modules.learning.infrastructure",
+        "com.studyagent.modules.tool.infrastructure",
+        "com.studyagent.modules.review.infrastructure"
 })
 @EnableConfigurationProperties({
+        AiModelProperties.class,
         ObjectStorageProperties.class,
         ElasticsearchProperties.class,
         RagProperties.class,

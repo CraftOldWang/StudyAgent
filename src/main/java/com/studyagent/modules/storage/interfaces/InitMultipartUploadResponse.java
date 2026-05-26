@@ -5,6 +5,8 @@ public record InitMultipartUploadResponse(
         boolean duplicated,
         Long fileId,
         Long documentId,
-        String status
+        String status,
+        int uploadedChunks,
+        int totalChunks
 ) {
 }

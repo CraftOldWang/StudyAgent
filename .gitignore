@@ -3,5 +3,17 @@ target/
 .vscode/
 *.iml
 .env
+some_apiKey
 logs/
 *.log
+frontend/node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
+frontend/vite.config.js
+frontend/vite.config.d.ts
+frontend/vite-dev.*.log
+
+docker/rocketmq/参考用的broker.conf
+简历.md
+scripts/
+docs/

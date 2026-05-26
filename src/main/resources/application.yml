@@ -22,6 +22,12 @@ spring:
     locations: classpath:db/migration
   jackson:
     default-property-inclusion: non_null
+  ai:
+    dashscope:
+      chat:
+        enabled: false
+      embedding:
+        enabled: false
 
 mybatis-plus:
   configuration:
@@ -49,11 +55,31 @@ study-agent:
   elasticsearch:
     endpoint: http://localhost:9200
     chunk-index: study-agent-chunks
-    vector-dimensions: 384
+    vector-dimensions: 1024
   rag:
     top-k: 6
     chunk-size: 900
     chunk-overlap: 120
+    bm25-candidate-size: 30
+    vector-candidate-size: 30
+    rrf-k: 60
+    parent-before: 1
+    parent-after: 1
+  ai:
+    embedding:
+      provider: dashscope
+      model: text-embedding-v3
+      dimensions: 1024
+      api-key: ${AI_DASHSCOPE_API_KEY:}
+      base-url: ${AI_DASHSCOPE_BASE_URL:https://dashscope.aliyuncs.com}
+      text-type: document
+    chat:
+      provider: deepseek
+      model: deepseek-chat
+      api-key: ${DEEPSEEK_API_KEY:}
+      base-url: ${DEEPSEEK_BASE_URL:https://api.deepseek.com}
+      temperature: 0.2
+      max-tokens: 1800
   rocketmq:
     document-topic: study-agent-document
     document-consumer-group: study-agent-document-consumer

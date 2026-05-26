@@ -6,6 +6,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record RagProperties(
         int topK,
         int chunkSize,
-        int chunkOverlap
+        int chunkOverlap,
+        int bm25CandidateSize,
+        int vectorCandidateSize,
+        int rrfK,
+        int parentBefore,
+        int parentAfter
 ) {
 }
