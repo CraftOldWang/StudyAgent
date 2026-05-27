@@ -25,7 +25,9 @@
         <mybatis.plus.version>3.5.16</mybatis.plus.version>
         <redisson.version>3.52.0</redisson.version>
         <rocketmq.spring.version>2.3.5</rocketmq.spring.version>
+        <canal.version>1.1.8</canal.version>
         <tika.version>3.3.0</tika.version>
+        <commons.io.version>2.21.0</commons.io.version>
     </properties>
 
     <dependencyManagement>
@@ -76,6 +78,16 @@
             <version>${rocketmq.spring.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.alibaba.otter</groupId>
+            <artifactId>canal.client</artifactId>
+            <version>${canal.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba.otter</groupId>
+            <artifactId>canal.protocol</artifactId>
+            <version>${canal.version}</version>
+        </dependency>
+        <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
             <version>${aws.sdk.version}</version>
@@ -84,6 +96,11 @@
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-core</artifactId>
             <version>${tika.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons.io.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.tika</groupId>

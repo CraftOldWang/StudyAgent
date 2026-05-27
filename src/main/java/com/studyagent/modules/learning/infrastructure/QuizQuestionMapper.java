@@ -1,0 +1,29 @@
+package com.studyagent.modules.learning.infrastructure;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.studyagent.modules.learning.domain.QuizQuestion;
+import java.util.List;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+
+public interface QuizQuestionMapper extends BaseMapper<QuizQuestion> {
+
+    @Select("""
+            <script>
+            SELECT *
+            FROM quiz_questions
+            WHERE user_id = #{userId}
+              AND status = 'ACTIVE'
+            <if test="knowledgeBaseId != null">
+              AND knowledge_base_id = #{knowledgeBaseId}
+            </if>
+            ORDER BY created_at DESC
+            LIMIT #{limit}
+            </script>
+            """)
+    List<QuizQuestion> selectHistory(
+            @Param("userId") Long userId,
+            @Param("knowledgeBaseId") Long knowledgeBaseId,
+            @Param("limit") int limit
+    );
+}

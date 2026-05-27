@@ -5,6 +5,10 @@ services:
     image: mysql:8.1
     container_name: study-agent-mysql
     command:
+      - --server-id=1
+      - --log-bin=mysql-bin
+      - --binlog-format=ROW
+      - --binlog-row-image=FULL
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_0900_ai_ci
       - --default-time-zone=+08:00
@@ -17,6 +21,7 @@ services:
       - "3307:3306"
     volumes:
       - mysql-data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro
     networks:
       - study-agent-net
     healthcheck:
@@ -24,6 +29,29 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+
+  canal:
+    image: canal/canal-server:v1.1.8
+    container_name: study-agent-canal
+    environment:
+      - canal.auto.scan=false
+      - canal.destinations=study_agent
+      - canal.instance.master.address=mysql:3306
+      - canal.instance.dbUsername=canal
+      - canal.instance.dbPassword=canal123
+      - canal.instance.connectionCharset=UTF-8
+      - canal.instance.tsdb.enable=false
+      - canal.instance.gtidon=false
+      - canal.instance.filter.regex=study_agent[.](documents|document_chunks)
+    ports:
+      - "11111:11111"
+    volumes:
+      - canal-logs:/home/admin/canal-server/logs
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - study-agent-net
 
   redis:
     image: redis:7.4
@@ -156,6 +184,7 @@ volumes:
   rocketmq-broker-store:
   rocketmq-broker-logs:
   rustfs-data:
+  canal-logs:
 
 networks:
   study-agent-net:

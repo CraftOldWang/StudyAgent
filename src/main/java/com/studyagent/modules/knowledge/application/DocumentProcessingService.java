@@ -1,11 +1,9 @@
 package com.studyagent.modules.knowledge.application;
 
 import com.studyagent.common.exception.BusinessException;
-import com.studyagent.infrastructure.embedding.EmbeddingService;
 import com.studyagent.infrastructure.objectstorage.ObjectStorageService;
 import com.studyagent.infrastructure.parser.DocumentTextParser;
 import com.studyagent.infrastructure.search.ElasticsearchChunkIndexer;
-import com.studyagent.infrastructure.search.IndexedChunk;
 import com.studyagent.modules.knowledge.domain.Document;
 import com.studyagent.modules.knowledge.domain.DocumentChunk;
 import com.studyagent.modules.knowledge.infrastructure.DocumentChunkMapper;
@@ -28,11 +26,12 @@ public class DocumentProcessingService {
     private final ObjectStorageService objectStorageService;
     private final DocumentTextParser documentTextParser;
     private final TextChunker textChunker;
-    private final EmbeddingService embeddingService;
     private final ElasticsearchChunkIndexer elasticsearchChunkIndexer;
     private final DocumentStatusService documentStatusService;
+    private final DocumentChunkIndexSyncService documentChunkIndexSyncService;
 
     public void process(Long documentId) {
+        boolean indexingStarted = false;
         Document document = documentMapper.selectById(documentId);
         if (document == null) {
             throw new BusinessException("文档不存在: " + documentId);
@@ -58,7 +57,6 @@ public class DocumentProcessingService {
                 throw new BusinessException("文档切块结果为空");
             }
 
-            updateStatus(document, "PARSED", "INDEXING", null);
             Long currentParentChunkId = null;
             for (int i = 0; i < chunks.size(); i++) {
                 String content = chunks.get(i);
@@ -78,27 +76,20 @@ public class DocumentProcessingService {
                     chunk.setParentChunkId(currentParentChunkId);
                     documentChunkMapper.updateById(chunk);
                 }
-
-                float[] embedding = embeddingService.embed(content);
-                String esDocId = elasticsearchChunkIndexer.index(new IndexedChunk(
-                        chunk.getId(),
-                        chunk.getDocumentId(),
-                        chunk.getKnowledgeBaseId(),
-                        chunk.getUserId(),
-                        chunk.getParentChunkId(),
-                        chunk.getChunkIndex(),
-                        document.getTitle(),
-                        chunk.getContent(),
-                        chunk.getMetadataJson(),
-                        embedding
-                ));
-                chunk.setEsDocId(esDocId);
-                documentChunkMapper.updateById(chunk);
             }
 
-            updateStatus(document, "PARSED", "INDEXED", null);
+            updateStatus(document, "PARSED", "INDEXING", null);
+            indexingStarted = true;
+            for (DocumentChunk chunk : documentChunkMapper.selectMissingEsDocIdByDocumentId(document.getId())) {
+                documentChunkIndexSyncService.syncChunk(chunk.getId());
+            }
+            documentChunkIndexSyncService.markDocumentIndexedIfComplete(document.getId());
         } catch (Exception ex) {
-            documentStatusService.markFailed(document.getId(), ex.getMessage());
+            if (indexingStarted) {
+                documentStatusService.markIndexFailed(document.getId(), ex.getMessage());
+            } else {
+                documentStatusService.markFailed(document.getId(), ex.getMessage());
+            }
             throw ex;
         }
     }

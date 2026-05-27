@@ -2,6 +2,7 @@ package com.studyagent.modules.learning.application;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.studyagent.common.exception.BusinessException;
 import com.studyagent.infrastructure.ai.ChatGenerationService;
@@ -15,6 +16,7 @@ import com.studyagent.modules.learning.infrastructure.AgentStepRecordMapper;
 import com.studyagent.modules.learning.infrastructure.ChatMessageMapper;
 import com.studyagent.modules.learning.infrastructure.ChatSessionMapper;
 import com.studyagent.modules.learning.interfaces.LearningSessionResponse;
+import com.studyagent.modules.learning.interfaces.QuizQuestionResponse;
 import com.studyagent.modules.rag.domain.RagReference;
 import com.studyagent.modules.rag.domain.RagSearchResult;
 import com.studyagent.modules.review.interfaces.ReviewCardResponse;
@@ -34,6 +36,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class LearningAgentService {
 
     private static final Long DEFAULT_USER_ID = KnowledgeBaseService.DEFAULT_USER_ID;
+    private static final String STAGE_PLAN = "PLAN";
+    private static final String STAGE_RETRIEVE = "RETRIEVE";
+    private static final String STAGE_TEACH = "TEACH";
+    private static final String STAGE_QA = "QA";
+    private static final String STAGE_QUIZ = "QUIZ";
+    private static final String STAGE_CARD = "CARD";
+    private static final String STAGE_SUMMARY = "SUMMARY";
+    private static final String STAGE_DONE = "DONE";
 
     private final ChatSessionMapper chatSessionMapper;
     private final ChatMessageMapper chatMessageMapper;
@@ -41,6 +51,7 @@ public class LearningAgentService {
     private final AgentStepRecordMapper agentStepRecordMapper;
     private final KnowledgeSearchTool knowledgeSearchTool;
     private final ReviewCardWriteTool reviewCardWriteTool;
+    private final QuizService quizService;
     private final ContextMemoryService contextMemoryService;
     private final ChatGenerationService chatGenerationService;
     private final ObjectMapper objectMapper;
@@ -63,7 +74,7 @@ public class LearningAgentService {
         chatSessionMapper.insert(session);
 
         insertMessage(session.getId(), DEFAULT_USER_ID, "USER", "TEXT", message, null, null, "{}");
-        AgentRun run = createRun(session.getId(), DEFAULT_USER_ID);
+        AgentRun run = createRun(session.getId(), DEFAULT_USER_ID, STAGE_PLAN);
         return new LearningSessionResponse(session.getId(), run.getId(), run.getStatus());
     }
 
@@ -71,40 +82,129 @@ public class LearningAgentService {
         validateMessage(message);
         ChatSession session = requireSession(sessionId);
         List<Long> knowledgeBaseIds = readKnowledgeBaseIds(session.getKnowledgeBaseScopeJson());
-        insertMessage(sessionId, session.getUserId(), "USER", "TEXT", message, null, null, "{}");
-        AgentRun run = createRun(sessionId, session.getUserId());
+        AgentRun run = requireRunningRun(session);
+        insertUserMessageIfNeeded(sessionId, session.getUserId(), message);
         try {
             emit(sink, "session.started", Map.of("sessionId", sessionId, "agentRunId", run.getId()));
             ContextMemoryService.RestoredContext restoredContext = contextMemoryService.restore(sessionId);
-            AgentContext context = new AgentContext(session, run, message, knowledgeBaseIds, sink);
+            String learningGoal = learningGoal(sessionId);
+            AgentContext context = new AgentContext(session, run, learningGoal, message, knowledgeBaseIds, sink);
 
-            String plan = executeStage(context, "PLAN", () -> generatePlan(message, restoredContext));
-            RagSearchResult searchResult = executeRetrieve(context);
-            String teaching = executeStage(context, "TEACH", () -> generateTeaching(message, plan, searchResult.references()));
-            String qa = executeStage(context, "QA", () -> generateQa(message, searchResult.references()));
-            String quiz = executeStage(context, "QUIZ", () -> generateQuiz(message, searchResult.references()));
-            String cards = executeCardStage(context, searchResult.references());
-            String summary = executeStage(context, "SUMMARY", () -> generateSummary(plan, teaching, qa, quiz, cards));
-
-            String finalAnswer = finalAnswer(teaching, qa, quiz, cards, summary);
-            ChatMessage assistantMessage = insertMessage(sessionId, session.getUserId(), "ASSISTANT", "AGENT_RESULT", finalAnswer, null, null, "{}");
-            MemorySnapshotResult snapshotResult = compressMemory(sessionId, assistantMessage.getId(), summary, sink);
-            completeRun(run);
-            emit(sink, "done", Map.of(
-                    "sessionId", sessionId,
-                    "agentRunId", run.getId(),
-                    "snapshotId", snapshotResult.snapshotId(),
-                    "coveredMessageId", snapshotResult.coveredMessageId()
-            ));
+            String stage = routeStage(run, currentStage(run), message);
+            emit(sink, "agent.stage.current", Map.of("stage", stage));
+            switch (stage) {
+                case STAGE_PLAN -> runPlanStage(context, restoredContext);
+                case STAGE_RETRIEVE -> runRetrieveStage(context);
+                case STAGE_TEACH -> runTeachStage(context);
+                case STAGE_QA -> runQaStage(context);
+                case STAGE_QUIZ -> runQuizStage(context);
+                case STAGE_CARD -> runCardStage(context);
+                case STAGE_SUMMARY -> runSummaryStage(context, restoredContext);
+                case STAGE_DONE -> {
+                    completeRun(run);
+                    emit(sink, "done", Map.of("sessionId", sessionId, "agentRunId", run.getId(), "stage", STAGE_DONE));
+                }
+                default -> throw new BusinessException("未知 Agent 阶段: " + stage);
+            }
         } catch (RuntimeException ex) {
-            failRun(run, ex.getMessage());
+            run.setErrorMessage(ex.getMessage());
+            agentRunMapper.updateById(run);
             emit(sink, "error", Map.of("message", ex.getMessage()));
             throw ex;
         }
     }
 
+    private void runPlanStage(AgentContext context, ContextMemoryService.RestoredContext restoredContext) {
+        String output = executeStage(context, STAGE_PLAN, () -> generatePlan(context.learningGoal(), restoredContext));
+        insertStageMessage(context, STAGE_PLAN, output);
+        advanceStage(context.run(), STAGE_RETRIEVE);
+        emitStageDone(context, STAGE_PLAN, STAGE_RETRIEVE);
+    }
+
+    private void runRetrieveStage(AgentContext context) {
+        RagSearchResult searchResult = executeRetrieve(context);
+        insertStageMessage(context, STAGE_RETRIEVE, toJson(searchResult));
+        advanceStage(context.run(), STAGE_TEACH);
+        emitStageDone(context, STAGE_RETRIEVE, STAGE_TEACH);
+    }
+
+    private void runTeachStage(AgentContext context) {
+        String plan = stageText(context.run().getId(), STAGE_PLAN);
+        RagSearchResult searchResult = stageSearchResult(context.run().getId());
+        String output = executeStage(context, STAGE_TEACH,
+                () -> generateTeaching(context.message(), plan, searchResult.references()));
+        insertStageMessage(context, STAGE_TEACH, output);
+        advanceStage(context.run(), STAGE_QA);
+        emitStageDone(context, STAGE_TEACH, STAGE_QA);
+    }
+
+    private void runQaStage(AgentContext context) {
+        RagSearchResult searchResult = stageSearchResult(context.run().getId());
+        String output = executeStage(context, STAGE_QA,
+                () -> generateQa(context.message(), searchResult.references()));
+        insertStageMessage(context, STAGE_QA, output);
+        String nextStage = asksToContinue(context.message()) ? STAGE_QUIZ : STAGE_QA;
+        advanceStage(context.run(), nextStage);
+        emitStageDone(context, STAGE_QA, nextStage);
+    }
+
+    private void runQuizStage(AgentContext context) {
+        RagSearchResult searchResult = stageSearchResult(context.run().getId());
+        String output = executeStage(context, STAGE_QUIZ, () -> {
+            List<QuizQuestionResponse> questions = quizService.createFromReferences(
+                    context.session().getUserId(),
+                    context.session().getId(),
+                    context.run().getId(),
+                    searchResult.references()
+            );
+            emit(context.sink(), "quiz.generated", Map.of(
+                    "content", questions.isEmpty() ? "本轮没有可用引用资料，暂不生成测验。" : "已生成测验题：" + questions.size(),
+                    "questions", questions
+            ));
+            if (questions.isEmpty()) {
+                return "本轮没有可用引用资料，暂不生成测验。";
+            }
+            return toJson(questions);
+        });
+        insertStageMessage(context, STAGE_QUIZ, output);
+        advanceStage(context.run(), STAGE_QA);
+        emitStageDone(context, STAGE_QUIZ, STAGE_QA);
+    }
+
+    private void runCardStage(AgentContext context) {
+        RagSearchResult searchResult = stageSearchResult(context.run().getId());
+        String output = executeCardStage(context, searchResult.references());
+        insertStageMessage(context, STAGE_CARD, output);
+        advanceStage(context.run(), STAGE_SUMMARY);
+        emitStageDone(context, STAGE_CARD, STAGE_SUMMARY);
+    }
+
+    private void runSummaryStage(AgentContext context, ContextMemoryService.RestoredContext restoredContext) {
+        String plan = stageText(context.run().getId(), STAGE_PLAN);
+        String teaching = stageText(context.run().getId(), STAGE_TEACH);
+        String qa = stageText(context.run().getId(), STAGE_QA);
+        String quiz = stageText(context.run().getId(), STAGE_QUIZ);
+        String cards = stageText(context.run().getId(), STAGE_CARD);
+        String output = executeStage(context, STAGE_SUMMARY, () -> generateSummary(plan, teaching, qa, quiz, cards));
+        ChatMessage assistantMessage = insertStageMessage(context, STAGE_SUMMARY, output);
+        MemorySnapshotResult snapshotResult = compressMemory(
+                context.session().getId(),
+                assistantMessage.getId(),
+                output,
+                context.sink()
+        );
+        completeRun(context.run());
+        emit(context.sink(), "done", Map.of(
+                "sessionId", context.session().getId(),
+                "agentRunId", context.run().getId(),
+                "stage", STAGE_SUMMARY,
+                "snapshotId", snapshotResult.snapshotId(),
+                "coveredMessageId", snapshotResult.coveredMessageId()
+        ));
+    }
+
     private String executeCardStage(AgentContext context, List<RagReference> references) {
-        String generatedCards = executeStage(context, "CARD", () -> generateCards(context.message(), references));
+        String generatedCards = executeStage(context, "CARD", () -> generateCards(context.learningGoal(), references));
         if (references.isEmpty()) {
             return generatedCards;
         }
@@ -167,7 +267,7 @@ public class LearningAgentService {
 
     private RagSearchResult executeRetrieve(AgentContext context) {
         AgentStepRecord step = startStep(context.run().getId(), "RETRIEVE", toJson(Map.of(
-                "question", context.message(),
+                "question", context.learningGoal(),
                 "knowledgeBaseIds", context.knowledgeBaseIds()
         )));
         emit(context.sink(), "stage.started", Map.of("stage", "RETRIEVE"));
@@ -178,9 +278,9 @@ public class LearningAgentService {
                     context.session().getId(),
                     context.session().getUserId(),
                     context.knowledgeBaseIds(),
-                    context.message()
+                    context.learningGoal()
             );
-            completeStep(step, toJson(Map.of("hitCount", result.references().size())));
+            completeStep(step, toJson(result));
             emit(context.sink(), "tool.completed", Map.of(
                     "toolName", KnowledgeSearchTool.TOOL_NAME,
                     "hitCount", result.references().size()
@@ -198,7 +298,10 @@ public class LearningAgentService {
     }
 
     private String executeStage(AgentContext context, String stage, StageAction action) {
-        AgentStepRecord step = startStep(context.run().getId(), stage, toJson(Map.of("message", context.message())));
+        AgentStepRecord step = startStep(context.run().getId(), stage, toJson(Map.of(
+                "learningGoal", context.learningGoal(),
+                "userMessage", context.message()
+        )));
         updateRunStage(context.run(), stage);
         emit(context.sink(), "stage.started", Map.of("stage", stage));
         try {
@@ -318,14 +421,6 @@ public class LearningAgentService {
         return builder.toString();
     }
 
-    private String finalAnswer(String teaching, String qa, String quiz, String cards, String summary) {
-        return "## 知识讲解\n" + teaching
-                + "\n\n## 答疑\n" + qa
-                + "\n\n## 即时测验\n" + quiz
-                + "\n\n## 复习卡\n" + cards
-                + "\n\n## 本轮总结\n" + summary;
-    }
-
     private ChatSession requireSession(Long sessionId) {
         ChatSession session = chatSessionMapper.selectById(sessionId);
         if (session == null) {
@@ -334,11 +429,20 @@ public class LearningAgentService {
         return session;
     }
 
-    private AgentRun createRun(Long sessionId, Long userId) {
+    private AgentRun requireRunningRun(ChatSession session) {
+        AgentRun run = agentRunMapper.selectRunningBySession(session.getId(), session.getUserId());
+        if (run != null) {
+            return run;
+        }
+        return createRun(session.getId(), session.getUserId(), STAGE_PLAN);
+    }
+
+    private AgentRun createRun(Long sessionId, Long userId, String currentStage) {
         AgentRun run = new AgentRun();
         run.setSessionId(sessionId);
         run.setUserId(userId);
         run.setStatus("RUNNING");
+        run.setCurrentStage(currentStage);
         run.setStartedAt(LocalDateTime.now());
         agentRunMapper.insert(run);
         return run;
@@ -350,16 +454,147 @@ public class LearningAgentService {
         agentRunMapper.updateById(run);
     }
 
-    private void failRun(AgentRun run, String errorMessage) {
-        run.setStatus("FAILED");
-        run.setErrorMessage(errorMessage);
-        run.setFinishedAt(LocalDateTime.now());
-        agentRunMapper.updateById(run);
-    }
-
     private void updateRunStage(AgentRun run, String stage) {
         run.setCurrentStage(stage);
         agentRunMapper.updateById(run);
+    }
+
+    private void advanceStage(AgentRun run, String nextStage) {
+        updateRunStage(run, nextStage);
+    }
+
+    private String currentStage(AgentRun run) {
+        if (run.getCurrentStage() == null || run.getCurrentStage().isBlank()) {
+            run.setCurrentStage(STAGE_PLAN);
+            agentRunMapper.updateById(run);
+            return STAGE_PLAN;
+        }
+        return run.getCurrentStage();
+    }
+
+    private String routeStage(AgentRun run, String currentStage, String userMessage) {
+        String normalized = userMessage == null ? "" : userMessage.trim().toLowerCase();
+        if (isQuestion(normalized)) {
+            return STAGE_QA;
+        }
+        if (containsAny(normalized, "测验", "测试", "quiz", "题目", "出题")) {
+            return STAGE_QUIZ;
+        }
+        if (containsAny(normalized, "总结", "收尾", "summary")) {
+            return STAGE_SUMMARY;
+        }
+        if (containsAny(normalized, "生成卡片", "复习卡", "card")) {
+            return STAGE_CARD;
+        }
+        if (containsAny(normalized, "下一步", "继续", "推进", "next")) {
+            if (STAGE_QA.equals(currentStage)) {
+                return hasCompletedStep(run.getId(), STAGE_QUIZ) ? STAGE_CARD : STAGE_QUIZ;
+            }
+            return currentStage;
+        }
+        if (STAGE_QA.equals(currentStage) || STAGE_TEACH.equals(currentStage)) {
+            return STAGE_QA;
+        }
+        return currentStage;
+    }
+
+    private boolean asksToContinue(String value) {
+        String normalized = value == null ? "" : value.trim().toLowerCase();
+        return containsAny(normalized, "下一步", "继续", "推进", "next");
+    }
+
+    private boolean isQuestion(String value) {
+        return value.contains("?")
+                || value.contains("？")
+                || containsAny(value, "为什么", "怎么", "如何", "哪里", "没懂", "不懂", "解释一下");
+    }
+
+    private boolean containsAny(String value, String... patterns) {
+        for (String pattern : patterns) {
+            if (value.contains(pattern)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void emitStageDone(AgentContext context, String completedStage, String nextStage) {
+        emit(context.sink(), "agent.stage.waiting", Map.of(
+                "completedStage", completedStage,
+                "nextStage", nextStage,
+                "message", "发送下一条消息继续推进到 " + nextStage
+        ));
+        emit(context.sink(), "done", Map.of(
+                "sessionId", context.session().getId(),
+                "agentRunId", context.run().getId(),
+                "completedStage", completedStage,
+                "nextStage", nextStage
+        ));
+    }
+
+    private ChatMessage insertStageMessage(AgentContext context, String stage, String content) {
+        return insertMessage(
+                context.session().getId(),
+                context.session().getUserId(),
+                "ASSISTANT",
+                stage + "_RESULT",
+                content,
+                null,
+                null,
+                toJson(Map.of("agentRunId", context.run().getId(), "stage", stage))
+        );
+    }
+
+    private void insertUserMessageIfNeeded(Long sessionId, Long userId, String message) {
+        List<ChatMessage> messages = chatMessageMapper.selectAfter(sessionId, 0L);
+        if (!messages.isEmpty()) {
+            ChatMessage latest = messages.getLast();
+            if ("USER".equals(latest.getRole()) && message.equals(latest.getContent())) {
+                return;
+            }
+        }
+        insertMessage(sessionId, userId, "USER", "TEXT", message, null, null, "{}");
+    }
+
+    private String learningGoal(Long sessionId) {
+        List<ChatMessage> messages = chatMessageMapper.selectAfter(sessionId, 0L);
+        for (ChatMessage message : messages) {
+            if ("USER".equals(message.getRole())) {
+                return message.getContent();
+            }
+        }
+        throw new BusinessException("学习会话缺少初始目标");
+    }
+
+    private String stageText(Long agentRunId, String stage) {
+        AgentStepRecord step = requireCompletedStep(agentRunId, stage);
+        try {
+            JsonNode root = objectMapper.readTree(step.getOutputJson());
+            return root.path("text").asText("");
+        } catch (Exception ex) {
+            throw new BusinessException("读取阶段输出失败: " + stage + ", " + ex.getMessage());
+        }
+    }
+
+    private RagSearchResult stageSearchResult(Long agentRunId) {
+        AgentStepRecord step = requireCompletedStep(agentRunId, STAGE_RETRIEVE);
+        try {
+            return objectMapper.readValue(step.getOutputJson(), RagSearchResult.class);
+        } catch (Exception ex) {
+            throw new BusinessException("读取检索阶段输出失败: " + ex.getMessage());
+        }
+    }
+
+    private AgentStepRecord requireCompletedStep(Long agentRunId, String stage) {
+        AgentStepRecord step = agentStepRecordMapper.selectLatestCompleted(agentRunId, stage);
+        if (step == null) {
+            throw new BusinessException("缺少已完成的 Agent 阶段: " + stage);
+        }
+        return step;
+    }
+
+    private boolean hasCompletedStep(Long agentRunId, String stage) {
+        return agentStepRecordMapper.selectLatestCompleted(agentRunId, stage) != null;
     }
 
     private AgentStepRecord startStep(Long agentRunId, String stage, String inputJson) {
@@ -471,6 +706,7 @@ public class LearningAgentService {
     private record AgentContext(
             ChatSession session,
             AgentRun run,
+            String learningGoal,
             String message,
             List<Long> knowledgeBaseIds,
             Consumer<LearningAgentEvent> sink

@@ -82,5 +82,13 @@ study-agent:
   rocketmq:
     document-topic: study-agent-document
     document-consumer-group: study-agent-document-consumer
-
-
+  canal:
+    enabled: true
+    host: localhost
+    port: 11111
+    destination: study_agent
+    username:
+    password:
+    subscribe-regex: 'study_agent\.(documents|document_chunks)'
+    batch-size: 100
+    empty-sleep-millis: 1000

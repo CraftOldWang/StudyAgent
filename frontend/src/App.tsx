@@ -25,6 +25,7 @@ import type {
   EntityId,
   KnowledgeBase,
   KnowledgeDocument,
+  QuizQuestion,
   RagReference,
   ReviewCard,
   ViewKey
@@ -80,6 +81,8 @@ function App() {
   const [agentInput, setAgentInput] = useState("");
   const [agentStreaming, setAgentStreaming] = useState(false);
   const [agentDraft, setAgentDraft] = useState("");
+  const [agentQuizQuestions, setAgentQuizQuestions] = useState<QuizQuestion[]>([]);
+  const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
 
   const [ragKbId, setRagKbId] = useState<EntityId | null>(null);
   const [ragQuestion, setRagQuestion] = useState("");
@@ -98,6 +101,8 @@ function App() {
   const [cardTags, setCardTags] = useState("");
   const [dueCards, setDueCards] = useState<ReviewCard[]>([]);
   const [reviewIndex, setReviewIndex] = useState(0);
+  const [quizHistory, setQuizHistory] = useState<QuizQuestion[]>([]);
+  const [quizHistoryKbId, setQuizHistoryKbId] = useState<EntityId | "">("");
 
   const meta = viewMeta[view];
   const selectedKb = useMemo(
@@ -147,9 +152,14 @@ function App() {
 
   async function refreshAll() {
     await runTask(async () => {
-      const [kbs, cards] = await Promise.all([api.listKnowledgeBases(), api.listReviewCards(reviewFilter || undefined)]);
+      const [kbs, cards, quizzes] = await Promise.all([
+        api.listKnowledgeBases(),
+        api.listReviewCards(reviewFilter || undefined),
+        api.listQuizQuestions()
+      ]);
       setKnowledgeBases(kbs);
       setReviewCards(cards);
+      setQuizHistory(quizzes);
       const firstKbId = kbs[0]?.id ?? null;
       const nextSelected = selectedKbId && kbs.some((kb) => kb.id === selectedKbId) ? selectedKbId : firstKbId;
       setSelectedKbId(nextSelected);
@@ -258,6 +268,7 @@ function App() {
     setAgentMessages([]);
     setAgentEvents([]);
     setAgentDraft("");
+    setAgentQuizQuestions([]);
     setAgentInput("");
   }
 
@@ -293,7 +304,7 @@ function App() {
         {
           id: messageSeed++,
           role: "assistant",
-          content: streamedContent.trim() || "本轮学习流程已完成，可在事件面板查看阶段状态。"
+          content: streamedContent.trim() || "当前阶段已完成，可继续发送消息推进下一阶段。"
         }
       ]);
       setAgentDraft("");
@@ -318,6 +329,11 @@ function App() {
     ]);
 
     const content = eventContent(eventName, data);
+    const questions = eventQuizQuestions(eventName, data);
+    if (questions.length > 0) {
+      setAgentQuizQuestions(questions);
+      void loadQuizHistory();
+    }
     if (content) {
       setAgentDraft((current) => (current ? `${current}\n\n${content}` : content));
     }
@@ -453,6 +469,39 @@ function App() {
     }
   }
 
+  async function loadQuizHistory(knowledgeBaseId = quizHistoryKbId) {
+    const questions = await runTask(() => api.listQuizQuestions(knowledgeBaseId || undefined));
+    if (questions) {
+      setQuizHistory(questions);
+    }
+  }
+
+  async function changeQuizHistoryKb(knowledgeBaseId: EntityId | "") {
+    setQuizHistoryKbId(knowledgeBaseId);
+    const questions = await runTask(() => api.listQuizQuestions(knowledgeBaseId || undefined));
+    if (questions) {
+      setQuizHistory(questions);
+    }
+  }
+
+  async function submitQuizAnswer(questionId: EntityId, answer?: string) {
+    const userAnswer = (answer ?? quizAnswers[questionId] ?? "").trim();
+    if (!userAnswer) {
+      setToast("请先填写答案");
+      return;
+    }
+    const result = await runTask(() => api.answerQuizQuestion(questionId, userAnswer), "答案已提交");
+    if (result) {
+      setQuizAnswers((current) => ({ ...current, [questionId]: "" }));
+      setAgentQuizQuestions((current) =>
+        current.map((question) =>
+          question.id === questionId ? { ...question, answers: [result, ...question.answers] } : question
+        )
+      );
+      await loadQuizHistory();
+    }
+  }
+
   async function submitReview(rating: "AGAIN" | "HARD" | "GOOD" | "EASY") {
     if (!currentDueCard) {
       return;
@@ -548,8 +597,14 @@ function App() {
             streaming={agentStreaming}
             draft={agentDraft}
             sessionId={agentSessionId}
+            quizQuestions={agentQuizQuestions}
+            quizAnswers={quizAnswers}
             onToggleKb={toggleAgentKb}
             onInputChange={setAgentInput}
+            onQuizAnswerChange={(questionId, value) =>
+              setQuizAnswers((current) => ({ ...current, [questionId]: value }))
+            }
+            onSubmitQuizAnswer={(questionId) => void submitQuizAnswer(questionId)}
             onSubmit={(event) => void submitAgent(event)}
             onReset={resetAgentSession}
           />
@@ -584,6 +639,8 @@ function App() {
             cardTags={cardTags}
             dueCard={currentDueCard}
             dueCount={dueCards.length}
+            quizHistory={quizHistory}
+            quizHistoryKbId={quizHistoryKbId}
             onOpenCreate={openCreateCard}
             onOpenEdit={openEditCard}
             onCancel={() => setShowCardForm(false)}
@@ -597,6 +654,8 @@ function App() {
             onDelete={(card) => void deleteCard(card)}
             onLoadDue={() => void loadDueCards()}
             onSubmitReview={(rating) => void submitReview(rating)}
+            onQuizHistoryKbChange={(knowledgeBaseId) => void changeQuizHistoryKb(knowledgeBaseId)}
+            onRefreshQuizHistory={() => void loadQuizHistory()}
           />
         )}
       </main>
@@ -806,8 +865,12 @@ interface AgentViewProps {
   streaming: boolean;
   draft: string;
   sessionId: EntityId | null;
+  quizQuestions: QuizQuestion[];
+  quizAnswers: Record<string, string>;
   onToggleKb: (id: EntityId) => void;
   onInputChange: (value: string) => void;
+  onQuizAnswerChange: (questionId: EntityId, value: string) => void;
+  onSubmitQuizAnswer: (questionId: EntityId) => void;
   onSubmit: (event: FormEvent) => void;
   onReset: () => void;
 }
@@ -819,7 +882,7 @@ function AgentView(props: AgentViewProps) {
         <div className="panelHead">
           <div>
             <h2>Agent 对话</h2>
-            <p>{props.sessionId ? `当前 sessionId: ${props.sessionId}` : "新消息会创建学习会话"}</p>
+            <p>{props.sessionId ? `当前 sessionId: ${props.sessionId}` : "新消息会创建学习会话，每次对话推进一个阶段"}</p>
           </div>
           <button className="ghostButton" type="button" onClick={props.onReset}>
             <Plus size={16} />
@@ -839,7 +902,15 @@ function AgentView(props: AgentViewProps) {
             </div>
           )}
           {props.messages.length === 0 && !props.streaming && (
-            <EmptyState text="发送一个学习目标，Agent 会按 PLAN、RETRIEVE、TEACH、QA、QUIZ、CARD、SUMMARY 运行。" />
+            <EmptyState text="发送学习目标后，Agent 会按阶段推进；你也可以随时提问、要求测验或请求生成复习卡。" />
+          )}
+          {props.quizQuestions.length > 0 && (
+            <QuizQuestionCards
+              questions={props.quizQuestions}
+              answers={props.quizAnswers}
+              onAnswerChange={props.onQuizAnswerChange}
+              onSubmitAnswer={props.onSubmitQuizAnswer}
+            />
           )}
         </div>
         <form className="chatForm" onSubmit={props.onSubmit}>
@@ -847,12 +918,12 @@ function AgentView(props: AgentViewProps) {
             rows={3}
             value={props.input}
             onChange={(event) => props.onInputChange(event.target.value)}
-            placeholder="例如：根据资料讲讲 Java 线程池的核心参数"
+            placeholder={props.sessionId ? "可以继续、提问、要求测验，或让它生成复习卡" : "例如：根据资料讲讲 Java 线程池的核心参数"}
             disabled={props.streaming}
           />
           <button className="primaryButton" type="submit" disabled={props.streaming}>
             <Send size={16} />
-            发送
+            {props.sessionId ? "发送" : "开始"}
           </button>
         </form>
       </section>
@@ -987,6 +1058,63 @@ function ReferenceList({ references }: { references: RagReference[] }) {
   );
 }
 
+interface QuizQuestionCardsProps {
+  questions: QuizQuestion[];
+  answers: Record<string, string>;
+  onAnswerChange: (questionId: EntityId, value: string) => void;
+  onSubmitAnswer: (questionId: EntityId) => void;
+}
+
+function QuizQuestionCards(props: QuizQuestionCardsProps) {
+  return (
+    <div className="quizCards">
+      <h2>测验题</h2>
+      {props.questions.map((question, index) => (
+        <article className="quizCard" key={question.id}>
+          <div className="badgeRow">
+            <span className="badge">第 {index + 1} 题</span>
+            <span className="badge">{question.questionType}</span>
+            {question.knowledgeBaseId && <span className="badge">KB {question.knowledgeBaseId}</span>}
+          </div>
+          <strong>{question.questionText}</strong>
+          {question.options.length > 0 && (
+            <div className="optionList">
+              {question.options.map((option) => (
+                <span className="badge" key={option}>
+                  {option}
+                </span>
+              ))}
+            </div>
+          )}
+          <textarea
+            rows={3}
+            value={props.answers[question.id] ?? ""}
+            onChange={(event) => props.onAnswerChange(question.id, event.target.value)}
+            placeholder="写下你的答案"
+          />
+          <div className="buttonRow">
+            <button className="primaryButton" type="button" onClick={() => props.onSubmitAnswer(question.id)}>
+              <CheckCircle2 size={16} />
+              提交答案
+            </button>
+          </div>
+          {question.answers[0] && (
+            <div className="answerFeedback">
+              <strong>最近评价：{question.answers[0].score ?? "-"} 分</strong>
+              <p>{question.answers[0].evaluation}</p>
+            </div>
+          )}
+          <details>
+            <summary>查看标准答案</summary>
+            <p>{question.correctAnswer}</p>
+            {question.explanation && <p>{question.explanation}</p>}
+          </details>
+        </article>
+      ))}
+    </div>
+  );
+}
+
 interface ReviewViewProps {
   knowledgeBases: KnowledgeBase[];
   cards: ReviewCard[];
@@ -999,6 +1127,8 @@ interface ReviewViewProps {
   cardTags: string;
   dueCard: ReviewCard | null;
   dueCount: number;
+  quizHistory: QuizQuestion[];
+  quizHistoryKbId: EntityId | "";
   onOpenCreate: () => void;
   onOpenEdit: (card: ReviewCard) => void;
   onCancel: () => void;
@@ -1012,6 +1142,8 @@ interface ReviewViewProps {
   onDelete: (card: ReviewCard) => void;
   onLoadDue: () => void;
   onSubmitReview: (rating: "AGAIN" | "HARD" | "GOOD" | "EASY") => void;
+  onQuizHistoryKbChange: (knowledgeBaseId: EntityId | "") => void;
+  onRefreshQuizHistory: () => void;
 }
 
 function ReviewView(props: ReviewViewProps) {
@@ -1156,6 +1288,54 @@ function ReviewView(props: ReviewViewProps) {
         ) : (
           <EmptyState text="暂无到期卡片。" />
         )}
+
+        <div className="quizHistory">
+          <div className="panelHead">
+            <div>
+              <h2>历史题目</h2>
+              <p>按知识库筛选 Agent 生成过的测验题和作答记录。</p>
+            </div>
+            <button className="ghostButton" type="button" onClick={props.onRefreshQuizHistory}>
+              <RefreshCw size={16} />
+              刷新
+            </button>
+          </div>
+          <label>
+            知识库筛选
+            <select
+              value={props.quizHistoryKbId}
+              onChange={(event) => props.onQuizHistoryKbChange(event.target.value)}
+            >
+              <option value="">全部知识库</option>
+              {props.knowledgeBases.map((kb) => (
+                <option value={kb.id} key={kb.id}>
+                  {kb.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="historyList">
+            {props.quizHistory.map((question) => (
+              <article className="historyItem" key={question.id}>
+                <div className="badgeRow">
+                  <span className="badge">{question.questionType}</span>
+                  {question.knowledgeBaseId && <span className="badge">KB {question.knowledgeBaseId}</span>}
+                  <span className="badge">{formatDate(question.createdAt)}</span>
+                </div>
+                <strong>{question.questionText}</strong>
+                <p>{question.correctAnswer}</p>
+                {question.answers[0] && (
+                  <div className="answerFeedback">
+                    <strong>最近作答：{question.answers[0].score ?? "-"} 分</strong>
+                    <p>{question.answers[0].userAnswer}</p>
+                    <p>{question.answers[0].evaluation}</p>
+                  </div>
+                )}
+              </article>
+            ))}
+            {props.quizHistory.length === 0 && <EmptyState text="暂无历史题目。" />}
+          </div>
+        </div>
       </section>
     </div>
   );
@@ -1201,7 +1381,18 @@ function eventContent(eventName: string, data: unknown): string {
   if (eventName === "tool.failed" || eventName === "error") {
     return `错误：${payload.message ?? "未知错误"}`;
   }
+  if (eventName === "agent.stage.waiting") {
+    return `阶段已完成：${payload.completedStage ?? "-"}\n下一阶段：${payload.nextStage ?? "-"}\n${payload.message ?? ""}`;
+  }
   return "";
+}
+
+function eventQuizQuestions(eventName: string, data: unknown): QuizQuestion[] {
+  if (eventName !== "quiz.generated" || !data || typeof data !== "object") {
+    return [];
+  }
+  const payload = data as { questions?: unknown };
+  return Array.isArray(payload.questions) ? (payload.questions as QuizQuestion[]) : [];
 }
 
 function readTags(card: ReviewCard): string[] {

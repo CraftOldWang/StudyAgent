@@ -26,4 +26,17 @@ public class DocumentStatusService {
         document.setUpdatedAt(LocalDateTime.now());
         documentMapper.updateById(document);
     }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void markIndexFailed(Long documentId, String errorMessage) {
+        Document document = documentMapper.selectById(documentId);
+        if (document == null) {
+            return;
+        }
+        document.setParseStatus("PARSED");
+        document.setIndexStatus("FAILED");
+        document.setErrorMessage(errorMessage);
+        document.setUpdatedAt(LocalDateTime.now());
+        documentMapper.updateById(document);
+    }
 }

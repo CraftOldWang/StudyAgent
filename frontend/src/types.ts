@@ -105,6 +105,34 @@ export interface ReviewSubmitResponse {
   record: ReviewRecord;
 }
 
+export interface QuizAnswer {
+  id: EntityId;
+  questionId: EntityId;
+  sessionId?: EntityId | null;
+  userAnswer: string;
+  evaluation?: string | null;
+  correct?: boolean | null;
+  score?: number | null;
+  answeredAt: string;
+}
+
+export interface QuizQuestion {
+  id: EntityId;
+  knowledgeBaseId?: EntityId | null;
+  documentId?: EntityId | null;
+  sessionId?: EntityId | null;
+  agentRunId?: EntityId | null;
+  questionType: string;
+  questionText: string;
+  correctAnswer: string;
+  explanation?: string | null;
+  options: string[];
+  sourceChunkIds: EntityId[];
+  status: string;
+  createdAt: string;
+  answers: QuizAnswer[];
+}
+
 export interface AgentEvent {
   id: number;
   event: string;

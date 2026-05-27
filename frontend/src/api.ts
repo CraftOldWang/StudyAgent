@@ -4,6 +4,8 @@ import type {
   KnowledgeBase,
   KnowledgeDocument,
   LearningSessionResponse,
+  QuizAnswer,
+  QuizQuestion,
   RagAnswer,
   RagSearchResult,
   ReviewCard,
@@ -135,6 +137,19 @@ export const api = {
     return request<ReviewSubmitResponse>(`/api/review/cards/${cardId}/reviews`, {
       method: "POST",
       body: JSON.stringify({ rating })
+    });
+  },
+  listQuizQuestions(knowledgeBaseId?: EntityId, limit = 50) {
+    const params = new URLSearchParams({ limit: String(limit) });
+    if (knowledgeBaseId) {
+      params.set("knowledgeBaseId", knowledgeBaseId);
+    }
+    return request<QuizQuestion[]>(`/api/quizzes/questions?${params.toString()}`);
+  },
+  answerQuizQuestion(questionId: EntityId, userAnswer: string) {
+    return request<QuizAnswer>(`/api/quizzes/questions/${questionId}/answers`, {
+      method: "POST",
+      body: JSON.stringify({ userAnswer })
     });
   }
 };

@@ -516,6 +516,56 @@ td {
   color: #7c2d12;
 }
 
+.quizCards {
+  display: grid;
+  gap: 12px;
+  max-width: 100%;
+}
+
+.quizCard,
+.historyItem {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 12px;
+}
+
+.quizCard strong,
+.historyItem strong {
+  line-height: 1.5;
+}
+
+.optionList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.answerFeedback {
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #eff6ff;
+  padding: 10px;
+}
+
+.answerFeedback strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+details {
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+}
+
+summary {
+  cursor: pointer;
+  color: var(--primary);
+  font-weight: 700;
+}
+
 .chatForm {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 96px;
@@ -620,6 +670,19 @@ code {
 
 .reviewSession {
   align-self: start;
+}
+
+.quizHistory {
+  display: grid;
+  gap: 12px;
+  margin-top: 22px;
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+}
+
+.historyList {
+  display: grid;
+  gap: 10px;
 }
 
 .reviewBox {

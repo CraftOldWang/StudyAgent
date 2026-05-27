@@ -1,6 +1,7 @@
 package com.studyagent;
 
 import com.studyagent.common.config.AiModelProperties;
+import com.studyagent.common.config.CanalProperties;
 import com.studyagent.common.config.ElasticsearchProperties;
 import com.studyagent.common.config.ObjectStorageProperties;
 import com.studyagent.common.config.RagProperties;
@@ -23,7 +24,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
         ObjectStorageProperties.class,
         ElasticsearchProperties.class,
         RagProperties.class,
-        StudyRocketMqProperties.class
+        StudyRocketMqProperties.class,
+        CanalProperties.class
 })
 public class StudyAgentApplication {
 
