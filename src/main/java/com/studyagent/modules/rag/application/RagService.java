@@ -22,6 +22,9 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+/**
+ * RAG 应用服务，编排混合检索、RRF 融合、父子上下文扩展和最终回答生成。
+ */
 @Service
 @RequiredArgsConstructor
 public class RagService {
@@ -34,6 +37,9 @@ public class RagService {
     private final ChatGenerationService chatGenerationService;
     private final RagProperties ragProperties;
 
+    /**
+     * 面向接口的问答入口：无召回时返回明确提示，有召回时仅基于引用生成答案。
+     */
     public RagAnswer answer(Long knowledgeBaseId, String question) {
         RagSearchResult searchResult = search(DEFAULT_USER_ID, List.of(knowledgeBaseId), question);
         if (searchResult.references().isEmpty()) {
@@ -43,8 +49,12 @@ public class RagService {
         return new RagAnswer(answer, searchResult.references());
     }
 
+    /**
+     * 在用户和知识库范围内执行 BM25 + 向量混合检索，并返回可引用的 chunk。
+     */
     public RagSearchResult search(Long userId, List<Long> knowledgeBaseIds, String question) {
         validateSearch(userId, knowledgeBaseIds, question);
+        // 向量检索和关键词检索都带上用户与知识库范围，权限过滤不交给模型决定。
         float[] queryVector = embeddingService.embedQuery(question);
         List<SearchHitChunk> bm25Hits = elasticsearchChunkIndexer.bm25Search(
                 userId,
@@ -66,6 +76,7 @@ public class RagService {
             return new RagSearchResult(question, List.of());
         }
 
+        // 融合后再按 chunkId 补取最新 ES 内容，避免候选列表中缺少排序后的命中文本。
         Map<Long, SearchHitChunk> hitMap = new LinkedHashMap<>();
         putHits(hitMap, bm25Hits);
         putHits(hitMap, vectorHits);
@@ -84,6 +95,9 @@ public class RagService {
         return new RagSearchResult(question, expandParentContext(fusedReferences));
     }
 
+    /**
+     * 校验检索必须带有明确用户、知识库范围和问题文本。
+     */
     private void validateSearch(Long userId, List<Long> knowledgeBaseIds, String question) {
         if (userId == null) {
             throw new BusinessException("用户不能为空");
@@ -96,6 +110,9 @@ public class RagService {
         }
     }
 
+    /**
+     * 将 ES 命中转换为 RRF 候选项，保留来源便于后续分析融合效果。
+     */
     private List<RrfRanker.RrfCandidate> candidates(String source, List<SearchHitChunk> hits) {
         return hits.stream()
                 .map(hit -> new RrfRanker.RrfCandidate(hit.chunkId(), source, hit.score()))
@@ -108,6 +125,9 @@ public class RagService {
         }
     }
 
+    /**
+     * 根据 chunkId 补查 ES 中最新命中内容。
+     */
     private Map<Long, SearchHitChunk> searchFreshHits(Long userId, List<Long> chunkIds) {
         Map<Long, SearchHitChunk> hitMap = new HashMap<>();
         List<SearchHitChunk> hits = elasticsearchChunkIndexer.searchByChunkIds(userId, chunkIds);
@@ -117,6 +137,9 @@ public class RagService {
         return hitMap;
     }
 
+    /**
+     * 将底层搜索命中转换成对外引用对象。
+     */
     private RagReference toReference(SearchHitChunk hit, String retrievalSource, double score) {
         if (hit == null) {
             return null;
@@ -134,6 +157,9 @@ public class RagService {
         );
     }
 
+    /**
+     * 对融合后的种子 chunk 做窗口扩展，补足父子检索上下文。
+     */
     private List<RagReference> expandParentContext(List<RagReference> fusedReferences) {
         Map<Long, RagReference> expanded = new LinkedHashMap<>();
         for (RagReference reference : fusedReferences) {
@@ -144,6 +170,9 @@ public class RagService {
                 .toList();
     }
 
+    /**
+     * 添加种子 chunk 前后的上下文窗口，并标记非种子 chunk 来源为 parent_context。
+     */
     private void addWindow(Map<Long, RagReference> expanded, RagReference seed) {
         int startIndex = Math.max(0, seed.chunkIndex() - ragProperties.parentBefore());
         int endIndex = seed.chunkIndex() + ragProperties.parentAfter();
@@ -163,6 +192,9 @@ public class RagService {
         }
     }
 
+    /**
+     * 约束模型只依据知识库引用回答，避免无依据生成。
+     */
     private String systemPrompt() {
         return """
                 你是一个面向学习备考场景的 AI 学习助手。你必须只依据用户提供的知识库引用回答。
@@ -171,6 +203,9 @@ public class RagService {
                 """;
     }
 
+    /**
+     * 构造带引用编号的用户提示词，方便模型在答案中标注依据。
+     */
     private String userPrompt(String question, List<RagReference> references) {
         StringBuilder builder = new StringBuilder();
         builder.append("问题：").append(question).append("\n\n");

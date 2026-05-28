@@ -7,8 +7,14 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+/**
+ * 复习卡 Mapper，提供到期卡片查询。
+ */
 public interface ReviewCardMapper extends BaseMapper<ReviewCard> {
 
+    /**
+     * 查询当前用户指定时间前已经到期的活跃卡片。
+     */
     @Select("""
             SELECT *
             FROM review_cards

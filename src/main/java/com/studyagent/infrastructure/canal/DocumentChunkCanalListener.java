@@ -17,6 +17,11 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+/**
+ * Canal binlog 监听器，用于捕获 document_chunks/documents 变化并补偿 ES 索引同步。
+ *
+ * <p>该组件默认由配置开关控制，适合作为 RocketMQ 处理链路之外的最终一致性补偿。</p>
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -31,6 +36,9 @@ public class DocumentChunkCanalListener {
     private volatile boolean running;
     private Thread worker;
 
+    /**
+     * 应用就绪后启动后台监听线程。
+     */
     @EventListener(ApplicationReadyEvent.class)
     public void start() {
         running = true;
@@ -39,6 +47,9 @@ public class DocumentChunkCanalListener {
         worker.start();
     }
 
+    /**
+     * 应用关闭时停止监听线程。
+     */
     @PreDestroy
     public void stop() {
         running = false;
@@ -47,6 +58,9 @@ public class DocumentChunkCanalListener {
         }
     }
 
+    /**
+     * 持续连接 Canal 并拉取 binlog，失败后等待再重试。
+     */
     private void listen() {
         while (running) {
             CanalConnector connector = CanalConnectors.newSingleConnector(
@@ -67,6 +81,7 @@ public class DocumentChunkCanalListener {
                         continue;
                     }
                     try {
+                        // 只有处理完成后才 ack，失败则 rollback 让 Canal 后续重投。
                         handleEntries(message.getEntries());
                         connector.ack(batchId);
                     } catch (Exception ex) {
@@ -86,6 +101,9 @@ public class DocumentChunkCanalListener {
         }
     }
 
+    /**
+     * 处理 Canal entry，只关注 INSERT 和 UPDATE 行数据。
+     */
     private void handleEntries(List<CanalEntry.Entry> entries) throws Exception {
         for (CanalEntry.Entry entry : entries) {
             if (entry.getEntryType() != CanalEntry.EntryType.ROWDATA) {
@@ -102,6 +120,9 @@ public class DocumentChunkCanalListener {
         }
     }
 
+    /**
+     * 根据表名分派处理逻辑。
+     */
     private void handleRow(String tableName, CanalEntry.EventType eventType, CanalEntry.RowData rowData) {
         if (DOCUMENTS_TABLE.equals(tableName)) {
             handleDocumentRow(eventType, rowData);
@@ -118,9 +139,13 @@ public class DocumentChunkCanalListener {
         if (chunkId == null || hasText(esDocId)) {
             return;
         }
+        // 只同步尚未回填 es_doc_id 的 chunk，避免重复写索引。
         documentChunkIndexSyncService.syncChunk(chunkId);
     }
 
+    /**
+     * 文档进入 PARSED + INDEXING/FAILED 时，补偿同步缺失 chunk。
+     */
     private void handleDocumentRow(CanalEntry.EventType eventType, CanalEntry.RowData rowData) {
         if (eventType != CanalEntry.EventType.INSERT && eventType != CanalEntry.EventType.UPDATE) {
             return;
@@ -137,6 +162,9 @@ public class DocumentChunkCanalListener {
         documentChunkIndexSyncService.syncMissingChunks(documentId);
     }
 
+    /**
+     * 从 Canal 列集合读取 Long 字段。
+     */
     private Long longColumn(List<CanalEntry.Column> columns, String name) {
         return columns.stream()
                 .filter(column -> Objects.equals(column.getName(), name))
@@ -147,6 +175,9 @@ public class DocumentChunkCanalListener {
                 .orElse(null);
     }
 
+    /**
+     * 从 Canal 列集合读取字符串字段。
+     */
     private String stringColumn(List<CanalEntry.Column> columns, String name) {
         return columns.stream()
                 .filter(column -> Objects.equals(column.getName(), name))
@@ -159,6 +190,9 @@ public class DocumentChunkCanalListener {
         return value != null && !value.isBlank();
     }
 
+    /**
+     * 空批次或异常后短暂休眠。
+     */
     private void sleepQuietly() {
         try {
             Thread.sleep(properties.emptySleepMillis());

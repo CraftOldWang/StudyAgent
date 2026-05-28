@@ -5,6 +5,9 @@ import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * 会话消息实体，完整保留用户、助手、工具和摘要相关消息。
+ */
 @Getter
 @Setter
 @TableName("chat_messages")

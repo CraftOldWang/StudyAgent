@@ -34,6 +34,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+/**
+ * 文件上传用例服务，统一编排秒传、普通上传、分片上传和文档入库。
+ *
+ * <p>本类是 storage 模块的事务边界：对象存储只保存文件内容，MySQL 保存文件和上传会话状态，
+ * Redis Bitmap 只承担分片上传过程中的短期状态记录。</p>
+ */
 @Service
 @RequiredArgsConstructor
 public class FileUploadService {
@@ -49,6 +55,9 @@ public class FileUploadService {
     private final StringRedisTemplate stringRedisTemplate;
     private final DocumentIndexProducer documentIndexProducer;
 
+    /**
+     * 根据客户端计算出的哈希检查文件是否已经入库，用于前端上传前的秒传判断。
+     */
     public FileDedupCheckResponse checkDuplicate(String md5, String sha256) {
         String normalizedMd5 = normalizeMd5(md5);
         FileRecord existing = findDuplicate(normalizedMd5, normalizeSha256(sha256));
@@ -58,6 +67,9 @@ public class FileUploadService {
         return new FileDedupCheckResponse(true, existing.getId(), existing.getStatus());
     }
 
+    /**
+     * 处理小文件直传：先计算哈希并进入去重锁，再决定秒传或写入对象存储。
+     */
     @Transactional
     public UploadResultResponse uploadSingle(Long knowledgeBaseId, MultipartFile file) {
         String md5 = calculateMd5(file);
@@ -65,6 +77,7 @@ public class FileUploadService {
         RLock lock = redissonClient.getLock("lock:file:dedup:" + md5);
         lock.lock();
         try {
+            // 哈希相同的文件只复用文件实体，但仍然为当前知识库创建新的文档记录。
             FileRecord existing = findDuplicate(md5, sha256);
             if (existing != null) {
                 Document document = createDocument(DEFAULT_USER_ID, knowledgeBaseId, existing, file.getOriginalFilename());
@@ -72,6 +85,7 @@ public class FileUploadService {
                 return new UploadResultResponse(existing.getId(), document.getId(), "DUPLICATED");
             }
 
+            // 对象 key 使用哈希分区，避免同名文件覆盖，同时保留原始文件名便于排查。
             String objectKey = "files/" + md5 + "/" + safeFilename(file.getOriginalFilename());
             objectStorageService.putObject(objectKey, fileInputStream(file), file.getSize(), contentType(file.getContentType()));
             FileRecord fileRecord = createFileRecord(md5, sha256, objectKey, file.getOriginalFilename(), file.getContentType(), file.getSize());
@@ -83,6 +97,9 @@ public class FileUploadService {
         }
     }
 
+    /**
+     * 初始化分片上传会话，并返回当前文件是否可以秒传或是否存在未完成会话。
+     */
     @Transactional
     public InitMultipartUploadResponse initMultipart(InitMultipartUploadRequest request) {
         String md5 = normalizeMd5(request.md5());
@@ -91,6 +108,7 @@ public class FileUploadService {
         RLock lock = redissonClient.getLock("lock:file:dedup:" + md5);
         lock.lock();
         try {
+            // 初始化阶段就做去重，客户端可以跳过后续所有分片上传。
             FileRecord existing = findDuplicate(md5, sha256);
             if (existing != null) {
                 Document document = createDocument(DEFAULT_USER_ID, request.knowledgeBaseId(), existing, request.filename());
@@ -104,6 +122,7 @@ public class FileUploadService {
                     md5
             );
             if (activeSession != null) {
+                // Redis Bitmap 是短期状态，返回前同步一次 MySQL 中的 uploadedChunks。
                 refreshUploadedChunks(activeSession);
                 return new InitMultipartUploadResponse(
                         activeSession.getId(),
@@ -116,6 +135,7 @@ public class FileUploadService {
                 );
             }
 
+            // 新会话默认保留一天，过期后需要客户端重新初始化上传。
             LocalDateTime now = LocalDateTime.now();
             UploadSession session = new UploadSession();
             session.setUserId(DEFAULT_USER_ID);
@@ -138,6 +158,9 @@ public class FileUploadService {
         }
     }
 
+    /**
+     * 上传单个分片。相同分片重复上传时直接幂等返回。
+     */
     @Transactional
     public void uploadChunk(Long uploadSessionId, int chunkIndex, MultipartFile chunk) {
         UploadSession session = requiredUploadSession(uploadSessionId);
@@ -147,6 +170,7 @@ public class FileUploadService {
         RLock lock = redissonClient.getLock("lock:upload:chunk:" + uploadSessionId + ":" + chunkIndex);
         lock.lock();
         try {
+            // Bitmap 标记已经成功落到对象存储的分片，避免重复写同一块。
             String bitmapKey = uploadBitmapKey(uploadSessionId);
             Boolean alreadyUploaded = stringRedisTemplate.opsForValue().getBit(bitmapKey, chunkIndex);
             if (Boolean.TRUE.equals(alreadyUploaded)) {
@@ -156,6 +180,7 @@ public class FileUploadService {
             String chunkKey = chunkObjectKey(session, chunkIndex);
             objectStorageService.putObject(chunkKey, fileInputStream(chunk), chunk.getSize(), "application/octet-stream");
             stringRedisTemplate.opsForValue().setBit(bitmapKey, chunkIndex, true);
+            // Bitmap TTL 与上传会话过期时间保持一致，避免 Redis 成为长期数据源。
             refreshBitmapTtl(session);
             session.setUploadedChunks(countUploadedChunks(session));
             session.setUpdatedAt(LocalDateTime.now());
@@ -165,12 +190,18 @@ public class FileUploadService {
         }
     }
 
+    /**
+     * 查询分片上传进度，返回已上传和缺失的分片下标，便于客户端断点续传。
+     */
     public MultipartUploadStatusResponse multipartStatus(Long uploadSessionId) {
         UploadSession session = requiredUploadSession(uploadSessionId);
         refreshUploadedChunks(session);
         return toMultipartStatus(session);
     }
 
+    /**
+     * 完成分片上传：校验分片完整性，合并对象，创建文件和文档记录，并触发索引任务。
+     */
     @Transactional
     public UploadResultResponse completeMultipart(Long uploadSessionId, Long knowledgeBaseId) {
         UploadSession session = requiredUploadSession(uploadSessionId);
@@ -184,6 +215,7 @@ public class FileUploadService {
         RLock lock = redissonClient.getLock("lock:file:dedup:" + session.getFileMd5());
         lock.lock();
         try {
+            // 完成阶段再次检查 MD5，处理并发上传中其他会话已经完成的情况。
             FileRecord existing = findByMd5(session.getFileMd5());
             if (existing != null) {
                 session.setStatus("COMPLETED");
@@ -202,6 +234,7 @@ public class FileUploadService {
                 throw new BusinessException("合并文件 MD5 与初始化 MD5 不一致");
             }
             String actualSha256 = hashes.sha256();
+            // 合并后的 SHA256 也参与去重，弥补仅依赖 MD5 的碰撞风险。
             FileRecord duplicateAfterHash = findDuplicate(actualMd5, actualSha256);
             if (duplicateAfterHash != null) {
                 session.setStatus("COMPLETED");
@@ -215,6 +248,7 @@ public class FileUploadService {
             }
 
             String objectKey = "files/" + session.getFileMd5() + "/" + safeFilename(session.getFilename());
+            // 这里按顺序读取临时分片形成一个连续流，避免把大文件完整加载到内存。
             putMergedObject(session, objectKey);
             FileRecord fileRecord = createFileRecord(session.getFileMd5(), actualSha256, objectKey, session.getFilename(),
                     session.getContentType(), session.getFileSize());
@@ -233,6 +267,9 @@ public class FileUploadService {
         }
     }
 
+    /**
+     * 按分片顺序流式计算合并后文件的 MD5 和 SHA256。
+     */
     private FileHashes calculateMergedHashes(UploadSession session) {
         MessageDigest md5Digest = messageDigest("MD5", "创建 MD5 摘要失败");
         MessageDigest sha256Digest = messageDigest("SHA-256", "创建 SHA256 摘要失败");
@@ -254,6 +291,9 @@ public class FileUploadService {
         );
     }
 
+    /**
+     * 将分片顺序拼成输入流后写入最终对象。
+     */
     private void putMergedObject(UploadSession session, String objectKey) {
         try (InputStream inputStream = new ChunkSequenceInputStream(session)) {
             objectStorageService.putObject(objectKey, inputStream, session.getFileSize(), contentType(session.getContentType()));
@@ -262,6 +302,9 @@ public class FileUploadService {
         }
     }
 
+    /**
+     * 读取上传会话，不存在时转换为明确的业务错误。
+     */
     private UploadSession requiredUploadSession(Long uploadSessionId) {
         UploadSession session = uploadSessionMapper.selectById(uploadSessionId);
         if (session == null) {
@@ -270,6 +313,9 @@ public class FileUploadService {
         return session;
     }
 
+    /**
+     * 先按 MD5 再按 SHA256 查找已入库文件。
+     */
     private FileRecord findDuplicate(String md5, String sha256) {
         FileRecord existing = findByMd5(md5);
         if (existing != null) {
@@ -289,6 +335,9 @@ public class FileUploadService {
                 .last("LIMIT 1"));
     }
 
+    /**
+     * 创建文件元数据，文件内容已经在对象存储中落盘。
+     */
     private FileRecord createFileRecord(String md5, String sha256, String objectKey, String filename, String contentType, long size) {
         LocalDateTime now = LocalDateTime.now();
         FileRecord fileRecord = new FileRecord();
@@ -308,6 +357,9 @@ public class FileUploadService {
         return fileRecord;
     }
 
+    /**
+     * 为文件在指定知识库下创建文档记录，并等待异步解析和索引。
+     */
     private Document createDocument(Long userId, Long knowledgeBaseId, FileRecord fileRecord, String title) {
         LocalDateTime now = LocalDateTime.now();
         Document document = new Document();
@@ -324,6 +376,9 @@ public class FileUploadService {
         return document;
     }
 
+    /**
+     * 计算 MultipartFile 的 MD5；调用方会用该值进入去重锁。
+     */
     private String calculateMd5(MultipartFile file) {
         try (InputStream inputStream = file.getInputStream()) {
             MessageDigest digest = MessageDigest.getInstance("MD5");
@@ -338,6 +393,9 @@ public class FileUploadService {
         }
     }
 
+    /**
+     * 计算 MultipartFile 的 SHA256，作为 MD5 之外的辅助去重依据。
+     */
     private String calculateSha256(MultipartFile file) {
         try (InputStream inputStream = file.getInputStream()) {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -386,6 +444,9 @@ public class FileUploadService {
         return "upload:bitmap:" + uploadSessionId;
     }
 
+    /**
+     * 校验客户端声明的文件大小、分片大小和总分片数是否一致。
+     */
     private void validateInitRequest(InitMultipartUploadRequest request) {
         long expectedChunks = (request.fileSize() + request.chunkSize() - 1) / request.chunkSize();
         if (expectedChunks != request.totalChunks()) {
@@ -393,6 +454,9 @@ public class FileUploadService {
         }
     }
 
+    /**
+     * 校验上传会话仍处于可写状态；过期会话会落库为 EXPIRED。
+     */
     private void validateUploadableSession(UploadSession session) {
         if (!"UPLOADING".equals(session.getStatus())) {
             throw new BusinessException("上传会话状态不是 UPLOADING");
@@ -405,12 +469,18 @@ public class FileUploadService {
         }
     }
 
+    /**
+     * 防止客户端用一个上传会话完成到另一个知识库。
+     */
     private void validateCompleteKnowledgeBase(UploadSession session, Long knowledgeBaseId) {
         if (session.getKnowledgeBaseId() != null && !session.getKnowledgeBaseId().equals(knowledgeBaseId)) {
             throw new BusinessException("完成上传的知识库与初始化上传的知识库不一致");
         }
     }
 
+    /**
+     * 校验分片序号和大小，确保最终合并结果可预测。
+     */
     private void validateChunk(UploadSession session, int chunkIndex, MultipartFile chunk) {
         if (chunkIndex < 0 || chunkIndex >= session.getTotalChunks()) {
             throw new BusinessException("分片序号超出范围");
@@ -427,6 +497,9 @@ public class FileUploadService {
         }
     }
 
+    /**
+     * 以 Redis Bitmap 为准刷新 MySQL 中的已上传分片数。
+     */
     private void refreshUploadedChunks(UploadSession session) {
         int uploadedChunks = countUploadedChunks(session);
         if (session.getUploadedChunks() == null || uploadedChunks != session.getUploadedChunks()) {
@@ -447,6 +520,9 @@ public class FileUploadService {
         return uploadedChunks(session).size();
     }
 
+    /**
+     * 从 Redis Bitmap 读取已经上传成功的分片下标。
+     */
     private List<Integer> uploadedChunks(UploadSession session) {
         List<Integer> indexes = new ArrayList<>();
         for (int i = 0; i < session.getTotalChunks(); i++) {
@@ -458,6 +534,9 @@ public class FileUploadService {
         return indexes;
     }
 
+    /**
+     * 从 Redis Bitmap 读取仍然缺失的分片下标。
+     */
     private List<Integer> missingChunks(UploadSession session) {
         List<Integer> indexes = new ArrayList<>();
         for (int i = 0; i < session.getTotalChunks(); i++) {
@@ -469,6 +548,9 @@ public class FileUploadService {
         return indexes;
     }
 
+    /**
+     * 将上传会话转换为接口响应，避免 Controller 暴露持久化对象。
+     */
     private MultipartUploadStatusResponse toMultipartStatus(UploadSession session) {
         List<Integer> uploaded = uploadedChunks(session);
         List<Integer> missing = missingChunks(session);
@@ -490,6 +572,9 @@ public class FileUploadService {
         );
     }
 
+    /**
+     * 统一规范化 MD5，避免大小写差异造成重复文件。
+     */
     private String normalizeMd5(String md5) {
         if (md5 == null || md5.isBlank()) {
             throw new BusinessException("文件 MD5 不能为空");
@@ -501,6 +586,9 @@ public class FileUploadService {
         return normalized;
     }
 
+    /**
+     * 统一规范化 SHA256；没有提供时允许只按 MD5 判断。
+     */
     private String normalizeSha256(String sha256) {
         if (sha256 == null || sha256.isBlank()) {
             return null;
@@ -538,6 +626,9 @@ public class FileUploadService {
     private record FileHashes(String md5, String sha256) {
     }
 
+    /**
+     * 顺序读取上传临时分片的输入流，供对象存储 SDK 流式写入最终文件。
+     */
     private final class ChunkSequenceInputStream extends InputStream {
         private final UploadSession session;
         private int nextChunkIndex;

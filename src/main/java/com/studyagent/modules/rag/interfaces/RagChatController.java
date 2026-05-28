@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * RAG 调试和问答接口，提供直接问答与仅检索两种入口。
+ */
 @RestController
 @RequestMapping("/api/chat")
 @RequiredArgsConstructor
@@ -21,11 +24,17 @@ public class RagChatController {
 
     private final RagService ragService;
 
+    /**
+     * 执行知识库问答。
+     */
     @PostMapping("/rag")
     public ApiResponse<RagAnswer> rag(@Valid @RequestBody ChatRequest request) {
         return ApiResponse.ok(ragService.answer(resolveKnowledgeBaseId(request), request.question()));
     }
 
+    /**
+     * 只执行检索并返回引用，便于调试召回效果。
+     */
     @PostMapping("/rag/search")
     public ApiResponse<RagSearchResult> search(@Valid @RequestBody ChatRequest request) {
         return ApiResponse.ok(ragService.search(
@@ -35,6 +44,9 @@ public class RagChatController {
         ));
     }
 
+    /**
+     * 兼容旧版单知识库参数，取多知识库列表中的第一个作为问答范围。
+     */
     private Long resolveKnowledgeBaseId(ChatRequest request) {
         if (request.knowledgeBaseId() != null) {
             return request.knowledgeBaseId();
@@ -43,6 +55,9 @@ public class RagChatController {
         return ids.getFirst();
     }
 
+    /**
+     * 解析知识库范围，优先使用多知识库列表。
+     */
     private List<Long> resolveKnowledgeBaseIds(ChatRequest request) {
         if (request.knowledgeBaseIds() != null && !request.knowledgeBaseIds().isEmpty()) {
             return request.knowledgeBaseIds();

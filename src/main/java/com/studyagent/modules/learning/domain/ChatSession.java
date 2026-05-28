@@ -5,6 +5,9 @@ import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * 学习聊天会话实体，保存会话模式、知识库范围和 WebSearch 开关。
+ */
 @Getter
 @Setter
 @TableName("chat_sessions")

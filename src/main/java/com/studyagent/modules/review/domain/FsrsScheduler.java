@@ -3,6 +3,9 @@ package com.studyagent.modules.review.domain;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
+/**
+ * FSRS 复习调度器，根据用户评分更新稳定性、难度、卡片状态和下次到期时间。
+ */
 public class FsrsScheduler {
 
     private static final double[] W = {
@@ -14,6 +17,9 @@ public class FsrsScheduler {
     private static final double DECAY = -0.5d;
     private static final double FACTOR = Math.pow(0.9d, 1.0d / DECAY) - 1.0d;
 
+    /**
+     * 根据复习前状态和本次评分计算复习后的完整调度状态。
+     */
     public FsrsSchedulingResult schedule(FsrsCardState before, ReviewRating rating, LocalDateTime reviewedAt) {
         int elapsedDays = elapsedDays(before, reviewedAt);
         double retrievability = retrievability(before.stability(), elapsedDays);
@@ -23,6 +29,7 @@ public class FsrsScheduler {
         int scheduledDays = scheduledDays(nextStability, rating, nextState);
         LocalDateTime dueAt = dueAt(reviewedAt, scheduledDays, rating, nextState);
         int reps = before.reps() + 1;
+        // 只有 REVIEW 状态答错才记为一次 lapses，学习阶段答错不算复习遗忘。
         int lapses = before.lapses() + (rating == ReviewRating.AGAIN && before.state() == CardState.REVIEW ? 1 : 0);
 
         FsrsCardState after = new FsrsCardState(
@@ -39,10 +46,16 @@ public class FsrsScheduler {
         return new FsrsSchedulingResult(before, after, rating);
     }
 
+    /**
+     * 创建新卡初始状态，新卡立即到期等待首次学习。
+     */
     public FsrsCardState newCard(LocalDateTime now) {
         return new FsrsCardState(CardState.NEW, now, null, 0.0d, 0.0d, 0, 0, 0, 0);
     }
 
+    /**
+     * 计算下一次难度，评分越差通常难度越高。
+     */
     private double nextDifficulty(double currentDifficulty, ReviewRating rating) {
         double initial = currentDifficulty <= 0 ? initDifficulty(rating) : currentDifficulty;
         double delta = W[6] * (rating.value() - 3);
@@ -50,6 +63,9 @@ public class FsrsScheduler {
         return constrain(next, 1.0d, 10.0d);
     }
 
+    /**
+     * 计算下一次稳定性，区分新卡、遗忘和成功回忆三种情况。
+     */
     private double nextStability(FsrsCardState before, ReviewRating rating, double retrievability) {
         if (before.state() == CardState.NEW || before.stability() <= 0) {
             return initStability(rating);
@@ -64,6 +80,9 @@ public class FsrsScheduler {
         return Math.max(stability, before.stability() + 0.01d);
     }
 
+    /**
+     * 新卡首次复习后的初始稳定性。
+     */
     private double initStability(ReviewRating rating) {
         return switch (rating) {
             case AGAIN -> W[0];
@@ -73,14 +92,23 @@ public class FsrsScheduler {
         };
     }
 
+    /**
+     * 新卡首次复习后的初始难度。
+     */
     private double initDifficulty(ReviewRating rating) {
         return constrain(W[4] - Math.exp((rating.value() - 1) * W[5]) + 1, 1.0d, 10.0d);
     }
 
+    /**
+     * 难度均值回归，避免单次评分让难度剧烈漂移。
+     */
     private double meanReversion(double init, double current) {
         return W[7] * init + (1 - W[7]) * current;
     }
 
+    /**
+     * 成功回忆后的稳定性增长公式。
+     */
     private double nextRecallStability(double difficulty, double stability, double retrievability, ReviewRating rating) {
         double hardPenalty = rating == ReviewRating.HARD ? W[15] : 1.0d;
         double easyBonus = rating == ReviewRating.EASY ? W[16] : 1.0d;
@@ -92,6 +120,9 @@ public class FsrsScheduler {
                 * easyBonus);
     }
 
+    /**
+     * 遗忘后的稳定性更新公式。
+     */
     private double nextForgetStability(double difficulty, double stability, double retrievability) {
         double forgetStability = W[11]
                 * Math.pow(difficulty, -W[12])
@@ -100,6 +131,9 @@ public class FsrsScheduler {
         return Math.min(forgetStability, stability / Math.exp(W[17] * W[18]));
     }
 
+    /**
+     * 根据稳定性和间隔天数估算当前可回忆概率。
+     */
     private double retrievability(double stability, int elapsedDays) {
         if (stability <= 0 || elapsedDays <= 0) {
             return 1.0d;
@@ -107,6 +141,9 @@ public class FsrsScheduler {
         return Math.pow(1 + FACTOR * elapsedDays / stability, DECAY);
     }
 
+    /**
+     * 根据稳定性和目标保持率计算下一次间隔天数。
+     */
     private int scheduledDays(double stability, ReviewRating rating, CardState state) {
         if (rating == ReviewRating.AGAIN) {
             return 0;
@@ -121,6 +158,9 @@ public class FsrsScheduler {
         return Math.max(1, interval);
     }
 
+    /**
+     * 将间隔天数转换成具体到期时间；学习阶段答错用分钟级间隔。
+     */
     private LocalDateTime dueAt(LocalDateTime reviewedAt, int scheduledDays, ReviewRating rating, CardState state) {
         if (rating == ReviewRating.AGAIN) {
             return reviewedAt.plusMinutes(5);
@@ -131,6 +171,9 @@ public class FsrsScheduler {
         return reviewedAt.plusDays(scheduledDays);
     }
 
+    /**
+     * 根据评分和当前状态决定下一张卡的状态。
+     */
     private CardState nextState(CardState state, ReviewRating rating) {
         if (rating == ReviewRating.AGAIN) {
             return state == CardState.REVIEW ? CardState.RELEARNING : CardState.LEARNING;
@@ -138,6 +181,9 @@ public class FsrsScheduler {
         return rating == ReviewRating.HARD && state == CardState.NEW ? CardState.LEARNING : CardState.REVIEW;
     }
 
+    /**
+     * 计算距离上次复习的天数，首次复习为 0。
+     */
     private int elapsedDays(FsrsCardState before, LocalDateTime reviewedAt) {
         if (before.lastReviewedAt() == null) {
             return 0;
@@ -146,10 +192,16 @@ public class FsrsScheduler {
         return Math.max(0, Math.toIntExact(days));
     }
 
+    /**
+     * 将值限制在指定范围内。
+     */
     private double constrain(double value, double min, double max) {
         return Math.min(Math.max(value, min), max);
     }
 
+    /**
+     * 保留四位小数，减少数据库中浮点字段噪音。
+     */
     private double round(double value) {
         return Math.round(value * 10000.0d) / 10000.0d;
     }

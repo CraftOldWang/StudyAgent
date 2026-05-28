@@ -4,6 +4,9 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+/**
+ * 初始化分片上传的请求参数，包含客户端提前计算出的文件哈希和分片规划。
+ */
 public record InitMultipartUploadRequest(
         @NotNull Long knowledgeBaseId,
         @NotBlank String filename,

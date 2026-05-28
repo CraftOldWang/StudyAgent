@@ -21,9 +21,15 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Spring AI 模型配置，按配置显式创建 chat 和 embedding 模型。
+ */
 @Configuration
 public class SpringAiConfig {
 
+    /**
+     * 创建 DashScope embedding 模型，不支持的 provider 直接报错。
+     */
     @Bean
     @ConditionalOnMissingBean
     public EmbeddingModel embeddingModel(AiModelProperties properties) {
@@ -36,6 +42,7 @@ public class SpringAiConfig {
                 .baseUrl(defaultString(embedding.baseUrl(), "https://dashscope.aliyuncs.com"))
                 .apiKey(apiKey)
                 .build();
+        // 文档和查询调用时可以通过 textType 覆盖默认值。
         DashScopeEmbeddingOptions options = DashScopeEmbeddingOptions.builder()
                 .model(defaultString(embedding.model(), "text-embedding-v3"))
                 .dimensions(embedding.dimensions())
@@ -50,6 +57,9 @@ public class SpringAiConfig {
         );
     }
 
+    /**
+     * 创建 DeepSeek 聊天模型；工具调用能力由业务工具服务显式治理。
+     */
     @Bean
     @ConditionalOnMissingBean
     public ChatModel chatModel(AiModelProperties properties) {
@@ -67,6 +77,7 @@ public class SpringAiConfig {
                 .temperature(chat.temperature())
                 .maxTokens(chat.maxTokens())
                 .build();
+        // 当前 Agent 使用服务层显式工具调用，不把任意工具直接交给模型自动调用。
         DefaultToolCallingManager toolCallingManager = DefaultToolCallingManager.builder()
                 .observationRegistry(ObservationRegistry.NOOP)
                 .toolCallbackResolver(new StaticToolCallbackResolver(List.of()))
@@ -81,6 +92,9 @@ public class SpringAiConfig {
                 .build();
     }
 
+    /**
+     * 读取 embedding 配置。
+     */
     private AiModelProperties.Embedding requiredEmbedding(AiModelProperties properties) {
         if (properties.embedding() == null) {
             throw new BusinessException("AI embedding 配置不能为空");
@@ -88,6 +102,9 @@ public class SpringAiConfig {
         return properties.embedding();
     }
 
+    /**
+     * 读取 chat 配置。
+     */
     private AiModelProperties.Chat requiredChat(AiModelProperties properties) {
         if (properties.chat() == null) {
             throw new BusinessException("AI chat 配置不能为空");
@@ -95,6 +112,9 @@ public class SpringAiConfig {
         return properties.chat();
     }
 
+    /**
+     * 校验必填字符串。
+     */
     private String required(String value, String message) {
         if (value == null || value.isBlank()) {
             throw new BusinessException(message);
@@ -102,6 +122,9 @@ public class SpringAiConfig {
         return value;
     }
 
+    /**
+     * 读取可选字符串，为空时使用默认值。
+     */
     private String defaultString(String value, String defaultValue) {
         return value == null || value.isBlank() ? defaultValue : value;
     }

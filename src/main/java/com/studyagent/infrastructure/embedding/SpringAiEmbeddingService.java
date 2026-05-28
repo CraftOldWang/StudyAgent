@@ -10,6 +10,9 @@ import org.springframework.ai.embedding.EmbeddingResponse;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
+/**
+ * Spring AI embedding 适配器，使用配置的真实模型生成文档和查询向量。
+ */
 @Service
 @Primary
 @RequiredArgsConstructor
@@ -22,11 +25,17 @@ public class SpringAiEmbeddingService implements EmbeddingService {
         return embedWithTextType(text, "document");
     }
 
+    /**
+     * 查询向量使用 provider 支持的 query textType，提升检索匹配效果。
+     */
     @Override
     public float[] embedQuery(String text) {
         return embedWithTextType(text, "query");
     }
 
+    /**
+     * 调用 Spring AI EmbeddingModel，并对空响应返回明确错误。
+     */
     private float[] embedWithTextType(String text, String textType) {
         if (text == null || text.isBlank()) {
             throw new BusinessException("向量化文本不能为空");

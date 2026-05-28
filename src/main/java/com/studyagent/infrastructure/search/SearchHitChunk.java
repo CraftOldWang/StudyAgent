@@ -1,5 +1,8 @@
 package com.studyagent.infrastructure.search;
 
+/**
+ * Elasticsearch 检索命中的 chunk。
+ */
 public record SearchHitChunk(
         Long chunkId,
         Long documentId,

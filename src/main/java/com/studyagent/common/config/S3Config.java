@@ -9,9 +9,15 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
 
+/**
+ * S3 兼容客户端配置。
+ */
 @Configuration
 public class S3Config {
 
+    /**
+     * 创建面向 MinIO/RustFS 的 S3Client。
+     */
     @Bean
     public S3Client s3Client(ObjectStorageProperties properties) {
         S3Configuration serviceConfiguration = S3Configuration.builder()

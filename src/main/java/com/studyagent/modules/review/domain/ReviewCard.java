@@ -5,6 +5,9 @@ import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * 复习卡实体，保存卡面内容、来源信息和 FSRS 调度字段。
+ */
 @Getter
 @Setter
 @TableName("review_cards")

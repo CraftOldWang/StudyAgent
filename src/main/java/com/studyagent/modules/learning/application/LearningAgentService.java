@@ -31,6 +31,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 状态化学习 Agent 应用服务，按固定阶段推进学习会话并输出 SSE 事件。
+ *
+ * <p>当前 Agent 不走完全开放循环，而是围绕 PLAN、RETRIEVE、TEACH、QA、QUIZ、CARD、SUMMARY
+ * 这些可观察阶段推进，方便做权限控制、工具审计和会话恢复。</p>
+ */
 @Service
 @RequiredArgsConstructor
 public class LearningAgentService {
@@ -56,6 +62,9 @@ public class LearningAgentService {
     private final ChatGenerationService chatGenerationService;
     private final ObjectMapper objectMapper;
 
+    /**
+     * 创建学习会话和首个 Agent Run，并持久化用户初始学习目标。
+     */
     @Transactional
     public LearningSessionResponse createSession(String message, List<Long> knowledgeBaseIds) {
         validateMessage(message);
@@ -78,6 +87,9 @@ public class LearningAgentService {
         return new LearningSessionResponse(session.getId(), run.getId(), run.getStatus());
     }
 
+    /**
+     * 执行或继续一个学习会话，将阶段状态、工具状态和内容增量推送给 SSE sink。
+     */
     public void runSession(Long sessionId, String message, Consumer<LearningAgentEvent> sink) {
         validateMessage(message);
         ChatSession session = requireSession(sessionId);
@@ -86,10 +98,12 @@ public class LearningAgentService {
         insertUserMessageIfNeeded(sessionId, session.getUserId(), message);
         try {
             emit(sink, "session.started", Map.of("sessionId", sessionId, "agentRunId", run.getId()));
+            // 恢复上下文时先加载最近压缩快照，再补充快照之后的原始消息。
             ContextMemoryService.RestoredContext restoredContext = contextMemoryService.restore(sessionId);
             String learningGoal = learningGoal(sessionId);
             AgentContext context = new AgentContext(session, run, learningGoal, message, knowledgeBaseIds, sink);
 
+            // 根据当前 run 状态和用户消息决定本轮要执行的 Agent 阶段。
             String stage = routeStage(run, currentStage(run), message);
             emit(sink, "agent.stage.current", Map.of("stage", stage));
             switch (stage) {
@@ -114,6 +128,9 @@ public class LearningAgentService {
         }
     }
 
+    /**
+     * PLAN 阶段：结合恢复上下文生成本轮学习计划，并推进到 RETRIEVE。
+     */
     private void runPlanStage(AgentContext context, ContextMemoryService.RestoredContext restoredContext) {
         String output = executeStage(context, STAGE_PLAN, () -> generatePlan(context.learningGoal(), restoredContext));
         insertStageMessage(context, STAGE_PLAN, output);
@@ -121,6 +138,9 @@ public class LearningAgentService {
         emitStageDone(context, STAGE_PLAN, STAGE_RETRIEVE);
     }
 
+    /**
+     * RETRIEVE 阶段：调用知识库检索工具并持久化检索结果。
+     */
     private void runRetrieveStage(AgentContext context) {
         RagSearchResult searchResult = executeRetrieve(context);
         insertStageMessage(context, STAGE_RETRIEVE, toJson(searchResult));
@@ -128,6 +148,9 @@ public class LearningAgentService {
         emitStageDone(context, STAGE_RETRIEVE, STAGE_TEACH);
     }
 
+    /**
+     * TEACH 阶段：基于检索引用讲解知识点。
+     */
     private void runTeachStage(AgentContext context) {
         String plan = stageText(context.run().getId(), STAGE_PLAN);
         RagSearchResult searchResult = stageSearchResult(context.run().getId());
@@ -138,16 +161,23 @@ public class LearningAgentService {
         emitStageDone(context, STAGE_TEACH, STAGE_QA);
     }
 
+    /**
+     * QA 阶段：围绕上一轮检索结果回答用户追问。
+     */
     private void runQaStage(AgentContext context) {
         RagSearchResult searchResult = stageSearchResult(context.run().getId());
         String output = executeStage(context, STAGE_QA,
                 () -> generateQa(context.message(), searchResult.references()));
         insertStageMessage(context, STAGE_QA, output);
+        // 用户明确要求继续时才推进到测验，否则保持在 QA，便于多轮追问。
         String nextStage = asksToContinue(context.message()) ? STAGE_QUIZ : STAGE_QA;
         advanceStage(context.run(), nextStage);
         emitStageDone(context, STAGE_QA, nextStage);
     }
 
+    /**
+     * QUIZ 阶段：根据引用资料生成并落库即时测验题。
+     */
     private void runQuizStage(AgentContext context) {
         RagSearchResult searchResult = stageSearchResult(context.run().getId());
         String output = executeStage(context, STAGE_QUIZ, () -> {
@@ -171,6 +201,9 @@ public class LearningAgentService {
         emitStageDone(context, STAGE_QUIZ, STAGE_QA);
     }
 
+    /**
+     * CARD 阶段：生成复习卡文本，并通过工具写入复习卡表。
+     */
     private void runCardStage(AgentContext context) {
         RagSearchResult searchResult = stageSearchResult(context.run().getId());
         String output = executeCardStage(context, searchResult.references());
@@ -179,6 +212,9 @@ public class LearningAgentService {
         emitStageDone(context, STAGE_CARD, STAGE_SUMMARY);
     }
 
+    /**
+     * SUMMARY 阶段：压缩本轮上下文、写入快照并完成 Agent Run。
+     */
     private void runSummaryStage(AgentContext context, ContextMemoryService.RestoredContext restoredContext) {
         String plan = stageText(context.run().getId(), STAGE_PLAN);
         String teaching = stageText(context.run().getId(), STAGE_TEACH);
@@ -187,6 +223,7 @@ public class LearningAgentService {
         String cards = stageText(context.run().getId(), STAGE_CARD);
         String output = executeStage(context, STAGE_SUMMARY, () -> generateSummary(plan, teaching, qa, quiz, cards));
         ChatMessage assistantMessage = insertStageMessage(context, STAGE_SUMMARY, output);
+        // 快照覆盖到 SUMMARY 消息，原始消息仍然保留在 chat_messages 中。
         MemorySnapshotResult snapshotResult = compressMemory(
                 context.session().getId(),
                 assistantMessage.getId(),
@@ -203,6 +240,9 @@ public class LearningAgentService {
         ));
     }
 
+    /**
+     * 执行复习卡生成和写入工具调用。
+     */
     private String executeCardStage(AgentContext context, List<RagReference> references) {
         String generatedCards = executeStage(context, "CARD", () -> generateCards(context.learningGoal(), references));
         if (references.isEmpty()) {
@@ -232,6 +272,9 @@ public class LearningAgentService {
         }
     }
 
+    /**
+     * 从引用资料构造复习卡草稿，最多生成三张，避免一次写入过多低质量卡片。
+     */
     private List<ReviewCardWriteTool.CardDraft> buildCardDrafts(AgentContext context, List<RagReference> references) {
         List<ReviewCardWriteTool.CardDraft> drafts = new ArrayList<>();
         int limit = Math.min(3, references.size());
@@ -250,6 +293,9 @@ public class LearningAgentService {
         return drafts;
     }
 
+    /**
+     * 压缩会话记忆并发送上下文压缩完成事件。
+     */
     private MemorySnapshotResult compressMemory(
             Long sessionId,
             Long coveredMessageId,
@@ -265,6 +311,9 @@ public class LearningAgentService {
         return new MemorySnapshotResult(snapshot.getId(), snapshot.getCoveredMessageId());
     }
 
+    /**
+     * 执行 RETRIEVE 阶段并完整记录工具开始、完成或失败事件。
+     */
     private RagSearchResult executeRetrieve(AgentContext context) {
         AgentStepRecord step = startStep(context.run().getId(), "RETRIEVE", toJson(Map.of(
                 "question", context.learningGoal(),
@@ -297,6 +346,9 @@ public class LearningAgentService {
         }
     }
 
+    /**
+     * 执行普通 Agent 阶段，统一记录 step、发送阶段事件并保存输出。
+     */
     private String executeStage(AgentContext context, String stage, StageAction action) {
         AgentStepRecord step = startStep(context.run().getId(), stage, toJson(Map.of(
                 "learningGoal", context.learningGoal(),
@@ -316,6 +368,9 @@ public class LearningAgentService {
         }
     }
 
+    /**
+     * 生成学习计划提示。
+     */
     private String generatePlan(String message, ContextMemoryService.RestoredContext restoredContext) {
         return chatGenerationService.generate(
                 "你是学习 Agent 的 PLAN 节点。请为用户本轮学习生成 3-5 步学习计划，简洁、可执行。",
@@ -323,6 +378,9 @@ public class LearningAgentService {
         );
     }
 
+    /**
+     * 基于引用资料生成讲解内容。
+     */
     private String generateTeaching(String message, String plan, List<RagReference> references) {
         if (references.isEmpty()) {
             return "知识库未检索到相关内容，暂时无法基于资料讲解。";
@@ -333,6 +391,9 @@ public class LearningAgentService {
         );
     }
 
+    /**
+     * 基于引用资料回答用户追问。
+     */
     private String generateQa(String message, List<RagReference> references) {
         if (references.isEmpty()) {
             return "知识库未检索到相关内容，无法做基于资料的答疑。";
@@ -343,6 +404,9 @@ public class LearningAgentService {
         );
     }
 
+    /**
+     * 生成即时测验文本，保留给纯文本测验场景复用。
+     */
     private String generateQuiz(String message, List<RagReference> references) {
         if (references.isEmpty()) {
             return "本轮没有可用引用资料，暂不生成测验。";
@@ -353,6 +417,9 @@ public class LearningAgentService {
         );
     }
 
+    /**
+     * 生成复习卡展示文本，真正写卡由 review_card_write 工具完成。
+     */
     private String generateCards(String message, List<RagReference> references) {
         if (references.isEmpty()) {
             return "本轮没有可用引用资料，暂不生成复习卡。";
@@ -363,6 +430,9 @@ public class LearningAgentService {
         );
     }
 
+    /**
+     * 生成本轮上下文摘要，后续会作为长期记忆快照内容。
+     */
     private String generateSummary(String plan, String teaching, String qa, String quiz, String cards) {
         return chatGenerationService.generate(
                 "你是学习 Agent 的 SUMMARY 节点。请压缩本轮学习上下文，保留目标、关键结论、待复习点。",
@@ -370,6 +440,9 @@ public class LearningAgentService {
         );
     }
 
+    /**
+     * 按阶段类型发送内容事件，前端可用事件名决定展示区域。
+     */
     private void emitStageOutput(Consumer<LearningAgentEvent> sink, String stage, String output) {
         if ("QUIZ".equals(stage)) {
             emit(sink, "quiz.generated", Map.of("content", output));
@@ -382,6 +455,9 @@ public class LearningAgentService {
         }
     }
 
+    /**
+     * 将恢复出来的快照和增量消息拼成 PLAN 阶段可读上下文。
+     */
     private String contextText(ContextMemoryService.RestoredContext restoredContext) {
         StringBuilder builder = new StringBuilder();
         if (restoredContext.snapshot() != null) {
@@ -406,6 +482,9 @@ public class LearningAgentService {
         return builder.toString();
     }
 
+    /**
+     * 将引用资料格式化为带编号的 prompt 文本。
+     */
     private String referencesText(List<RagReference> references) {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < references.size(); i++) {
@@ -421,6 +500,9 @@ public class LearningAgentService {
         return builder.toString();
     }
 
+    /**
+     * 查询学习会话，不存在时返回明确业务错误。
+     */
     private ChatSession requireSession(Long sessionId) {
         ChatSession session = chatSessionMapper.selectById(sessionId);
         if (session == null) {
@@ -429,6 +511,9 @@ public class LearningAgentService {
         return session;
     }
 
+    /**
+     * 读取当前会话未完成的 run，不存在时创建一个新 run。
+     */
     private AgentRun requireRunningRun(ChatSession session) {
         AgentRun run = agentRunMapper.selectRunningBySession(session.getId(), session.getUserId());
         if (run != null) {
@@ -437,6 +522,9 @@ public class LearningAgentService {
         return createRun(session.getId(), session.getUserId(), STAGE_PLAN);
     }
 
+    /**
+     * 创建 Agent Run，记录当前所处阶段。
+     */
     private AgentRun createRun(Long sessionId, Long userId, String currentStage) {
         AgentRun run = new AgentRun();
         run.setSessionId(sessionId);
@@ -448,12 +536,18 @@ public class LearningAgentService {
         return run;
     }
 
+    /**
+     * 标记 Agent Run 完成。
+     */
     private void completeRun(AgentRun run) {
         run.setStatus("COMPLETED");
         run.setFinishedAt(LocalDateTime.now());
         agentRunMapper.updateById(run);
     }
 
+    /**
+     * 更新 run 的当前阶段，作为恢复和下一轮路由依据。
+     */
     private void updateRunStage(AgentRun run, String stage) {
         run.setCurrentStage(stage);
         agentRunMapper.updateById(run);
@@ -463,6 +557,9 @@ public class LearningAgentService {
         updateRunStage(run, nextStage);
     }
 
+    /**
+     * 读取当前阶段；历史数据缺失时回补为 PLAN。
+     */
     private String currentStage(AgentRun run) {
         if (run.getCurrentStage() == null || run.getCurrentStage().isBlank()) {
             run.setCurrentStage(STAGE_PLAN);
@@ -472,6 +569,9 @@ public class LearningAgentService {
         return run.getCurrentStage();
     }
 
+    /**
+     * 根据用户消息和当前阶段决定本轮执行哪个固定节点。
+     */
     private String routeStage(AgentRun run, String currentStage, String userMessage) {
         String normalized = userMessage == null ? "" : userMessage.trim().toLowerCase();
         if (isQuestion(normalized)) {
@@ -498,11 +598,17 @@ public class LearningAgentService {
         return currentStage;
     }
 
+    /**
+     * 判断用户是否希望推进到下一个学习阶段。
+     */
     private boolean asksToContinue(String value) {
         String normalized = value == null ? "" : value.trim().toLowerCase();
         return containsAny(normalized, "下一步", "继续", "推进", "next");
     }
 
+    /**
+     * 粗略识别追问消息，优先进入 QA 阶段。
+     */
     private boolean isQuestion(String value) {
         return value.contains("?")
                 || value.contains("？")
@@ -518,6 +624,9 @@ public class LearningAgentService {
         return false;
     }
 
+    /**
+     * 发送阶段等待事件和本轮 SSE done 事件。
+     */
     private void emitStageDone(AgentContext context, String completedStage, String nextStage) {
         emit(context.sink(), "agent.stage.waiting", Map.of(
                 "completedStage", completedStage,
@@ -532,6 +641,9 @@ public class LearningAgentService {
         ));
     }
 
+    /**
+     * 将阶段输出保存为 assistant 消息，metadata 中记录 run 和 stage。
+     */
     private ChatMessage insertStageMessage(AgentContext context, String stage, String content) {
         return insertMessage(
                 context.session().getId(),
@@ -545,6 +657,9 @@ public class LearningAgentService {
         );
     }
 
+    /**
+     * 防止同一条用户消息在重入或重试时重复写入。
+     */
     private void insertUserMessageIfNeeded(Long sessionId, Long userId, String message) {
         List<ChatMessage> messages = chatMessageMapper.selectAfter(sessionId, 0L);
         if (!messages.isEmpty()) {
@@ -556,6 +671,9 @@ public class LearningAgentService {
         insertMessage(sessionId, userId, "USER", "TEXT", message, null, null, "{}");
     }
 
+    /**
+     * 获取会话第一条用户消息作为学习目标。
+     */
     private String learningGoal(Long sessionId) {
         List<ChatMessage> messages = chatMessageMapper.selectAfter(sessionId, 0L);
         for (ChatMessage message : messages) {
@@ -566,6 +684,9 @@ public class LearningAgentService {
         throw new BusinessException("学习会话缺少初始目标");
     }
 
+    /**
+     * 从阶段记录中读取文本输出。
+     */
     private String stageText(Long agentRunId, String stage) {
         AgentStepRecord step = requireCompletedStep(agentRunId, stage);
         try {
@@ -576,6 +697,9 @@ public class LearningAgentService {
         }
     }
 
+    /**
+     * 从 RETRIEVE 阶段记录中恢复检索结果。
+     */
     private RagSearchResult stageSearchResult(Long agentRunId) {
         AgentStepRecord step = requireCompletedStep(agentRunId, STAGE_RETRIEVE);
         try {
@@ -585,6 +709,9 @@ public class LearningAgentService {
         }
     }
 
+    /**
+     * 读取指定阶段最近一次成功记录。
+     */
     private AgentStepRecord requireCompletedStep(Long agentRunId, String stage) {
         AgentStepRecord step = agentStepRecordMapper.selectLatestCompleted(agentRunId, stage);
         if (step == null) {
@@ -593,10 +720,16 @@ public class LearningAgentService {
         return step;
     }
 
+    /**
+     * 判断某阶段是否已经成功执行过。
+     */
     private boolean hasCompletedStep(Long agentRunId, String stage) {
         return agentStepRecordMapper.selectLatestCompleted(agentRunId, stage) != null;
     }
 
+    /**
+     * 创建 RUNNING 阶段记录。
+     */
     private AgentStepRecord startStep(Long agentRunId, String stage, String inputJson) {
         AgentStepRecord step = new AgentStepRecord();
         step.setAgentRunId(agentRunId);
@@ -608,6 +741,9 @@ public class LearningAgentService {
         return step;
     }
 
+    /**
+     * 完成阶段记录并保存输出 JSON。
+     */
     private void completeStep(AgentStepRecord step, String outputJson) {
         step.setStatus("COMPLETED");
         step.setOutputJson(outputJson);
@@ -615,6 +751,9 @@ public class LearningAgentService {
         agentStepRecordMapper.updateById(step);
     }
 
+    /**
+     * 标记阶段失败并保存错误信息。
+     */
     private void failStep(AgentStepRecord step, String errorMessage) {
         step.setStatus("FAILED");
         step.setErrorMessage(errorMessage);
@@ -622,6 +761,9 @@ public class LearningAgentService {
         agentStepRecordMapper.updateById(step);
     }
 
+    /**
+     * 持久化一条会话消息。
+     */
     private ChatMessage insertMessage(
             Long sessionId,
             Long userId,
@@ -646,18 +788,27 @@ public class LearningAgentService {
         return message;
     }
 
+    /**
+     * 校验用户消息非空。
+     */
     private void validateMessage(String message) {
         if (message == null || message.isBlank()) {
             throw new BusinessException("学习消息不能为空");
         }
     }
 
+    /**
+     * 校验会话必须绑定明确知识库范围。
+     */
     private void validateKnowledgeBases(List<Long> knowledgeBaseIds) {
         if (knowledgeBaseIds == null || knowledgeBaseIds.isEmpty()) {
             throw new BusinessException("知识库范围不能为空");
         }
     }
 
+    /**
+     * 从首条消息生成会话标题。
+     */
     private String titleFrom(String message) {
         String normalized = message.replaceAll("\\s+", " ").trim();
         if (normalized.length() <= 40) {
@@ -666,6 +817,9 @@ public class LearningAgentService {
         return normalized.substring(0, 40);
     }
 
+    /**
+     * 序列化对象为 JSON，失败时转成业务异常。
+     */
     private String toJson(Object value) {
         try {
             return objectMapper.writeValueAsString(value);
@@ -674,6 +828,9 @@ public class LearningAgentService {
         }
     }
 
+    /**
+     * 从会话 JSON 中读取允许检索的知识库 ID。
+     */
     private List<Long> readKnowledgeBaseIds(String json) {
         try {
             return objectMapper.readValue(json, new TypeReference<>() {
@@ -683,10 +840,16 @@ public class LearningAgentService {
         }
     }
 
+    /**
+     * 发送一个结构化 Agent 事件。
+     */
     private void emit(Consumer<LearningAgentEvent> sink, String event, Object data) {
         sink.accept(new LearningAgentEvent(event, data));
     }
 
+    /**
+     * 压缩文本长度，用于标题、复习卡草稿和上下文摘要展示。
+     */
     private String compact(String content, int maxLength) {
         if (content == null) {
             return "";
@@ -698,11 +861,17 @@ public class LearningAgentService {
         return normalized.substring(0, maxLength) + "...";
     }
 
+    /**
+     * 可被 executeStage 执行的阶段动作。
+     */
     @FunctionalInterface
     private interface StageAction {
         String run();
     }
 
+    /**
+     * 单次 Agent 执行中的上下文参数聚合。
+     */
     private record AgentContext(
             ChatSession session,
             AgentRun run,
@@ -713,6 +882,9 @@ public class LearningAgentService {
     ) {
     }
 
+    /**
+     * 上下文压缩结果，用于 SSE done 事件返回快照信息。
+     */
     private record MemorySnapshotResult(
             Long snapshotId,
             Long coveredMessageId

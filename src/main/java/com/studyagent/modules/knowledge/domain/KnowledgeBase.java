@@ -5,6 +5,9 @@ import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * 知识库实体，表示用户可选择的检索和学习资料范围。
+ */
 @Getter
 @Setter
 @TableName("knowledge_bases")

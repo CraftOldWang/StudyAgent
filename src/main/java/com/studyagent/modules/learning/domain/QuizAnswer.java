@@ -5,6 +5,9 @@ import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * 测验作答记录实体，保存用户答案、评分和反馈。
+ */
 @Getter
 @Setter
 @TableName("quiz_answers")

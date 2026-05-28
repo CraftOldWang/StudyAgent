@@ -5,6 +5,9 @@ import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * 复习记录实体，保存一次复习前后的调度状态变化。
+ */
 @Getter
 @Setter
 @TableName("review_records")

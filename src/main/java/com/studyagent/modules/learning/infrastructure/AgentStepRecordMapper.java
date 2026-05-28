@@ -5,8 +5,14 @@ import com.studyagent.modules.learning.domain.AgentStepRecord;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+/**
+ * Agent 阶段记录 Mapper，提供阶段恢复所需查询。
+ */
 public interface AgentStepRecordMapper extends BaseMapper<AgentStepRecord> {
 
+    /**
+     * 查询指定阶段最近一次成功记录。
+     */
     @Select("""
             SELECT *
             FROM agent_step_records

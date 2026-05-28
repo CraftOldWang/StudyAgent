@@ -8,6 +8,9 @@ import com.studyagent.modules.learning.domain.QuizQuestion;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * 测验题响应，包含题目、来源 chunk 和历史作答。
+ */
 public record QuizQuestionResponse(
         Long id,
         Long knowledgeBaseId,
@@ -25,6 +28,9 @@ public record QuizQuestionResponse(
         List<QuizAnswerResponse> answers
 ) {
 
+    /**
+     * 将题目实体和作答记录转换为接口响应。
+     */
     public static QuizQuestionResponse from(QuizQuestion question, List<QuizAnswer> answers, ObjectMapper objectMapper) {
         return new QuizQuestionResponse(
                 question.getId(),
@@ -44,6 +50,9 @@ public record QuizQuestionResponse(
         );
     }
 
+    /**
+     * 读取字符串 JSON 数组，解析失败时返回空列表以保持响应稳定。
+     */
     private static List<String> readStringList(String json, ObjectMapper objectMapper) {
         if (json == null || json.isBlank()) {
             return List.of();
@@ -56,6 +65,9 @@ public record QuizQuestionResponse(
         }
     }
 
+    /**
+     * 读取 Long JSON 数组，解析失败时返回空列表以保持响应稳定。
+     */
     private static List<Long> readLongList(String json, ObjectMapper objectMapper) {
         if (json == null || json.isBlank()) {
             return List.of();

@@ -6,8 +6,14 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+/**
+ * 会话消息 Mapper，支持按快照覆盖点加载增量消息。
+ */
 public interface ChatMessageMapper extends BaseMapper<ChatMessage> {
 
+    /**
+     * 查询指定 messageId 之后的会话消息。
+     */
     @Select("""
             SELECT *
             FROM chat_messages

@@ -5,6 +5,9 @@ import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * 文档切块实体，是 RAG 检索、引用展示和 ES 索引同步的最小业务单元。
+ */
 @Getter
 @Setter
 @TableName("document_chunks")

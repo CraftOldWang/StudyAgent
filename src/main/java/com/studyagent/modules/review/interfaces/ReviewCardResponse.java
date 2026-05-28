@@ -3,6 +3,9 @@ package com.studyagent.modules.review.interfaces;
 import com.studyagent.modules.review.domain.ReviewCard;
 import java.time.LocalDateTime;
 
+/**
+ * 复习卡响应，包含卡片内容和当前 FSRS 调度状态。
+ */
 public record ReviewCardResponse(
         Long id,
         Long knowledgeBaseId,
@@ -23,6 +26,9 @@ public record ReviewCardResponse(
         Integer lapses
 ) {
 
+    /**
+     * 将复习卡实体转换为接口响应。
+     */
     public static ReviewCardResponse from(ReviewCard card) {
         return new ReviewCardResponse(
                 card.getId(),

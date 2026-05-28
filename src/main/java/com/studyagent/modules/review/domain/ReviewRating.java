@@ -2,6 +2,9 @@ package com.studyagent.modules.review.domain;
 
 import com.studyagent.common.exception.BusinessException;
 
+/**
+ * 用户复习评分，对应 FSRS 的 Again、Hard、Good、Easy 四档。
+ */
 public enum ReviewRating {
     AGAIN(1),
     HARD(2),
@@ -18,6 +21,9 @@ public enum ReviewRating {
         return value;
     }
 
+    /**
+     * 从接口输入解析评分枚举。
+     */
     public static ReviewRating from(String value) {
         if (value == null || value.isBlank()) {
             throw new BusinessException("复习评分不能为空");

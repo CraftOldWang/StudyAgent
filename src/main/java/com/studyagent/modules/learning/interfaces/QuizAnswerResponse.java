@@ -3,6 +3,9 @@ package com.studyagent.modules.learning.interfaces;
 import com.studyagent.modules.learning.domain.QuizAnswer;
 import java.time.LocalDateTime;
 
+/**
+ * 测验作答响应。
+ */
 public record QuizAnswerResponse(
         Long id,
         Long questionId,
@@ -14,6 +17,9 @@ public record QuizAnswerResponse(
         LocalDateTime answeredAt
 ) {
 
+    /**
+     * 将作答实体转换为接口响应。
+     */
     public static QuizAnswerResponse from(QuizAnswer answer) {
         return new QuizAnswerResponse(
                 answer.getId(),

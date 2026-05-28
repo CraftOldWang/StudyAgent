@@ -18,6 +18,11 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+/**
+ * Elasticsearch chunk 索引适配器，封装索引创建、写入、删除和检索请求。
+ *
+ * <p>业务层只关心 IndexedChunk 和 SearchHitChunk，不直接依赖 ES SDK 或 HTTP 细节。</p>
+ */
 @Component
 @RequiredArgsConstructor
 public class ElasticsearchChunkIndexer {
@@ -28,11 +33,17 @@ public class ElasticsearchChunkIndexer {
             .connectTimeout(Duration.ofSeconds(5))
             .build();
 
+    /**
+     * 应用启动时确保 chunk 索引存在且向量维度与配置一致。
+     */
     @PostConstruct
     public void init() {
         ensureIndex();
     }
 
+    /**
+     * 写入单个 chunk 到 ES，并返回业务可追踪的 es_doc_id。
+     */
     public String index(IndexedChunk chunk) {
         if (chunk.embedding().length != properties.vectorDimensions()) {
             throw new BusinessException("Embedding 维度与 Elasticsearch 配置不一致: actual="
@@ -53,17 +64,24 @@ public class ElasticsearchChunkIndexer {
             embedding.add(value);
         }
 
+        // 使用 chunkId 作为 ES 文档 ID，便于 MySQL document_chunks.es_doc_id 反查和幂等覆盖。
         String esDocId = String.valueOf(chunk.chunkId());
         request("PUT", "/" + properties.chunkIndex() + "/_doc/" + esDocId, body.toString());
         return esDocId;
     }
 
+    /**
+     * 删除指定文档下的全部 ES chunk，用于文档重新处理前清理旧索引。
+     */
     public void deleteByDocumentId(Long documentId) {
         ObjectNode root = objectMapper.createObjectNode();
         root.putObject("query").putObject("term").put("document_id", documentId);
         request("POST", "/" + properties.chunkIndex() + "/_delete_by_query?refresh=true", root.toString());
     }
 
+    /**
+     * 执行向量检索，过滤条件包含用户和知识库范围。
+     */
     public List<SearchHitChunk> vectorSearch(Long userId, List<Long> knowledgeBaseIds, float[] queryVector, int topK) {
         ObjectNode root = objectMapper.createObjectNode();
         root.put("size", topK);
@@ -76,6 +94,7 @@ public class ElasticsearchChunkIndexer {
         }
         knn.put("k", topK);
         knn.put("num_candidates", Math.max(topK * 5, 30));
+        // ES KNN filter 直接限制资源范围，避免召回越权 chunk 后再过滤。
         ObjectNode filter = knn.putObject("filter").putObject("bool");
         ArrayNode must = filter.putArray("must");
         must.add(termQuery("user_id", userId));
@@ -90,6 +109,9 @@ public class ElasticsearchChunkIndexer {
         return readHits(response);
     }
 
+    /**
+     * 执行 BM25 关键词检索，过滤条件包含用户和知识库范围。
+     */
     public List<SearchHitChunk> bm25Search(Long userId, List<Long> knowledgeBaseIds, String query, int topK) {
         ObjectNode root = objectMapper.createObjectNode();
         root.put("size", topK);
@@ -105,6 +127,9 @@ public class ElasticsearchChunkIndexer {
         return readHits(response);
     }
 
+    /**
+     * 根据 chunkId 批量补取 ES 内容，并保留用户范围过滤。
+     */
     public List<SearchHitChunk> searchByChunkIds(Long userId, List<Long> chunkIds) {
         if (chunkIds == null || chunkIds.isEmpty()) {
             return List.of();
@@ -126,6 +151,9 @@ public class ElasticsearchChunkIndexer {
         return readHits(response);
     }
 
+    /**
+     * 添加用户和知识库范围过滤。
+     */
     private void addScopeFilter(ArrayNode filter, Long userId, List<Long> knowledgeBaseIds) {
         filter.add(termQuery("user_id", userId));
         ObjectNode terms = objectMapper.createObjectNode();
@@ -136,6 +164,9 @@ public class ElasticsearchChunkIndexer {
         filter.add(terms);
     }
 
+    /**
+     * 创建 ES chunk 索引或校验已有索引向量维度。
+     */
     private void ensureIndex() {
         HttpRequest headRequest = HttpRequest.newBuilder()
                 .uri(uri("/" + properties.chunkIndex()))
@@ -158,6 +189,7 @@ public class ElasticsearchChunkIndexer {
             throw new BusinessException("检查 Elasticsearch 索引被中断");
         }
 
+        // 显式声明 dense_vector 维度，应用配置变化时必须重建索引或改用新索引名。
         ObjectNode mapping = objectMapper.createObjectNode();
         ObjectNode propertiesNode = mapping.putObject("mappings").putObject("properties");
         propertiesNode.putObject("chunk_id").put("type", "long");
@@ -178,6 +210,9 @@ public class ElasticsearchChunkIndexer {
         request("PUT", "/" + properties.chunkIndex(), mapping.toString());
     }
 
+    /**
+     * 校验已有索引 embedding 维度，避免查询和写入时出现隐蔽错误。
+     */
     private void validateExistingIndexDimensions() {
         JsonNode mapping = request("GET", "/" + properties.chunkIndex() + "/_mapping", null);
         JsonNode embedding = mapping.path(properties.chunkIndex())
@@ -197,12 +232,18 @@ public class ElasticsearchChunkIndexer {
         }
     }
 
+    /**
+     * 构造 term 查询节点。
+     */
     private ObjectNode termQuery(String field, Long value) {
         ObjectNode root = objectMapper.createObjectNode();
         root.putObject("term").put(field, value);
         return root;
     }
 
+    /**
+     * 将 ES hits 转换成基础设施层搜索命中对象。
+     */
     private List<SearchHitChunk> readHits(JsonNode response) {
         List<SearchHitChunk> hits = new ArrayList<>();
         for (JsonNode hit : response.path("hits").path("hits")) {
@@ -225,6 +266,9 @@ public class ElasticsearchChunkIndexer {
         return hits;
     }
 
+    /**
+     * 写入可空 Long 字段。
+     */
     private void putNullableLong(ObjectNode body, String field, Long value) {
         if (value == null) {
             body.putNull(field);
@@ -233,6 +277,9 @@ public class ElasticsearchChunkIndexer {
         body.put(field, value);
     }
 
+    /**
+     * 统一发送 ES HTTP 请求，非 2xx 响应直接转换为业务异常。
+     */
     private JsonNode request(String method, String path, String body) {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(uri(path))
@@ -259,6 +306,9 @@ public class ElasticsearchChunkIndexer {
         }
     }
 
+    /**
+     * 拼接 ES endpoint 和请求路径。
+     */
     private URI uri(String path) {
         return URI.create(properties.endpoint() + path);
     }

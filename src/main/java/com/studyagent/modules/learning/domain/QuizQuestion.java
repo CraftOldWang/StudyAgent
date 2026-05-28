@@ -5,6 +5,9 @@ import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * 即时测验题实体，记录题干、标准答案、解析和来源 chunk。
+ */
 @Getter
 @Setter
 @TableName("quiz_questions")

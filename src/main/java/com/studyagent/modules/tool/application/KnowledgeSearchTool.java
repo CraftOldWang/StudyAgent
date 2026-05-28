@@ -13,6 +13,9 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+/**
+ * Agent 的知识库检索工具，封装资源范围校验、RAG 检索和工具调用审计。
+ */
 @Service
 @RequiredArgsConstructor
 public class KnowledgeSearchTool {
@@ -23,6 +26,9 @@ public class KnowledgeSearchTool {
     private final ToolCallRecordMapper toolCallRecordMapper;
     private final ObjectMapper objectMapper;
 
+    /**
+     * 在当前会话允许的知识库范围内检索资料。
+     */
     public RagSearchResult search(
             Long agentRunId,
             Long sessionId,
@@ -32,6 +38,7 @@ public class KnowledgeSearchTool {
     ) {
         ToolCallRecord record = createRecord(agentRunId, sessionId, userId, allowedKnowledgeBaseIds, question);
         try {
+            // 工具只能使用会话预先授权的知识库范围，不能让模型临时决定检索范围。
             if (allowedKnowledgeBaseIds == null || allowedKnowledgeBaseIds.isEmpty()) {
                 throw new BusinessException("当前会话没有可检索的知识库范围");
             }
@@ -44,6 +51,9 @@ public class KnowledgeSearchTool {
         }
     }
 
+    /**
+     * 创建 RUNNING 审计记录，先落库再执行真实工具逻辑。
+     */
     private ToolCallRecord createRecord(
             Long agentRunId,
             Long sessionId,
@@ -64,6 +74,9 @@ public class KnowledgeSearchTool {
         return record;
     }
 
+    /**
+     * 工具成功后记录命中数量。
+     */
     private void completeRecord(ToolCallRecord record, List<RagReference> references) {
         record.setStatus("COMPLETED");
         record.setResultSummary("hitCount=" + references.size());
@@ -71,6 +84,9 @@ public class KnowledgeSearchTool {
         toolCallRecordMapper.updateById(record);
     }
 
+    /**
+     * 工具失败后记录错误，调用方继续抛出异常并通过 SSE 暴露失败事件。
+     */
     private void failRecord(ToolCallRecord record, String errorMessage) {
         record.setStatus("FAILED");
         record.setErrorMessage(errorMessage);
@@ -78,6 +94,9 @@ public class KnowledgeSearchTool {
         toolCallRecordMapper.updateById(record);
     }
 
+    /**
+     * 将工具参数序列化为 JSON，便于审计和问题回放。
+     */
     private String argumentsJson(List<Long> allowedKnowledgeBaseIds, String question) {
         try {
             return objectMapper.writeValueAsString(new KnowledgeSearchArguments(allowedKnowledgeBaseIds, question));
@@ -86,6 +105,9 @@ public class KnowledgeSearchTool {
         }
     }
 
+    /**
+     * knowledge_search 工具的审计参数快照。
+     */
     private record KnowledgeSearchArguments(
             List<Long> knowledgeBaseIds,
             String question

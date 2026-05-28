@@ -5,6 +5,9 @@ import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * 文档实体，关联上传文件并记录解析、切块和索引状态。
+ */
 @Getter
 @Setter
 @TableName("documents")

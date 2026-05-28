@@ -13,6 +13,9 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+/**
+ * Agent 的复习卡写入工具，负责资源范围校验和工具调用审计。
+ */
 @Service
 @RequiredArgsConstructor
 public class ReviewCardWriteTool {
@@ -23,6 +26,9 @@ public class ReviewCardWriteTool {
     private final ToolCallRecordMapper toolCallRecordMapper;
     private final ObjectMapper objectMapper;
 
+    /**
+     * 批量写入复习卡草稿，写入范围受当前会话知识库授权限制。
+     */
     public List<ReviewCardResponse> writeCards(
             Long agentRunId,
             Long sessionId,
@@ -35,6 +41,7 @@ public class ReviewCardWriteTool {
             if (drafts == null || drafts.isEmpty()) {
                 throw new BusinessException("复习卡草稿不能为空");
             }
+            // 逐张卡校验知识库范围，避免 Agent 越权写入其他知识库。
             List<ReviewCardResponse> cards = drafts.stream()
                     .map(draft -> createCard(sessionId, allowedKnowledgeBaseIds, draft))
                     .toList();
@@ -46,6 +53,9 @@ public class ReviewCardWriteTool {
         }
     }
 
+    /**
+     * 将单个草稿转换为复习卡，缺省知识库时使用会话授权范围的第一个知识库。
+     */
     private ReviewCardResponse createCard(Long sessionId, List<Long> allowedKnowledgeBaseIds, CardDraft draft) {
         Long knowledgeBaseId = draft.knowledgeBaseId();
         if (knowledgeBaseId == null) {
@@ -66,6 +76,9 @@ public class ReviewCardWriteTool {
         ));
     }
 
+    /**
+     * 创建 RUNNING 审计记录，保存工具参数快照。
+     */
     private ToolCallRecord createRecord(
             Long agentRunId,
             Long sessionId,
@@ -86,6 +99,9 @@ public class ReviewCardWriteTool {
         return record;
     }
 
+    /**
+     * 工具成功后记录写入卡片数量。
+     */
     private void completeRecord(ToolCallRecord record, int cardCount) {
         record.setStatus("COMPLETED");
         record.setResultSummary("cardCount=" + cardCount);
@@ -93,6 +109,9 @@ public class ReviewCardWriteTool {
         toolCallRecordMapper.updateById(record);
     }
 
+    /**
+     * 工具失败后记录错误信息。
+     */
     private void failRecord(ToolCallRecord record, String errorMessage) {
         record.setStatus("FAILED");
         record.setErrorMessage(errorMessage);
@@ -100,6 +119,9 @@ public class ReviewCardWriteTool {
         toolCallRecordMapper.updateById(record);
     }
 
+    /**
+     * 将工具参数序列化为 JSON，便于审计和回放。
+     */
     private String argumentsJson(List<Long> allowedKnowledgeBaseIds, List<CardDraft> drafts) {
         try {
             return objectMapper.writeValueAsString(new ReviewCardWriteArguments(allowedKnowledgeBaseIds, drafts));
@@ -108,6 +130,9 @@ public class ReviewCardWriteTool {
         }
     }
 
+    /**
+     * Agent 生成的复习卡草稿。
+     */
     public record CardDraft(
             Long knowledgeBaseId,
             Long documentId,
@@ -119,6 +144,9 @@ public class ReviewCardWriteTool {
     ) {
     }
 
+    /**
+     * review_card_write 工具的审计参数快照。
+     */
     private record ReviewCardWriteArguments(
             List<Long> knowledgeBaseIds,
             List<CardDraft> drafts

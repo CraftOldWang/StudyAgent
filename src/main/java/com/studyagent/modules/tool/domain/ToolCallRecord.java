@@ -5,6 +5,9 @@ import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * 工具调用审计记录，保存 Agent 每次工具调用的参数、结果和失败原因。
+ */
 @Getter
 @Setter
 @TableName("tool_call_records")

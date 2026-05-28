@@ -15,6 +15,9 @@ import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
 import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+/**
+ * S3 兼容对象存储适配器，可对接 MinIO、RustFS 等实现。
+ */
 @Service
 @RequiredArgsConstructor
 public class S3ObjectStorageService implements ObjectStorageService {
@@ -22,11 +25,17 @@ public class S3ObjectStorageService implements ObjectStorageService {
     private final S3Client s3Client;
     private final ObjectStorageProperties properties;
 
+    /**
+     * 应用启动时创建或校验 bucket。
+     */
     @PostConstruct
     public void init() {
         ensureBucket();
     }
 
+    /**
+     * bucket 不存在时创建，其他 S3 异常向上抛出。
+     */
     @Override
     public void ensureBucket() {
         try {
@@ -36,6 +45,9 @@ public class S3ObjectStorageService implements ObjectStorageService {
         }
     }
 
+    /**
+     * 流式写入对象，避免大文件进入内存。
+     */
     @Override
     public void putObject(String objectKey, InputStream inputStream, long contentLength, String contentType) {
         PutObjectRequest request = PutObjectRequest.builder()
@@ -46,6 +58,9 @@ public class S3ObjectStorageService implements ObjectStorageService {
         s3Client.putObject(request, RequestBody.fromInputStream(inputStream, contentLength));
     }
 
+    /**
+     * 获取对象输入流，调用方负责关闭返回的流。
+     */
     @Override
     public InputStream getObject(String objectKey) {
         GetObjectRequest request = GetObjectRequest.builder()
@@ -56,6 +71,9 @@ public class S3ObjectStorageService implements ObjectStorageService {
         return response;
     }
 
+    /**
+     * 同 bucket 内复制对象。
+     */
     @Override
     public void copyObject(String sourceKey, String targetKey) {
         CopyObjectRequest request = CopyObjectRequest.builder()

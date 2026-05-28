@@ -6,6 +6,9 @@ import java.security.MessageDigest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+/**
+ * 基于哈希的本地 embedding 实现，主要用于开发或测试时不依赖外部模型。
+ */
 @Service
 @RequiredArgsConstructor
 public class HashEmbeddingService implements EmbeddingService {
@@ -26,6 +29,7 @@ public class HashEmbeddingService implements EmbeddingService {
             vector[index] += 1.0f;
         }
 
+        // 额外加入字符级特征，缓解中文文本分词为空或过粗的问题。
         for (int i = 0; i < normalized.length(); i++) {
             char ch = normalized.charAt(i);
             if (!Character.isWhitespace(ch)) {
@@ -38,6 +42,9 @@ public class HashEmbeddingService implements EmbeddingService {
         return vector;
     }
 
+    /**
+     * 生成稳定的正整数哈希。
+     */
     private int positiveHash(String text) {
         try {
             MessageDigest digest = MessageDigest.getInstance("MD5");
@@ -52,6 +59,9 @@ public class HashEmbeddingService implements EmbeddingService {
         }
     }
 
+    /**
+     * 将向量归一化，便于使用 cosine 相似度。
+     */
     private void normalize(float[] vector) {
         double sum = 0;
         for (float value : vector) {

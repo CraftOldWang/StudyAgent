@@ -6,8 +6,14 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+/**
+ * 测验题 Mapper，提供题目历史查询。
+ */
 public interface QuizQuestionMapper extends BaseMapper<QuizQuestion> {
 
+    /**
+     * 查询当前用户的活跃题目历史，可按知识库过滤。
+     */
     @Select("""
             <script>
             SELECT *

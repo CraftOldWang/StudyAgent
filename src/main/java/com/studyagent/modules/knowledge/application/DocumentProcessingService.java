@@ -16,6 +16,11 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+/**
+ * 文档处理应用服务，编排“对象读取 -> 文本解析 -> 切块 -> 向量化索引”的完整链路。
+ *
+ * <p>本服务不吞掉异常：失败会写入明确文档状态后继续抛出，让消息消费侧决定重试或进入失败流程。</p>
+ */
 @Service
 @RequiredArgsConstructor
 public class DocumentProcessingService {
@@ -30,6 +35,9 @@ public class DocumentProcessingService {
     private final DocumentStatusService documentStatusService;
     private final DocumentChunkIndexSyncService documentChunkIndexSyncService;
 
+    /**
+     * 处理指定文档，已索引文档会幂等跳过。
+     */
     public void process(Long documentId) {
         boolean indexingStarted = false;
         Document document = documentMapper.selectById(documentId);
@@ -46,6 +54,7 @@ public class DocumentProcessingService {
         }
 
         try {
+            // 重跑文档处理时先清理旧 chunk 和旧 ES 索引，保证 MySQL 与 ES 能重新对齐。
             documentChunkMapper.deleteByDocumentId(document.getId());
             elasticsearchChunkIndexer.deleteByDocumentId(document.getId());
             updateStatus(document, "PARSING", "PENDING", null);
@@ -72,6 +81,7 @@ public class DocumentProcessingService {
                 chunk.setCreatedAt(LocalDateTime.now());
                 documentChunkMapper.insert(chunk);
                 if (i % 3 == 0) {
+                    // 每三个子 chunk 选一个作为父 chunk，检索时可用它补全文档上下文窗口。
                     currentParentChunkId = chunk.getId();
                     chunk.setParentChunkId(currentParentChunkId);
                     documentChunkMapper.updateById(chunk);
@@ -81,6 +91,7 @@ public class DocumentProcessingService {
             updateStatus(document, "PARSED", "INDEXING", null);
             indexingStarted = true;
             for (DocumentChunk chunk : documentChunkMapper.selectMissingEsDocIdByDocumentId(document.getId())) {
+                // 每个 chunk 独立写 ES 并回填 es_doc_id，便于失败后从缺失点继续同步。
                 documentChunkIndexSyncService.syncChunk(chunk.getId());
             }
             documentChunkIndexSyncService.markDocumentIndexedIfComplete(document.getId());
@@ -94,6 +105,9 @@ public class DocumentProcessingService {
         }
     }
 
+    /**
+     * 更新文档处理状态，状态字段用于前端展示和异步任务恢复。
+     */
     private void updateStatus(Document document, String parseStatus, String indexStatus, String errorMessage) {
         document.setParseStatus(parseStatus);
         document.setIndexStatus(indexStatus);
@@ -102,6 +116,9 @@ public class DocumentProcessingService {
         documentMapper.updateById(document);
     }
 
+    /**
+     * 从对象存储读取文件内容并交给解析器提取文本。
+     */
     private String parseFile(FileRecord fileRecord) {
         try (InputStream inputStream = objectStorageService.getObject(fileRecord.getObjectKey())) {
             return documentTextParser.parse(inputStream);
@@ -112,10 +129,16 @@ public class DocumentProcessingService {
         }
     }
 
+    /**
+     * 粗略估算 token 数，当前用于记录 chunk 成本和后续上下文预算。
+     */
     private int estimateTokenCount(String content) {
         return Math.max(1, content.length() / 2);
     }
 
+    /**
+     * 构造 chunk 元数据 JSON，后续写入 ES 后可作为引用信息的一部分。
+     */
     private String chunkMetadata(Document document, int chunkIndex, int totalChunks) {
         return """
                 {"documentTitle":"%s","sourceType":"%s","chunkIndex":%d,"totalChunks":%d}

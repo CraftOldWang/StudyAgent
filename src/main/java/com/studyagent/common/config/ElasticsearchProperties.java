@@ -2,6 +2,9 @@ package com.studyagent.common.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+/**
+ * Elasticsearch 检索和向量索引配置。
+ */
 @ConfigurationProperties(prefix = "study-agent.elasticsearch")
 public record ElasticsearchProperties(
         String endpoint,

@@ -5,6 +5,9 @@ import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * Agent 阶段执行记录，保存每个阶段的输入、输出、状态和错误信息。
+ */
 @Getter
 @Setter
 @TableName("agent_step_records")

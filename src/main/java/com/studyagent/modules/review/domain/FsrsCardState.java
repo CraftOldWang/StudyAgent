@@ -2,6 +2,9 @@ package com.studyagent.modules.review.domain;
 
 import java.time.LocalDateTime;
 
+/**
+ * FSRS 卡片调度状态快照。
+ */
 public record FsrsCardState(
         CardState state,
         LocalDateTime dueAt,

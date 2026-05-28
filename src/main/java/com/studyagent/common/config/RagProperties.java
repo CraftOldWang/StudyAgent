@@ -2,6 +2,9 @@ package com.studyagent.common.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+/**
+ * RAG 检索、切块和父子上下文扩展配置。
+ */
 @ConfigurationProperties(prefix = "study-agent.rag")
 public record RagProperties(
         int topK,
