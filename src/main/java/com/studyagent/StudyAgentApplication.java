@@ -1,11 +1,11 @@
 package com.studyagent;
 
-import com.studyagent.common.config.AiModelProperties;
-import com.studyagent.common.config.CanalProperties;
-import com.studyagent.common.config.ElasticsearchProperties;
-import com.studyagent.common.config.ObjectStorageProperties;
-import com.studyagent.common.config.RagProperties;
-import com.studyagent.common.config.StudyRocketMqProperties;
+import com.studyagent.config.AiModelProperties;
+import com.studyagent.config.CanalProperties;
+import com.studyagent.config.ElasticsearchProperties;
+import com.studyagent.config.ObjectStorageProperties;
+import com.studyagent.config.RagProperties;
+import com.studyagent.config.StudyRocketMqProperties;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

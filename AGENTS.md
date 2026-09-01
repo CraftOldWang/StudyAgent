@@ -1,220 +1,130 @@
 # AGENTS.md
 
-本文件约束后续 Agent 在本项目中的实现方式。实现前先阅读 `docs/PROJECT_DESIGN.md`。
+本文件约束所有在本仓库工作的 agent，包括主 agent 与 subagent。
 
-## 1. 项目目标
+## 0. 本文件的地位
 
-构建一个面向学习备考场景的 AI 学习助手，支持：
+- 本文件是唯一的实现约束来源。与本文件冲突的历史文档一律作废。
+- `docs/` 下的旧设计文档、根目录的建议稿（`fable5建议.md`、`opus5建议.md`、`AGENT_RUNTIME_EVOLUTION.md`、`CONTEXT.md` 等）**不作为设计依据**，不要引用它们论证任何决定。它们是上一轮的产物，与当前代码和当前方向都不一致。
+- 本文件的决策条款归用户所有。agent 可以指出条款过时或自相矛盾，但不得自行改写决策内容。
 
-- 学习资料上传、分片上传、断点续传和文件去重。
-- 文档解析、文本切分、向量化和 Elasticsearch 索引。
-- BM25 + 向量混合检索、父子检索、RRF 融合。
-- 基于 Spring AI Alibaba 的状态化学习 Agent。
-- SSE 流式输出 token、阶段状态和工具调用事件。
-- 复习卡生成、FSRS 复习调度和复习记录。
-- 工具鉴权、资源范围控制和调用审计。
-- 上下文压缩、持久化快照和会话恢复。
+## 1. 最高原则：技术决策权属于用户
 
-## 2. 架构原则
+**任何有多个可辩护答案的技术选择，必须停下来把选项和代价交给用户，不得自行决定后继续实现。**
 
-- 使用轻量 DDD + 模块化单体。
-- 不拆微服务，除非用户明确要求。
-- 优先保持模块边界清晰，而不是过度抽象。
-- 业务模块不能直接依赖具体中间件 SDK，应通过 infrastructure adapter 访问。
-- 重要状态必须持久化到 MySQL，Redis 只作为缓存、锁、Bitmap、短期状态使用。
-- 不使用静默降级策略。依赖失败时返回明确错误或进入明确失败状态。
-- 不添加非必要 try-catch。只在需要转换业务状态、补充上下文或释放资源时捕获异常。
-- 作为资深软件工程师，写代码时为代码添加详尽的注释。使用中英文混合或纯中文解释核心逻辑，不仅解释“是什么”，还要解释“为什么”。但避免过于显然的注释。
+理由：本项目用于面试。如果 agent 替用户做了技术决策，最终交付的是一个用户无法解释、无法辩护的系统，项目也就失去了意义。宁可停下来问，也不要"合理地"替用户选。
 
-## 3. 推荐包结构
+- 需要问的：架构、分层、存储选型、算法选择、库和框架引入、数据模型、协议与契约、任何会写进简历的实现方式。
+- 不需要问的：纯机械跟进——重命名、套用已经确认过的模式、修编译错误、补充已确认设计下的样板代码。
+- 明令禁止的借口："采用合理默认值""业界通用做法""先实现一版后面再调"。这些都不能替代询问。
+- §7 的未决问题清单内的任何一项，一律不得自行决定。
 
-```text
-src/main/java/.../studyagent
-  common
-    config
-    constant
-    exception
-    response
-    security
-  infrastructure
-    ai
-    embedding
-    objectstorage
-    parser
-    mq
-    redis
-    search
-  modules
-    user
-    storage
-    knowledge
-    rag
-    learning
-    review
-    tool
-    evaluation
-```
+## 2. 主 agent 与 subagent 的分工
 
-每个业务模块内部优先使用：
+主线程的上下文是稀缺资源，承载的是设计推理和用户的决策记录；文件内容、构建输出、测试日志都是可以随时重新生成的廉价信息，不应该占用主线程。
+
+- 主线程只做：设计讨论、决策记录、任务分解、验收结论。
+- subagent 做：仓库勘察、具体实现、编译与测试、独立验收。
+- **实现与验收必须由不同的 subagent 完成。** 写代码的 agent 不验收自己的代码。
+- subagent 返回结论与 `file:line` 证据，不返回文件内容。
+- 重复性、机械性的工作使用较小的模型（sonnet），不浪费在大模型上。
+- 相互独立的 subagent 在一条消息里一次性发起，让它们并行。
+- **subagent 不得擅自扩大任务范围。** 遇到任务边界外的问题、或遇到需要决策的分歧，停下并上报，不要顺手改掉，也不要自行选择一种做法。
+
+## 3. 包结构（已定，方案三：按子域分包，子域内按职责分包）
 
 ```text
-application
-domain
-infrastructure
-interfaces
+src/main/java/com/studyagent/
+  config/            所有 @ConfigurationProperties 与 @Configuration
+  common/
+    exception/  response/
+    json/            唯一的 JSON 工具
+  model/             所有表实体
+  mapper/            所有 MyBatis-Plus Mapper
+  algo/              纯算法，不依赖 Spring：fsrs/ rrf/ metric/ chunk/
+  agent/
+    loop/            Agent Loop 内核、迭代与终止控制
+    planner/  writer/
+    prompt/          prompt 模板
+    codec/           结构化输出解析、校验、修复
+    tool/            工具定义与工具治理
+    memory/          短期与长期记忆、压缩策略
+    checkpoint/      会话快照与恢复
+    trace/           traceId、事件、回放
+    subagent/        子 agent 委派
+    web/
+  rag/               retrieval/ index/ embedding/ eval/ web/
+  ingest/            upload/ storage/ parse/ chunk/ pipeline/ sync/ web/
+  review/
+  profile/           用户画像、长期记忆、知识图谱
 ```
 
 约定：
 
-- `interfaces` 放 Controller、Request、Response、SSE endpoint。
-- `application` 放用例服务、事务编排、DTO 转换。
-- `domain` 放领域对象、状态机、领域服务、策略接口。
-- `infrastructure` 放 Mapper、Repository 实现、外部服务适配。
+- `model/` 只放表实体，不写行为。
+- `algo/` 只放纯算法，不允许出现 Spring 注解或框架依赖，必须能纯单元测试。
+- `mapper/` 与 `model/` 全局共享。这是刻意的：旧结构把实体和 Mapper 关在模块私有包里，反而逼出了六处"跨模块 import 对方 Mapper"和一组双向依赖。提到全局是为了溶解那个问题，不是偷懒。
+- Controller 及其 Request/Response 放在各子域的 `web/` 下。持久化全局、Web 局部，这个不对称是有意的。
+- **禁止再出现 `application/domain/infrastructure/interfaces` 四层结构。** 旧结构里 27 个 domain 文件只有 9 个有方法，四个模块的 domain 包是零方法的表实体集合；不要复制这种分层。
+- 一个包对应一种职责。新增包之前先确认它不是已有包的同义词。
 
 ## 4. 代码风格
 
-- Java 代码优先使用清晰命名，不用晦涩缩写。
-- DTO、Entity、Domain Object 不要混用。
-- Controller 不写业务逻辑。
-- Mapper 不写复杂业务判断。
-- 事务边界放在 application service。
-- 配置项必须写入配置类，不要散落字符串。
-- 时间字段统一使用 `LocalDateTime` 或项目约定类型。
-- 数据库主键类型先统一使用 `Long`，除非用户另行指定。
-- JSON 字段统一以 `metadataJson`、`xxxJson` 命名，并在应用层转换成结构化对象。
+- 注释解释"为什么"，不解释"是什么"。不写显然的注释，也不写"这段代码做了什么"的复述。
+- DTO、表实体、领域对象不混用。
+- Controller 不写业务逻辑。Mapper 不写复杂业务判断。
+- 事务边界必须明确，写在服务层，不要靠调用链隐式传播。
+- 配置项进 `config/` 下的 `@ConfigurationProperties`，不允许把配置字符串散落在业务类里。
+- 主键统一 `Long`，时间统一 `LocalDateTime`。
+- **一个类只承担一类职责。** 超过 300 行必须在提交说明里给出理由。旧代码里有 1169 行和 872 行的类，各自同时承担了编排、业务规则、持久化、DTO 组装、prompt 拼装、JSON 解析——不要再产生这种类。
+- 同一段逻辑不允许存在第二份拷贝。旧代码里 `extractJsonObject` 被逐字复制过两份，`toJson` 包装器被重复实现过多次；这类重复一旦发现就合并到 `common/json`。
 
-## 5. 异常与失败处理
+## 5. 失败处理
 
-- 不要吞异常。
-- 不要假装外部服务调用成功。
-- 不要自动切到另一个 provider，除非需求明确要求。
-- 文档处理失败要写入文档状态和错误信息。
-- Agent 工具调用失败要发出 `tool.failed` SSE 事件，并写入工具审计记录。
-- RAG 无召回结果时返回明确的“知识库未检索到相关内容”，不要编造答案。
-- WebSearch 只能在会话配置允许时使用。
+- 不静默降级，不吞异常，不引入降级 provider 掩盖真实错误。
+- 不用大范围 try-catch 包裹业务流程。只在需要转换业务状态、补充上下文、释放资源时捕获。
+- 外部依赖失败必须留下明确的状态和错误信息，不允许让调用方无法区分"成功"和"没做"。
+- 长流程失败后必须能看出停在哪一步。旧代码里 run 崩溃后永远停在 RUNNING、下次请求会被当成僵尸 run 继续追加，这是反面例子。
 
-## 6. 数据一致性
-
-- 文件去重使用 MD5/SHA256 + Redisson 分布式锁。
-- RocketMQ 消费必须幂等。
-- ES 索引写入后要能通过业务表追踪对应 `es_doc_id`。
-- 删除文档时必须考虑 MySQL、ES、对象存储的一致性。
-- 可以使用最终一致性，但必须有可重试任务或明确状态。
-- 不要把 Redis 当作唯一数据源。
-
-## 7. Agent 和工具约束
-
-学习 Agent 初版使用状态化工作流：
-
-```text
-PLAN -> RETRIEVE -> TEACH -> QA -> QUIZ -> CARD -> SUMMARY
-```
-
-工具要求：
-
-- 每个工具必须有名称、描述、参数对象和权限声明。
-- 工具调用前必须校验用户、会话和资源范围。
-- 工具调用后必须写入 `tool_call_records`。
-- `knowledge_search` 工具只能查当前会话允许的知识库。
-- `review_card_write` 工具只能为当前用户写入复习卡。
-- `web_search` 工具默认不启用。
-
-## 8. SSE 约束
-
-SSE 接口必须输出结构化事件，推荐事件名：
-
-- `session.started`
-- `stage.started`
-- `stage.completed`
-- `token.delta`
-- `tool.started`
-- `tool.completed`
-- `tool.failed`
-- `quiz.generated`
-- `card.generated`
-- `context.summary.completed`
-- `error`
-- `done`
-
-不要只输出纯文本 token。阶段状态和工具状态也要输出，方便前端展示 Agent 正在做什么。
-
-## 9. 上下文压缩约束
-
-- 完整消息存入 `chat_messages`。
-- 压缩快照存入 `chat_context_snapshots`。
-- 快照必须记录 `covered_message_id`。
-- 恢复上下文时加载最近快照，再加载该快照之后的消息。
-- Redis 只缓存活跃会话上下文。
-- 压缩失败不能删除原始消息。
-
-## 10. 检索约束
-
-RAG 初版至少支持：
-
-- BM25 关键词检索。
-- 向量检索。
-- RRF 融合。
-- 知识库权限过滤。
-- 返回引用 chunk 和 document 信息。
-
-父子检索建议实现：
-
-- 子 chunk 用于召回。
-- 父 chunk 用于补全文档上下文。
-
-不要在没有依据的情况下生成引用。
-
-## 11. 测试要求
-
-新增核心逻辑时必须补测试。优先覆盖：
-
-- 文件分片上传状态判断。
-- 文件去重并发场景。
-- 文档状态机。
-- RocketMQ 消费幂等。
-- RRF 排序。
-- RAG 权限过滤。
-- 工具鉴权。
-- 上下文快照恢复。
-- FSRS 调度计算。
-
-对中间件相关逻辑优先写集成测试或使用 Testcontainers。若当前阶段尚未引入 Testcontainers，需要至少保留可执行的服务层测试和清晰的 TODO。
-
-## 12. Docker Compose 约束
-
-开发环境应包含：
-
-- MySQL
-- Redis
-- Elasticsearch
-- Kibana
-- RocketMQ namesrv
-- RocketMQ broker
-- RocketMQ dashboard
-- MinIO 或 RustFS
-
-中间件连接参数必须通过配置文件或环境变量注入，不能硬编码到业务类。
-
-## 13. 实现顺序
-
-优先按以下阶段推进：
-
-1. 初始化 Spring Boot 工程、基础配置、docker-compose。
-2. 文件上传、分片上传、断点续传、对象存储适配。
-3. 文档处理异步链路和状态机。
-4. Elasticsearch 索引、embedding、混合检索。
-5. 学习会话、SSE 和状态化 Agent。
-6. 工具系统、工具鉴权和审计。
-7. 复习卡和 FSRS。
-8. RAG 评测和 Skill 扩展。
-
-## 14. 禁止事项
+## 6. 硬禁止
 
 - 禁止为了演示效果硬编码答案。
-- 禁止在 RAG 无结果时编造知识库来源。
-- 禁止把用户 ID、知识库 ID 等权限条件交给模型自行决定。
-- 禁止在 Controller 中直接调用 Elasticsearch、Redis、RocketMQ 或对象存储 SDK。
-- 禁止新增无意义抽象层。
-- 禁止新增大范围 try-catch 包裹业务流程。
-- 禁止引入降级 provider 掩盖真实错误。
-- 禁止在未说明的情况下删除用户数据或清空索引。
+- 禁止在检索无结果时编造知识库来源。
+- 禁止把 userId、知识库 ID 等权限条件交给模型决定。权限参数一律服务端注入。
+- 禁止把密钥、token 写进任何文件、日志或提交。
+- **禁止删除未被 git 跟踪的文件。** 本仓库有相当数量的未跟踪文件，删除即不可恢复。需要删除时先向用户确认。
+- 禁止 `git commit` 与 `git push`，除非用户明确要求。
+- 禁止引用已作废的历史文档作为设计依据（见 §0）。
+- 禁止在 §7 的未决问题上自行决定。
+
+## 7. 未决问题（不得自行决定，必须问用户）
+
+以下每一项都还没有结论。实现时如果撞上其中任何一项，停下来上报。
+
+- 技术栈是否更换：Spring AI 是否保留、是否引入真正的 vector store 客户端。
+- Agent Loop 由谁拥有：是否关闭框架内置的工具执行循环、由应用层接管迭代与终止。
+- 工具治理的具体形态：结果体积上限、写入条数配额、超时、重试。
+- Context 管理：是否引入真正的消息列表、token 预算、分层压缩策略。
+- 记忆形态：文件形式的短期/长期记忆与数据库各承担什么。
+- Session 与 checkpoint：恢复粒度、快照内容、崩溃后的接管方式。
+- 多 agent 协作模型：进程内并发还是消息驱动，子 agent 的边界。
+- Prompt 管理：模板放哪、是否版本化、结构化输出契约的唯一来源在哪。
+- 分块策略与检索策略：分块参数、中文分词器、相关性阈值。
+- 音视频摄入：ASR 方案。
+- Trace 与回放：traceId 传播方式、事件模型、回放需要落库哪些字段。
+- 评测：LLM as judge 的形态、轨迹评测口径。
+- 用户身份：目前 `DEFAULT_USER_ID = 1L` 硬编码且零鉴权，用户画像与长期记忆没有主体可挂。这一项会牵动几乎所有表。
+- 数据库 schema 重建方案：已确认可以重开，但新表设计本身未定。
+
+## 8. 已知问题（是缺陷，不是可参照的设计）
+
+改到相关位置时不要照抄，也不要假设它们是有意为之。
+
+- `application.yml` 里三个 API key 以 `${ENV:默认值}` 形式提交了真实值，且该文件被 git 跟踪。视为已泄露。
+- `application.yml` 里 `configuration:` / `global-config:` 缩进在 `spring:` 下而非 `mybatis-plus:` 下，导致驼峰映射、`assign_id`、逻辑删除全部静默失效。
+- `DEFAULT_USER_ID = 1L` 硬编码在七个服务里，全项目零鉴权，上传接口无鉴权且限额 1024MB。
+- `HashEmbeddingService` 与 `SpringAiEmbeddingService` 都是无条件 `@Service`，仅靠后者的 `@Primary` 才不冲突；前者永远不会被注入。
+- `TextChunker` 零测试，且边界吸附含硬编码魔数，而它直接决定检索质量。
+- `QuizService` 已不再接入 agent，Planner 仍可输出 QUIZ 阶段但后端不生成测验。
+- 上下文在单个 todo 内无长度上限，`token_count` 字段只写不读，撑爆 window 只会表现为 provider 报错。
+

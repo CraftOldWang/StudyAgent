@@ -195,6 +195,7 @@ p {
 }
 
 .knowledgeLayout,
+.performanceLayout,
 .ragLayout,
 .reviewLayout {
   display: grid;
@@ -240,6 +241,40 @@ p {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface-soft);
+}
+
+.performanceForm {
+  align-content: start;
+}
+
+.runningNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #1e3a8a;
+  padding: 11px 12px;
+  font-size: 13px;
+}
+
+.runningNotice strong,
+.runningNotice span {
+  display: block;
+}
+
+.runningNotice span {
+  margin-top: 3px;
+  color: #475569;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.twoColumnForm {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
 label {
@@ -668,6 +703,55 @@ code {
   gap: 10px;
 }
 
+.fullWidthPanel {
+  grid-column: 1 / -1;
+}
+
+.metricStack {
+  display: grid;
+  gap: 12px;
+}
+
+.metricGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.metricCard {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  padding: 12px;
+}
+
+.metric {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 7px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.metric strong {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.metric.strong strong {
+  color: var(--primary);
+  font-size: 18px;
+}
+
+.errorText {
+  color: var(--danger);
+}
+
 .reviewSession {
   align-self: start;
 }
@@ -778,9 +862,15 @@ code {
   }
 
   .knowledgeLayout,
+  .performanceLayout,
   .ragLayout,
   .reviewLayout,
   .chatLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .metricGrid,
+  .twoColumnForm {
     grid-template-columns: 1fr;
   }
 

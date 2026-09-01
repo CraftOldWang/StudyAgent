@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 /**
- * 学习 Todo Mapper，提供 Agent v2 循环所需的当前知识点查询。
+ * 学习 Todo Mapper，提供学习 Agent 循环所需的当前知识点查询。
  */
 public interface LearningTodoMapper extends BaseMapper<LearningTodo> {
 

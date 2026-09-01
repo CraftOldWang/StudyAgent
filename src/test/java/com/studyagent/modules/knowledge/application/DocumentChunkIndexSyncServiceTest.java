@@ -65,10 +65,32 @@ class DocumentChunkIndexSyncServiceTest {
         ArgumentCaptor<IndexedChunk> indexedChunk = ArgumentCaptor.forClass(IndexedChunk.class);
         verify(elasticsearchChunkIndexer).index(indexedChunk.capture());
         assertThat(indexedChunk.getValue().documentTitle()).isEqualTo("demo");
+        assertThat(indexedChunk.getValue().chunkType()).isEqualTo(DocumentChunk.TYPE_CHILD);
         verify(documentChunkMapper).updateEsDocIdIfMissing(1L, "1");
         verify(documentMapper).updateById(document);
         assertThat(document.getIndexStatus()).isEqualTo("INDEXED");
         assertThat(document.getErrorMessage()).isNull();
+    }
+
+    @Test
+    void syncChunkShouldIndexParentChunk() {
+        DocumentChunk chunk = chunk();
+        chunk.setChunkType(DocumentChunk.TYPE_PARENT);
+        chunk.setParentChunkId(null);
+        when(documentChunkMapper.selectById(1L)).thenReturn(chunk);
+        when(documentMapper.selectById(10L)).thenReturn(document());
+        when(embeddingService.embed("chunk content")).thenReturn(new float[]{0.1f, 0.2f});
+        when(elasticsearchChunkIndexer.index(any(IndexedChunk.class))).thenReturn("1");
+        when(documentChunkMapper.countByDocumentId(10L)).thenReturn(1);
+        when(documentChunkMapper.countMissingEsDocIdByDocumentId(10L)).thenReturn(0);
+
+        boolean synced = syncService.syncChunk(1L);
+
+        assertThat(synced).isTrue();
+        ArgumentCaptor<IndexedChunk> indexedChunk = ArgumentCaptor.forClass(IndexedChunk.class);
+        verify(elasticsearchChunkIndexer).index(indexedChunk.capture());
+        assertThat(indexedChunk.getValue().chunkType()).isEqualTo(DocumentChunk.TYPE_PARENT);
+        assertThat(indexedChunk.getValue().parentChunkId()).isNull();
     }
 
     @Test
@@ -121,6 +143,7 @@ class DocumentChunkIndexSyncServiceTest {
         chunk.setKnowledgeBaseId(20L);
         chunk.setUserId(30L);
         chunk.setParentChunkId(1L);
+        chunk.setChunkType(DocumentChunk.TYPE_CHILD);
         chunk.setChunkIndex(0);
         chunk.setContent("chunk content");
         chunk.setMetadataJson("{}");

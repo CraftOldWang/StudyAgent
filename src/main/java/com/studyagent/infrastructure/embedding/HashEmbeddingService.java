@@ -1,6 +1,6 @@
 package com.studyagent.infrastructure.embedding;
 
-import com.studyagent.common.config.ElasticsearchProperties;
+import com.studyagent.config.ElasticsearchProperties;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import lombok.RequiredArgsConstructor;

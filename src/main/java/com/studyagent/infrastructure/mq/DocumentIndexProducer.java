@@ -1,8 +1,9 @@
 package com.studyagent.infrastructure.mq;
 
-import com.studyagent.common.config.StudyRocketMqProperties;
+import com.studyagent.config.StudyRocketMqProperties;
 import com.studyagent.modules.knowledge.application.DocumentIndexMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -12,6 +13,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * 文档索引消息生产者，负责在文件和文档记录提交后发送异步处理消息。
  */
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class DocumentIndexProducer {
 
@@ -23,6 +25,11 @@ public class DocumentIndexProducer {
      */
     public void send(Long documentId) {
         if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            log.info(
+                    "检测到当前事务未提交，RocketMQ 文档索引消息将在 afterCommit 发送: topic={}, documentId={}",
+                    properties.documentTopic(),
+                    documentId
+            );
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
@@ -38,6 +45,14 @@ public class DocumentIndexProducer {
      * 立即发送 RocketMQ 消息。
      */
     private void sendNow(Long documentId) {
+        long startedAt = System.nanoTime();
+        log.info("发送 RocketMQ 文档索引消息: topic={}, documentId={}", properties.documentTopic(), documentId);
         rocketMQTemplate.convertAndSend(properties.documentTopic(), new DocumentIndexMessage(documentId));
+        log.info(
+                "RocketMQ 文档索引消息发送完成: topic={}, documentId={}, messageMillis={}",
+                properties.documentTopic(),
+                documentId,
+                java.time.Duration.ofNanos(System.nanoTime() - startedAt).toMillis()
+        );
     }
 }

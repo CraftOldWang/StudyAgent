@@ -3,7 +3,7 @@ package com.studyagent.infrastructure.ai;
 import com.alibaba.cloud.ai.dashscope.api.DashScopeApi;
 import com.alibaba.cloud.ai.dashscope.embedding.DashScopeEmbeddingModel;
 import com.alibaba.cloud.ai.dashscope.embedding.DashScopeEmbeddingOptions;
-import com.studyagent.common.config.AiModelProperties;
+import com.studyagent.config.AiModelProperties;
 import com.studyagent.common.exception.BusinessException;
 import io.micrometer.observation.ObservationRegistry;
 import java.util.List;

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.studyagent.common.config.ElasticsearchProperties;
+import com.studyagent.config.ElasticsearchProperties;
 import com.studyagent.common.exception.BusinessException;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
@@ -55,6 +55,7 @@ public class ElasticsearchChunkIndexer {
         body.put("knowledge_base_id", chunk.knowledgeBaseId());
         body.put("user_id", chunk.userId());
         putNullableLong(body, "parent_chunk_id", chunk.parentChunkId());
+        body.put("chunk_type", chunk.chunkType());
         body.put("chunk_index", chunk.chunkIndex());
         body.put("document_title", chunk.documentTitle());
         body.put("content", chunk.content());
@@ -98,6 +99,7 @@ public class ElasticsearchChunkIndexer {
         ObjectNode filter = knn.putObject("filter").putObject("bool");
         ArrayNode must = filter.putArray("must");
         must.add(termQuery("user_id", userId));
+        must.add(childChunkFilter());
         ObjectNode terms = objectMapper.createObjectNode();
         ArrayNode ids = terms.putObject("terms").putArray("knowledge_base_id");
         for (Long knowledgeBaseId : knowledgeBaseIds) {
@@ -128,7 +130,7 @@ public class ElasticsearchChunkIndexer {
     }
 
     /**
-     * 根据 chunkId 批量补取 ES 内容，并保留用户范围过滤。
+     * 根据子 chunkId 批量补取 ES 内容，并保留用户范围过滤。
      */
     public List<SearchHitChunk> searchByChunkIds(Long userId, List<Long> chunkIds) {
         if (chunkIds == null || chunkIds.isEmpty()) {
@@ -140,6 +142,7 @@ public class ElasticsearchChunkIndexer {
         ObjectNode bool = root.putObject("query").putObject("bool");
         ArrayNode filter = bool.putArray("filter");
         filter.add(termQuery("user_id", userId));
+        filter.add(childChunkFilter());
         ObjectNode terms = objectMapper.createObjectNode();
         ArrayNode ids = terms.putObject("terms").putArray("chunk_id");
         for (Long chunkId : chunkIds) {
@@ -152,10 +155,47 @@ public class ElasticsearchChunkIndexer {
     }
 
     /**
+     * 根据子文档 parent_chunk_id 批量读取父文档。
+     *
+     * <p>这是父子检索的第二跳：第一跳只召回 CHILD，第二跳用 CHILD.parent_chunk_id 到 ES 取 PARENT。
+     * 用户和知识库过滤仍然在 ES 查询里完成，避免把越权父块带入模型上下文。</p>
+     */
+    public List<SearchHitChunk> searchParentChunks(Long userId, List<Long> knowledgeBaseIds, List<Long> parentChunkIds) {
+        if (parentChunkIds == null || parentChunkIds.isEmpty()) {
+            return List.of();
+        }
+        ObjectNode root = objectMapper.createObjectNode();
+        root.put("size", parentChunkIds.size());
+        root.put("_source", true);
+        ObjectNode bool = root.putObject("query").putObject("bool");
+        ArrayNode filter = bool.putArray("filter");
+        filter.add(termQuery("user_id", userId));
+        filter.add(termQuery("chunk_type", "PARENT"));
+
+        ObjectNode knowledgeBaseTerms = objectMapper.createObjectNode();
+        ArrayNode knowledgeBaseIdArray = knowledgeBaseTerms.putObject("terms").putArray("knowledge_base_id");
+        for (Long knowledgeBaseId : knowledgeBaseIds) {
+            knowledgeBaseIdArray.add(knowledgeBaseId);
+        }
+        filter.add(knowledgeBaseTerms);
+
+        ObjectNode chunkIdTerms = objectMapper.createObjectNode();
+        ArrayNode chunkIdArray = chunkIdTerms.putObject("terms").putArray("chunk_id");
+        for (Long parentChunkId : parentChunkIds) {
+            chunkIdArray.add(parentChunkId);
+        }
+        filter.add(chunkIdTerms);
+
+        JsonNode response = request("POST", "/" + properties.chunkIndex() + "/_search", root.toString());
+        return readHits(response);
+    }
+
+    /**
      * 添加用户和知识库范围过滤。
      */
     private void addScopeFilter(ArrayNode filter, Long userId, List<Long> knowledgeBaseIds) {
         filter.add(termQuery("user_id", userId));
+        filter.add(childChunkFilter());
         ObjectNode terms = objectMapper.createObjectNode();
         ArrayNode ids = terms.putObject("terms").putArray("knowledge_base_id");
         for (Long knowledgeBaseId : knowledgeBaseIds) {
@@ -197,6 +237,7 @@ public class ElasticsearchChunkIndexer {
         propertiesNode.putObject("knowledge_base_id").put("type", "long");
         propertiesNode.putObject("user_id").put("type", "long");
         propertiesNode.putObject("parent_chunk_id").put("type", "long");
+        propertiesNode.putObject("chunk_type").put("type", "keyword");
         propertiesNode.putObject("chunk_index").put("type", "integer");
         propertiesNode.putObject("document_title").put("type", "keyword");
         propertiesNode.putObject("content").put("type", "text").put("analyzer", "standard");
@@ -230,6 +271,33 @@ public class ElasticsearchChunkIndexer {
                     + ", expected=" + properties.vectorDimensions()
                     + "。请删除旧索引或改用新的 study-agent.elasticsearch.chunk-index 后重启应用。");
         }
+        ensureExistingChunkTypeMapping(mapping);
+    }
+
+    /**
+     * 为已有索引补齐 chunk_type 映射。
+     *
+     * <p>父子检索要求 ES 只召回 CHILD 文档。chunk_type 必须是 keyword，不能依赖动态 text 映射，
+     * 否则 term 过滤会因为分词和大小写处理导致召回为空或不稳定。</p>
+     */
+    private void ensureExistingChunkTypeMapping(JsonNode mapping) {
+        JsonNode chunkType = mapping.path(properties.chunkIndex())
+                .path("mappings")
+                .path("properties")
+                .path("chunk_type");
+        if (chunkType.isMissingNode()) {
+            ObjectNode update = objectMapper.createObjectNode();
+            update.putObject("properties").putObject("chunk_type").put("type", "keyword");
+            request("PUT", "/" + properties.chunkIndex() + "/_mapping", update.toString());
+            return;
+        }
+        String type = chunkType.path("type").asText("");
+        if (!"keyword".equals(type)) {
+            throw new BusinessException("Elasticsearch 索引 chunk_type 字段必须是 keyword: index="
+                    + properties.chunkIndex()
+                    + ", actual=" + type
+                    + "。请删除旧索引或改用新的 study-agent.elasticsearch.chunk-index 后重启应用。");
+        }
     }
 
     /**
@@ -238,6 +306,34 @@ public class ElasticsearchChunkIndexer {
     private ObjectNode termQuery(String field, Long value) {
         ObjectNode root = objectMapper.createObjectNode();
         root.putObject("term").put(field, value);
+        return root;
+    }
+
+    /**
+     * 构造字符串 term 查询节点，当前用于 chunk_type 精确过滤。
+     */
+    private ObjectNode termQuery(String field, String value) {
+        ObjectNode root = objectMapper.createObjectNode();
+        root.putObject("term").put(field, value);
+        return root;
+    }
+
+    /**
+     * 只召回子 chunk，同时兼容升级前已存在的 ES 文档。
+     *
+     * <p>新索引文档中 PARENT 和 CHILD 都会进入 ES，但召回阶段只使用 CHILD。旧索引文档没有 chunk_type，如果直接 term 过滤会导致历史资料
+     * 全部不可检索。这里允许 missing chunk_type，旧数据会按子块兼容处理，重新处理文档后就会进入标准父子结构。</p>
+     */
+    private ObjectNode childChunkFilter() {
+        ObjectNode root = objectMapper.createObjectNode();
+        ObjectNode bool = root.putObject("bool");
+        ArrayNode should = bool.putArray("should");
+        should.add(termQuery("chunk_type", "CHILD"));
+        ObjectNode missingChunkType = objectMapper.createObjectNode();
+        ArrayNode mustNot = missingChunkType.putObject("bool").putArray("must_not");
+        mustNot.add(objectMapper.createObjectNode().putObject("exists").put("field", "chunk_type"));
+        should.add(missingChunkType);
+        bool.put("minimum_should_match", 1);
         return root;
     }
 
@@ -256,6 +352,7 @@ public class ElasticsearchChunkIndexer {
                     source.path("parent_chunk_id").isMissingNode() || source.path("parent_chunk_id").isNull()
                             ? null
                             : source.path("parent_chunk_id").asLong(),
+                    source.path("chunk_type").asText("CHILD"),
                     source.path("chunk_index").asInt(),
                     source.path("document_title").asText(null),
                     source.path("content").asText(),

@@ -58,7 +58,7 @@ public class SpringAiChatGenerationService implements ChatGenerationService {
      * 使用 Spring AI ChatClient 挂载学习 Agent 工具。
      *
      * <p>这里使用 ChatClient 的 toolCallbacks 和 toolContext，而不是在 ChatModel 中全局默认挂载工具。
-     * 这样普通聊天不会误触写库工具，只有 Agent v2 明确调用该方法时，模型才具备工具调用能力。</p>
+     * 这样普通聊天不会误触写库工具，只有学习 Agent 的 Planner 明确调用该方法时，模型才具备工具调用能力。</p>
      */
     @Override
     public String plannerWithTools(

@@ -37,7 +37,6 @@ public class DocumentChunkIndexSyncService {
         if (chunk == null || hasText(chunk.getEsDocId())) {
             return false;
         }
-
         Document document = documentMapper.selectById(chunk.getDocumentId());
         if (document == null) {
             throw new BusinessException("文档不存在: " + chunk.getDocumentId());
@@ -46,7 +45,8 @@ public class DocumentChunkIndexSyncService {
             return false;
         }
 
-        // embedding 与 ES 写入都是真实外部依赖，失败时直接抛出，不做静默降级。
+        // 父块和子块都写入 ES：子块用于召回，父块用于通过 parent_chunk_id 补全上下文。
+        // 这里为父块也生成 embedding，是为了复用同一个 ES mapping；查询阶段会显式过滤 CHILD，避免父块参与召回排序。
         float[] embedding = embeddingService.embed(chunk.getContent());
         String esDocId = elasticsearchChunkIndexer.index(new IndexedChunk(
                 chunk.getId(),
@@ -54,6 +54,7 @@ public class DocumentChunkIndexSyncService {
                 chunk.getKnowledgeBaseId(),
                 chunk.getUserId(),
                 chunk.getParentChunkId(),
+                chunk.getChunkType(),
                 chunk.getChunkIndex(),
                 document.getTitle(),
                 chunk.getContent(),

@@ -4,7 +4,7 @@ import com.alibaba.otter.canal.client.CanalConnector;
 import com.alibaba.otter.canal.client.CanalConnectors;
 import com.alibaba.otter.canal.protocol.CanalEntry;
 import com.alibaba.otter.canal.protocol.Message;
-import com.studyagent.common.config.CanalProperties;
+import com.studyagent.config.CanalProperties;
 import com.studyagent.modules.knowledge.application.DocumentChunkIndexSyncService;
 import jakarta.annotation.PreDestroy;
 import java.net.InetSocketAddress;
