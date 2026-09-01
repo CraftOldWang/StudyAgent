@@ -1,19 +1,16 @@
 package com.studyagent.modules.rag.application;
 
-import com.studyagent.common.config.RagProperties;
+import com.studyagent.config.RagProperties;
 import com.studyagent.common.exception.BusinessException;
 import com.studyagent.infrastructure.ai.ChatGenerationService;
 import com.studyagent.infrastructure.embedding.EmbeddingService;
 import com.studyagent.infrastructure.search.ElasticsearchChunkIndexer;
 import com.studyagent.infrastructure.search.SearchHitChunk;
 import com.studyagent.modules.knowledge.application.KnowledgeBaseService;
-import com.studyagent.modules.knowledge.domain.DocumentChunk;
-import com.studyagent.modules.knowledge.infrastructure.DocumentChunkMapper;
 import com.studyagent.modules.rag.domain.RagAnswer;
 import com.studyagent.modules.rag.domain.RagReference;
 import com.studyagent.modules.rag.domain.RagSearchResult;
-import com.studyagent.modules.rag.domain.RrfRanker;
-import java.util.ArrayList;
+import com.studyagent.algo.rrf.RrfRanker;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -23,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 /**
- * RAG 应用服务，编排混合检索、RRF 融合、父子上下文扩展和最终回答生成。
+ * RAG 应用服务，编排混合检索、RRF 融合、父子检索和最终回答生成。
  */
 @Service
 @RequiredArgsConstructor
@@ -33,7 +30,6 @@ public class RagService {
 
     private final EmbeddingService embeddingService;
     private final ElasticsearchChunkIndexer elasticsearchChunkIndexer;
-    private final DocumentChunkMapper documentChunkMapper;
     private final ChatGenerationService chatGenerationService;
     private final RagProperties ragProperties;
 
@@ -92,7 +88,7 @@ public class RagService {
                 .map(item -> toReference(hitMap.get(item.chunkId()), "rrf", item.score()))
                 .filter(reference -> reference != null)
                 .toList();
-        return new RagSearchResult(question, expandParentContext(fusedReferences));
+        return new RagSearchResult(question, loadParentContext(userId, knowledgeBaseIds, fusedReferences));
     }
 
     /**
@@ -139,6 +135,9 @@ public class RagService {
 
     /**
      * 将底层搜索命中转换成对外引用对象。
+     *
+     * <p>这里的引用仍然代表“命中的子 chunk”。后续父子检索会用 parentChunkId 取回父块内容，
+     * 但保留子 chunkId 作为引用来源，便于审计、复习卡溯源和检索评测。</p>
      */
     private RagReference toReference(SearchHitChunk hit, String retrievalSource, double score) {
         if (hit == null) {
@@ -158,38 +157,62 @@ public class RagService {
     }
 
     /**
-     * 对融合后的种子 chunk 做窗口扩展，补足父子检索上下文。
+     * 根据融合后的子 chunk 命中，从 Elasticsearch 批量取回父 chunk 内容。
+     *
+     * <p>真正的父子检索不是“命中点前后扩展”，而是：子 chunk 负责召回，父 chunk 负责上下文。
+     * 子文档通过 parent_chunk_id 指向父文档的 chunk_id，第二跳仍然在 ES 内完成。
+     * 多个命中落在同一父块时只返回一次父块，分数取该父块下最高命中分，避免把同一段上下文重复塞给模型。</p>
      */
-    private List<RagReference> expandParentContext(List<RagReference> fusedReferences) {
-        Map<Long, RagReference> expanded = new LinkedHashMap<>();
-        for (RagReference reference : fusedReferences) {
-            addWindow(expanded, reference);
+    private List<RagReference> loadParentContext(
+            Long userId,
+            List<Long> knowledgeBaseIds,
+            List<RagReference> childReferences
+    ) {
+        Map<Long, RagReference> bestChildByParent = new LinkedHashMap<>();
+        for (RagReference childReference : childReferences) {
+            Long parentChunkId = childReference.parentChunkId();
+            if (parentChunkId == null) {
+                // 兼容历史数据：没有 parent_chunk_id 的旧子块无法回表到父块，只能作为子块引用返回。
+                bestChildByParent.putIfAbsent(childReference.chunkId(), childReference);
+                continue;
+            }
+            bestChildByParent.merge(parentChunkId, childReference, (existing, candidate) ->
+                    candidate.score() > existing.score() ? candidate : existing);
         }
-        return new ArrayList<>(expanded.values()).stream()
-                .limit(ragProperties.topK() * Math.max(1, ragProperties.parentBefore() + ragProperties.parentAfter() + 1))
+
+        List<Long> parentChunkIds = bestChildByParent.keySet().stream().toList();
+        if (parentChunkIds.isEmpty()) {
+            return List.of();
+        }
+        Map<Long, SearchHitChunk> parentMap = new HashMap<>();
+        for (SearchHitChunk parentChunk : elasticsearchChunkIndexer.searchParentChunks(userId, knowledgeBaseIds, parentChunkIds)) {
+            parentMap.put(parentChunk.chunkId(), parentChunk);
+        }
+
+        return bestChildByParent.entrySet().stream()
+                .map(entry -> toParentReference(entry.getKey(), entry.getValue(), parentMap.get(entry.getKey())))
+                .limit(ragProperties.topK())
                 .toList();
     }
 
     /**
-     * 添加种子 chunk 前后的上下文窗口，并标记非种子 chunk 来源为 parent_context。
+     * 将父块内容包装成 RAG 引用。chunkId 继续保留命中的子块 ID，parentChunkId 指向实际上下文父块。
      */
-    private void addWindow(Map<Long, RagReference> expanded, RagReference seed) {
-        int startIndex = Math.max(0, seed.chunkIndex() - ragProperties.parentBefore());
-        int endIndex = seed.chunkIndex() + ragProperties.parentAfter();
-        List<DocumentChunk> chunks = documentChunkMapper.selectWindow(seed.documentId(), startIndex, endIndex);
-        for (DocumentChunk chunk : chunks) {
-            expanded.putIfAbsent(chunk.getId(), new RagReference(
-                    chunk.getId(),
-                    chunk.getDocumentId(),
-                    chunk.getKnowledgeBaseId(),
-                    chunk.getParentChunkId(),
-                    chunk.getChunkIndex(),
-                    seed.documentTitle(),
-                    chunk.getContent(),
-                    chunk.getId().equals(seed.chunkId()) ? seed.retrievalSource() : "parent_context",
-                    chunk.getId().equals(seed.chunkId()) ? seed.score() : Math.max(seed.score() * 0.8d, 0.0001d)
-            ));
+    private RagReference toParentReference(Long parentChunkId, RagReference childReference, SearchHitChunk parentChunk) {
+        if (parentChunk == null) {
+            return childReference;
         }
+        return new RagReference(
+                childReference.chunkId(),
+                parentChunk.documentId(),
+                parentChunk.knowledgeBaseId(),
+                parentChunkId,
+                childReference.chunkIndex(),
+                parentChunk.documentTitle(),
+                parentChunk.content(),
+                "parent_child_rrf",
+                childReference.score()
+        );
     }
 
     /**

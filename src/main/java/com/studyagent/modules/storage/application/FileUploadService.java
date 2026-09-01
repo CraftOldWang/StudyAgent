@@ -1,7 +1,7 @@
 package com.studyagent.modules.storage.application;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.studyagent.common.config.ObjectStorageProperties;
+import com.studyagent.config.ObjectStorageProperties;
 import com.studyagent.common.exception.BusinessException;
 import com.studyagent.infrastructure.mq.DocumentIndexProducer;
 import com.studyagent.infrastructure.objectstorage.ObjectStorageService;

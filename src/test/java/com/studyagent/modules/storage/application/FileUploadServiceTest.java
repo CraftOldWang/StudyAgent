@@ -9,7 +9,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.studyagent.common.config.ObjectStorageProperties;
+import com.studyagent.config.ObjectStorageProperties;
 import com.studyagent.common.exception.BusinessException;
 import com.studyagent.infrastructure.mq.DocumentIndexProducer;
 import com.studyagent.infrastructure.objectstorage.ObjectStorageService;

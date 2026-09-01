@@ -6,8 +6,8 @@ spring:
     name: study-agent
   servlet:
     multipart:
-      max-file-size: 200MB
-      max-request-size: 220MB
+      max-file-size: 1024MB
+      max-request-size: 1100MB
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3307/study_agent?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
@@ -59,11 +59,11 @@ study-agent:
     top-k: 6
     chunk-size: 900
     chunk-overlap: 120
+    parent-chunk-size: 2400
+    parent-chunk-overlap: 240
     bm25-candidate-size: 30
     vector-candidate-size: 30
     rrf-k: 60
-    parent-before: 1
-    parent-after: 1
   ai:
     embedding:
       provider: dashscope

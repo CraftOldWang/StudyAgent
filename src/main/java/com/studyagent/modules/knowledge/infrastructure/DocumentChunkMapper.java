@@ -33,6 +33,8 @@ public interface DocumentChunkMapper extends BaseMapper<DocumentChunk> {
 
     /**
      * 统计尚未同步到 ES 的 chunk 数。
+     *
+     * <p>父子检索要求 PARENT 和 CHILD 都进入 ES，因此完成判断必须覆盖两类 chunk。</p>
      */
     @Select("""
             SELECT COUNT(*)
@@ -43,7 +45,7 @@ public interface DocumentChunkMapper extends BaseMapper<DocumentChunk> {
     int countMissingEsDocIdByDocumentId(@Param("documentId") Long documentId);
 
     /**
-     * 统计文档总 chunk 数。
+     * 统计文档总 chunk 数，包含父块和子块。
      */
     @Select("""
             SELECT COUNT(*)
@@ -53,14 +55,16 @@ public interface DocumentChunkMapper extends BaseMapper<DocumentChunk> {
     int countByDocumentId(@Param("documentId") Long documentId);
 
     /**
-     * 查询尚未回填 es_doc_id 的 chunk，按原文顺序返回。
+     * 查询尚未回填 es_doc_id 的 chunk。
+     *
+     * <p>按主键顺序返回可以基本保持“父块先插入、子块随后插入”的索引顺序，便于调试 ES 中的父子关系。</p>
      */
     @Select("""
             SELECT *
             FROM document_chunks
             WHERE document_id = #{documentId}
               AND es_doc_id IS NULL
-            ORDER BY chunk_index ASC
+            ORDER BY id ASC
             """)
     List<DocumentChunk> selectMissingEsDocIdByDocumentId(@Param("documentId") Long documentId);
 
@@ -78,20 +82,4 @@ public interface DocumentChunkMapper extends BaseMapper<DocumentChunk> {
             </script>
             """)
     List<DocumentChunk> selectChunksByIds(@Param("ids") Collection<Long> ids);
-
-    /**
-     * 查询某个 chunk 周围的窗口，用于父子检索补全文档上下文。
-     */
-    @Select("""
-            SELECT *
-            FROM document_chunks
-            WHERE document_id = #{documentId}
-              AND chunk_index BETWEEN #{startIndex} AND #{endIndex}
-            ORDER BY chunk_index ASC
-            """)
-    List<DocumentChunk> selectWindow(
-            @Param("documentId") Long documentId,
-            @Param("startIndex") int startIndex,
-            @Param("endIndex") int endIndex
-    );
 }

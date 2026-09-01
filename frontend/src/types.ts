@@ -35,6 +35,85 @@ export interface UploadResult {
   status: string;
 }
 
+export interface PerformanceUploadStage {
+  mode: string;
+  fileId: EntityId;
+  documentId: EntityId;
+  objectKey: string;
+  uploadId?: string | null;
+  uploadMillis: number;
+  mergeMillis: number;
+  databaseMillis: number;
+  totalMillis: number;
+}
+
+export interface PerformanceUploadComparison {
+  filename: string;
+  contentType: string;
+  fileSize: number;
+  chunkSizeBytes: number;
+  totalChunks: number;
+  chunkConcurrency: number;
+  triggerIndex: boolean;
+  summary?: string;
+  direct: PerformanceUploadStage;
+  multipart: PerformanceUploadStage;
+}
+
+export interface PerformanceDirectUploadResponse {
+  filename: string;
+  contentType: string;
+  fileSize: number;
+  direct: PerformanceUploadStage;
+}
+
+export interface PerformanceMultipartInitResponse {
+  uploadId: string;
+  objectKey: string;
+  chunkSizeBytes: number;
+  totalChunks: number;
+}
+
+export interface PerformanceMultipartPartResponse {
+  partNumber: number;
+  eTag: string;
+  uploadMillis: number;
+}
+
+export interface PerformanceMultipartCompleteResponse {
+  filename: string;
+  contentType: string;
+  fileSize: number;
+  chunkSizeBytes: number;
+  totalChunks: number;
+  chunkConcurrency: number;
+  multipart: PerformanceUploadStage;
+}
+
+export interface PerformancePipelineStage {
+  fileId: EntityId;
+  documentId: EntityId;
+  uploadMillis: number;
+  databaseMillis: number;
+  messageMillis: number;
+  processingMillis: number;
+  responseMillis: number;
+  indexedMillis: number;
+  parseStatus: string;
+  indexStatus: string;
+  childChunkCount: number;
+  errorMessage?: string | null;
+}
+
+export interface PerformancePipelineComparison {
+  filename: string;
+  contentType: string;
+  fileSize: number;
+  waitTimeoutMillis: number;
+  synchronous: PerformancePipelineStage;
+  rocketMq: PerformancePipelineStage;
+}
+
 export interface RagReference {
   chunkId: EntityId;
   documentId: EntityId;
@@ -146,4 +225,4 @@ export interface ChatMessage {
   content: string;
 }
 
-export type ViewKey = "knowledge" | "agent" | "rag" | "review";
+export type ViewKey = "knowledge" | "performance" | "agent" | "rag" | "review";

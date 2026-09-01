@@ -4,6 +4,7 @@ import {
   Bot,
   Brain,
   CheckCircle2,
+  Gauge,
   FileText,
   FolderPlus,
   Loader2,
@@ -25,6 +26,11 @@ import type {
   EntityId,
   KnowledgeBase,
   KnowledgeDocument,
+  PerformancePipelineComparison,
+  PerformancePipelineStage,
+  PerformanceMultipartPartResponse,
+  PerformanceUploadComparison,
+  PerformanceUploadStage,
   QuizQuestion,
   RagReference,
   ReviewCard,
@@ -44,6 +50,10 @@ const viewMeta: Record<ViewKey, { eyebrow: string; title: string }> = {
     eyebrow: "RAG 测试",
     title: "只验证检索、引用和基于资料回答"
   },
+  performance: {
+    eyebrow: "性能测试",
+    title: "RustFS 上传与 RocketMQ 解耦耗时对比"
+  },
   review: {
     eyebrow: "复习系统",
     title: "复习卡 CRUD 与 FSRS 复习"
@@ -52,6 +62,7 @@ const viewMeta: Record<ViewKey, { eyebrow: string; title: string }> = {
 
 const navItems: Array<{ key: ViewKey; label: string; icon: typeof BookOpen }> = [
   { key: "knowledge", label: "知识库", icon: BookOpen },
+  { key: "performance", label: "性能", icon: Gauge },
   { key: "agent", label: "Agent", icon: Bot },
   { key: "rag", label: "RAG 测试", icon: Search },
   { key: "review", label: "复习", icon: Brain }
@@ -73,6 +84,16 @@ function App() {
   const [kbName, setKbName] = useState("");
   const [kbDescription, setKbDescription] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [performanceFile, setPerformanceFile] = useState<File | null>(null);
+  const [performanceKbId, setPerformanceKbId] = useState<EntityId | null>(null);
+  const [performanceChunkSizeMb, setPerformanceChunkSizeMb] = useState(8);
+  const [performanceChunkConcurrency, setPerformanceChunkConcurrency] = useState(4);
+  const [performanceWaitSeconds, setPerformanceWaitSeconds] = useState(300);
+  const [performanceTriggerIndex, setPerformanceTriggerIndex] = useState(false);
+  const [uploadComparison, setUploadComparison] = useState<PerformanceUploadComparison | null>(null);
+  const [pipelineComparison, setPipelineComparison] = useState<PerformancePipelineComparison | null>(null);
+  const [performanceRunning, setPerformanceRunning] = useState<"upload" | "pipeline" | null>(null);
+  const [performanceProgress, setPerformanceProgress] = useState("");
 
   const [agentKbIds, setAgentKbIds] = useState<EntityId[]>([]);
   const [agentSessionId, setAgentSessionId] = useState<EntityId | null>(null);
@@ -165,6 +186,7 @@ function App() {
       setSelectedKbId(nextSelected);
       setRagKbId((current) => current ?? nextSelected);
       setCardKbId((current) => current ?? nextSelected);
+      setPerformanceKbId((current) => current ?? nextSelected);
       setAgentKbIds((current) => (current.length ? current : nextSelected ? [nextSelected] : []));
     });
   }
@@ -254,6 +276,180 @@ function App() {
     if (result) {
       setSelectedFile(null);
       await loadDocuments(selectedKbId);
+    }
+  }
+
+  async function runUploadPerformance(event: FormEvent) {
+    event.preventDefault();
+    if (!performanceKbId) {
+      setToast("请先选择知识库");
+      return;
+    }
+    if (!performanceFile) {
+      setToast("请选择测试文件");
+      return;
+    }
+    setPerformanceRunning("upload");
+    setPerformanceProgress("前端单请求直传上传中");
+    setError("");
+    try {
+      const normalizedChunkSizeMb = Math.max(5, performanceChunkSizeMb);
+      if (normalizedChunkSizeMb !== performanceChunkSizeMb) {
+        setPerformanceChunkSizeMb(normalizedChunkSizeMb);
+      }
+      const chunkSizeBytes = normalizedChunkSizeMb * 1024 * 1024;
+      const chunkConcurrency = Math.max(1, performanceChunkConcurrency);
+
+      const directStartedAt = performance.now();
+      const directResponse = await api.uploadPerformanceDirect(
+        performanceKbId,
+        performanceFile,
+        performanceTriggerIndex
+      );
+      const direct = {
+        ...directResponse.direct,
+        totalMillis: Math.round(performance.now() - directStartedAt)
+      };
+
+      setPerformanceProgress("初始化 S3 Multipart Upload");
+      const multipartStartedAt = performance.now();
+      const initResponse = await api.initPerformanceMultipart(performanceFile, chunkSizeBytes);
+      let multipartCompleted = false;
+      try {
+        setPerformanceProgress(`前端并发分片上传中 0/${initResponse.totalChunks}`);
+        const partUploadStartedAt = performance.now();
+        const parts = await uploadMultipartPartsFromBrowser(
+          performanceFile,
+          initResponse.uploadId,
+          initResponse.objectKey,
+          initResponse.chunkSizeBytes,
+          initResponse.totalChunks,
+          chunkConcurrency,
+          (finished, total) => setPerformanceProgress(`前端并发分片上传中 ${finished}/${total}`)
+        );
+        const browserUploadMillis = Math.round(performance.now() - partUploadStartedAt);
+
+        setPerformanceProgress("RustFS complete multipart 中");
+        const completeResponse = await api.completePerformanceMultipart({
+          knowledgeBaseId: performanceKbId,
+          filename: performanceFile.name,
+          contentType: performanceFile.type || "application/octet-stream",
+          fileSize: performanceFile.size,
+          objectKey: initResponse.objectKey,
+          uploadId: initResponse.uploadId,
+          chunkSizeBytes: initResponse.chunkSizeBytes,
+          totalChunks: initResponse.totalChunks,
+          chunkConcurrency,
+          browserUploadMillis,
+          triggerIndex: performanceTriggerIndex,
+          parts
+        });
+        multipartCompleted = true;
+        const multipart = {
+          ...completeResponse.multipart,
+          uploadMillis: browserUploadMillis,
+          totalMillis: Math.round(performance.now() - multipartStartedAt)
+        };
+        const result: PerformanceUploadComparison = {
+          filename: performanceFile.name,
+          contentType: performanceFile.type || "application/octet-stream",
+          fileSize: performanceFile.size,
+          chunkSizeBytes: initResponse.chunkSizeBytes,
+          totalChunks: initResponse.totalChunks,
+          chunkConcurrency,
+          triggerIndex: performanceTriggerIndex,
+          summary: "BROWSER_SIDE_COMPARISON：直传从浏览器单请求开始计时；S3 Multipart 从浏览器 slice 并发上传 chunk 开始计时。",
+          direct,
+          multipart
+        };
+        setUploadComparison(result);
+      } finally {
+        if (!multipartCompleted && initResponse.uploadId && initResponse.objectKey) {
+          await api.abortPerformanceMultipart(initResponse.uploadId, initResponse.objectKey).catch(() => undefined);
+        }
+      }
+      setToast("上传性能测试完成");
+      await loadDocuments(performanceKbId);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "上传性能测试失败";
+      setError(message);
+      setToast(message);
+    } finally {
+      setPerformanceProgress("");
+      setPerformanceRunning(null);
+    }
+  }
+
+  async function uploadMultipartPartsFromBrowser(
+    file: File,
+    uploadId: string,
+    objectKey: string,
+    chunkSizeBytes: number,
+    totalChunks: number,
+    chunkConcurrency: number,
+    onProgress: (finished: number, total: number) => void
+  ) {
+    const parts: Array<{ partNumber: number; eTag: string }> = [];
+    let nextChunkIndex = 0;
+    let finishedChunks = 0;
+    const workerCount = Math.min(chunkConcurrency, totalChunks);
+
+    async function worker() {
+      while (true) {
+        const chunkIndex = nextChunkIndex;
+        nextChunkIndex += 1;
+        if (chunkIndex >= totalChunks) {
+          return;
+        }
+        const start = chunkIndex * chunkSizeBytes;
+        const end = Math.min(file.size, start + chunkSizeBytes);
+        const chunk = file.slice(start, end);
+        const response: PerformanceMultipartPartResponse = await api.uploadPerformanceMultipartPart(
+          uploadId,
+          objectKey,
+          chunkIndex + 1,
+          chunk,
+          file.name
+        );
+        parts[chunkIndex] = {
+          partNumber: response.partNumber,
+          eTag: response.eTag
+        };
+        finishedChunks += 1;
+        onProgress(finishedChunks, totalChunks);
+      }
+    }
+
+    await Promise.all(Array.from({ length: workerCount }, () => worker()));
+    return parts;
+  }
+
+  async function runPipelinePerformance() {
+    if (!performanceKbId) {
+      setToast("请先选择知识库");
+      return;
+    }
+    if (!performanceFile) {
+      setToast("请选择测试文件");
+      return;
+    }
+    setPerformanceRunning("pipeline");
+    setError("");
+    try {
+      const result = await api.comparePipelinePerformance(
+        performanceKbId,
+        performanceFile,
+        Math.max(1, performanceWaitSeconds)
+      );
+      setPipelineComparison(result);
+      setToast("处理链路性能测试完成");
+      await loadDocuments(performanceKbId);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "处理链路性能测试失败";
+      setError(message);
+      setToast(message);
+    } finally {
+      setPerformanceRunning(null);
     }
   }
 
@@ -610,6 +806,30 @@ function App() {
           />
         )}
 
+        {view === "performance" && (
+          <PerformanceView
+            knowledgeBases={knowledgeBases}
+            selectedKbId={performanceKbId}
+            selectedFile={performanceFile}
+            chunkSizeMb={performanceChunkSizeMb}
+            chunkConcurrency={performanceChunkConcurrency}
+            waitSeconds={performanceWaitSeconds}
+            triggerIndex={performanceTriggerIndex}
+            running={performanceRunning}
+            progress={performanceProgress}
+            uploadResult={uploadComparison}
+            pipelineResult={pipelineComparison}
+            onKbChange={setPerformanceKbId}
+            onFileChange={setPerformanceFile}
+            onChunkSizeChange={setPerformanceChunkSizeMb}
+            onChunkConcurrencyChange={setPerformanceChunkConcurrency}
+            onWaitSecondsChange={setPerformanceWaitSeconds}
+            onTriggerIndexChange={setPerformanceTriggerIndex}
+            onRunUpload={runUploadPerformance}
+            onRunPipeline={() => void runPipelinePerformance()}
+          />
+        )}
+
         {view === "rag" && (
           <RagView
             knowledgeBases={knowledgeBases}
@@ -852,6 +1072,238 @@ function DocumentTable({ documents }: { documents: KnowledgeDocument[] }) {
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+interface PerformanceViewProps {
+  knowledgeBases: KnowledgeBase[];
+  selectedKbId: EntityId | null;
+  selectedFile: File | null;
+  chunkSizeMb: number;
+  chunkConcurrency: number;
+  waitSeconds: number;
+  triggerIndex: boolean;
+  running: "upload" | "pipeline" | null;
+  progress: string;
+  uploadResult: PerformanceUploadComparison | null;
+  pipelineResult: PerformancePipelineComparison | null;
+  onKbChange: (id: EntityId) => void;
+  onFileChange: (file: File | null) => void;
+  onChunkSizeChange: (value: number) => void;
+  onChunkConcurrencyChange: (value: number) => void;
+  onWaitSecondsChange: (value: number) => void;
+  onTriggerIndexChange: (value: boolean) => void;
+  onRunUpload: (event: FormEvent) => void;
+  onRunPipeline: () => void;
+}
+
+function PerformanceView(props: PerformanceViewProps) {
+  const busy = props.running !== null;
+  const runningTitle = props.running === "upload" ? "直传 vs 分片测试运行中" : "同步 vs RocketMQ 测试运行中";
+  const runningDetail =
+    props.running === "upload"
+      ? "正在写入 RustFS 和 MySQL，后端日志会输出直传、S3 Multipart part 上传、complete 和入库耗时。"
+      : "正在等待真实解析、embedding 和 ES 索引完成；RocketMQ 消费状态会持续写入后端日志。";
+  return (
+    <div className="performanceLayout">
+      <section className="panel">
+        <div className="panelHead">
+          <div>
+            <h2>测试输入</h2>
+            <p>选择同一个文件后，分别运行上传对比和处理链路对比。</p>
+          </div>
+        </div>
+        <form className="form performanceForm" onSubmit={props.onRunUpload}>
+          <label>
+            知识库
+            <select value={props.selectedKbId ?? ""} onChange={(event) => props.onKbChange(event.target.value)}>
+              {props.knowledgeBases.map((kb) => (
+                <option value={kb.id} key={kb.id}>
+                  {kb.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="fileDrop">
+            <input
+              type="file"
+              accept=".pdf,.md,.markdown,.txt,.doc,.docx,.ppt,.pptx,application/pdf,text/markdown,text/plain"
+              onChange={(event) => props.onFileChange(event.target.files?.[0] ?? null)}
+              disabled={busy}
+            />
+            <Upload size={26} />
+            <strong>{props.selectedFile ? props.selectedFile.name : "选择测试文件"}</strong>
+            <span>{props.selectedFile ? formatBytes(props.selectedFile.size) : "会真实写入 RustFS、MySQL、RocketMQ、embedding 和 ES"}</span>
+          </label>
+          <div className="twoColumnForm">
+            <label>
+              分片大小 MB
+              <input
+                type="number"
+                min={5}
+                value={props.chunkSizeMb}
+                onChange={(event) => props.onChunkSizeChange(Number(event.target.value))}
+                disabled={busy}
+              />
+            </label>
+            <label>
+              分片并发数
+              <input
+                type="number"
+                min={1}
+                max={64}
+                value={props.chunkConcurrency}
+                onChange={(event) => props.onChunkConcurrencyChange(Number(event.target.value))}
+                disabled={busy}
+              />
+            </label>
+          </div>
+          <div className="twoColumnForm">
+            <label>
+              MQ 等待秒数
+              <input
+                type="number"
+                min={1}
+                value={props.waitSeconds}
+                onChange={(event) => props.onWaitSecondsChange(Number(event.target.value))}
+                disabled={busy}
+              />
+            </label>
+          </div>
+          <label className="checkRow">
+            <input
+              type="checkbox"
+              checked={props.triggerIndex}
+              onChange={(event) => props.onTriggerIndexChange(event.target.checked)}
+              disabled={busy}
+            />
+            <span>上传对比后也发送索引消息</span>
+          </label>
+          <div className="buttonRow">
+            <button className="primaryButton" type="submit" disabled={busy}>
+              {props.running === "upload" ? <Loader2 className="spin" size={16} /> : <Gauge size={16} />}
+              直传 vs S3 分片
+            </button>
+            <button className="ghostButton" type="button" onClick={props.onRunPipeline} disabled={busy}>
+              {props.running === "pipeline" ? <Loader2 className="spin" size={16} /> : <RefreshCw size={16} />}
+              同步 vs RocketMQ
+            </button>
+          </div>
+          {props.running && (
+            <div className="runningNotice" role="status">
+              <Loader2 className="spin" size={16} />
+              <div>
+                <strong>{runningTitle}</strong>
+                <span>{props.progress || runningDetail}</span>
+              </div>
+            </div>
+          )}
+        </form>
+      </section>
+
+      <section className="panel resultPanel">
+        <h2>上传对比结果</h2>
+        {props.uploadResult ? (
+          <UploadPerformanceResult result={props.uploadResult} />
+        ) : (
+          <EmptyState text="运行直传 vs S3 Multipart 后显示 RustFS 上传耗时。" />
+        )}
+      </section>
+
+      <section className="panel resultPanel fullWidthPanel">
+        <h2>处理链路结果</h2>
+        {props.pipelineResult ? (
+          <PipelinePerformanceResult result={props.pipelineResult} />
+        ) : (
+          <EmptyState text="运行同步 vs RocketMQ 后显示真实 embedding 和 ES 索引耗时。" />
+        )}
+      </section>
+    </div>
+  );
+}
+
+function UploadPerformanceResult({ result }: { result: PerformanceUploadComparison }) {
+  return (
+    <div className="metricStack">
+      <div className="badgeRow">
+        <span className="badge">{formatBytes(result.fileSize)}</span>
+        <span className="badge">chunk {formatBytes(result.chunkSizeBytes)}</span>
+        <span className="badge">{result.totalChunks} chunks</span>
+        <span className="badge">并发 {result.chunkConcurrency}</span>
+        <span className="badge">{result.triggerIndex ? "已触发索引" : "仅上传入库"}</span>
+      </div>
+      <div className="metricGrid">
+        <UploadStageCard title="单文件直传" stage={result.direct} />
+        <UploadStageCard title="S3 Multipart" stage={result.multipart} />
+      </div>
+    </div>
+  );
+}
+
+function UploadStageCard({ title, stage }: { title: string; stage: PerformanceUploadStage }) {
+  return (
+    <article className="metricCard">
+      <div className="itemRow">
+        <strong>{title}</strong>
+        <StatusBadge status={stage.mode} />
+      </div>
+      <Metric label="总耗时" value={formatMillis(stage.totalMillis)} strong />
+      <Metric label="上传耗时" value={formatMillis(stage.uploadMillis)} />
+      <Metric label={stage.mode.includes("MULTIPART") ? "complete 耗时" : "合并耗时"} value={formatMillis(stage.mergeMillis)} />
+      <Metric label="入库耗时" value={formatMillis(stage.databaseMillis)} />
+      <div className="badgeRow">
+        <span className="badge">file {stage.fileId}</span>
+        <span className="badge">doc {stage.documentId}</span>
+      </div>
+    </article>
+  );
+}
+
+function PipelinePerformanceResult({ result }: { result: PerformancePipelineComparison }) {
+  return (
+    <div className="metricStack">
+      <div className="badgeRow">
+        <span className="badge">{formatBytes(result.fileSize)}</span>
+        <span className="badge">timeout {formatMillis(result.waitTimeoutMillis)}</span>
+      </div>
+      <div className="metricGrid">
+        <PipelineStageCard title="传统同步处理" stage={result.synchronous} />
+        <PipelineStageCard title="RocketMQ 解耦" stage={result.rocketMq} />
+      </div>
+    </div>
+  );
+}
+
+function PipelineStageCard({ title, stage }: { title: string; stage: PerformancePipelineStage }) {
+  return (
+    <article className="metricCard">
+      <div className="itemRow">
+        <strong>{title}</strong>
+        <StatusBadge status={stage.indexStatus} />
+      </div>
+      <Metric label="用户等待" value={formatMillis(stage.responseMillis)} strong />
+      <Metric label="最终索引完成" value={formatMillis(stage.indexedMillis)} />
+      <Metric label="对象上传" value={formatMillis(stage.uploadMillis)} />
+      <Metric label="业务入库" value={formatMillis(stage.databaseMillis)} />
+      <Metric label="消息发送" value={formatMillis(stage.messageMillis)} />
+      <Metric label="同步处理" value={formatMillis(stage.processingMillis)} />
+      <div className="badgeRow">
+        <span className="badge">file {stage.fileId}</span>
+        <span className="badge">doc {stage.documentId}</span>
+        <span className="badge">chunks {stage.childChunkCount}</span>
+        <span className="badge">{stage.parseStatus}</span>
+      </div>
+      {stage.errorMessage && <p className="errorText">{stage.errorMessage}</p>}
+    </article>
+  );
+}
+
+function Metric({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
+  return (
+    <div className={`metric ${strong ? "strong" : ""}`}>
+      <span>{label}</span>
+      <strong>{value}</strong>
     </div>
   );
 }
@@ -1430,6 +1882,13 @@ function formatBytes(value: number) {
     return `${(value / 1024).toFixed(1)} KB`;
   }
   return `${(value / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function formatMillis(value: number) {
+  if (value < 1000) {
+    return `${value} ms`;
+  }
+  return `${(value / 1000).toFixed(2)} s`;
 }
 
 export default App;

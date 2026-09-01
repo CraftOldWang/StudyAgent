@@ -4,6 +4,12 @@ import type {
   KnowledgeBase,
   KnowledgeDocument,
   LearningSessionResponse,
+  PerformanceDirectUploadResponse,
+  PerformanceMultipartCompleteResponse,
+  PerformanceMultipartInitResponse,
+  PerformanceMultipartPartResponse,
+  PerformancePipelineComparison,
+  PerformanceUploadComparison,
   QuizAnswer,
   QuizQuestion,
   RagAnswer,
@@ -75,6 +81,93 @@ export const api = {
     formData.set("knowledgeBaseId", String(knowledgeBaseId));
     formData.set("file", file);
     return request<UploadResult>("/api/files/upload", {
+      method: "POST",
+      body: formData
+    });
+  },
+  compareUploadPerformance(
+    knowledgeBaseId: EntityId,
+    file: File,
+    chunkSizeBytes: number,
+    chunkConcurrency: number,
+    triggerIndex: boolean
+  ) {
+    const formData = new FormData();
+    formData.set("knowledgeBaseId", String(knowledgeBaseId));
+    formData.set("file", file);
+    formData.set("chunkSizeBytes", String(chunkSizeBytes));
+    formData.set("chunkConcurrency", String(chunkConcurrency));
+    formData.set("triggerIndex", String(triggerIndex));
+    return request<PerformanceUploadComparison>("/api/performance/files/upload-comparison", {
+      method: "POST",
+      body: formData
+    });
+  },
+  uploadPerformanceDirect(knowledgeBaseId: EntityId, file: File, triggerIndex: boolean) {
+    const formData = new FormData();
+    formData.set("knowledgeBaseId", String(knowledgeBaseId));
+    formData.set("file", file);
+    formData.set("triggerIndex", String(triggerIndex));
+    return request<PerformanceDirectUploadResponse>("/api/performance/files/upload-comparison/direct", {
+      method: "POST",
+      body: formData
+    });
+  },
+  initPerformanceMultipart(file: File, chunkSizeBytes: number) {
+    const formData = new FormData();
+    formData.set("filename", file.name);
+    formData.set("contentType", file.type || "application/octet-stream");
+    formData.set("fileSize", String(file.size));
+    formData.set("chunkSizeBytes", String(chunkSizeBytes));
+    return request<PerformanceMultipartInitResponse>("/api/performance/files/upload-comparison/multipart/init", {
+      method: "POST",
+      body: formData
+    });
+  },
+  uploadPerformanceMultipartPart(uploadId: string, objectKey: string, partNumber: number, chunk: Blob, filename: string) {
+    const formData = new FormData();
+    formData.set("uploadId", uploadId);
+    formData.set("objectKey", objectKey);
+    formData.set("file", chunk, `${filename}.part-${partNumber}`);
+    return request<PerformanceMultipartPartResponse>(
+      `/api/performance/files/upload-comparison/multipart/parts/${partNumber}`,
+      {
+        method: "POST",
+        body: formData
+      }
+    );
+  },
+  completePerformanceMultipart(payload: {
+    knowledgeBaseId: EntityId;
+    filename: string;
+    contentType: string;
+    fileSize: number;
+    objectKey: string;
+    uploadId: string;
+    chunkSizeBytes: number;
+    totalChunks: number;
+    chunkConcurrency: number;
+    browserUploadMillis: number;
+    triggerIndex: boolean;
+    parts: Array<{ partNumber: number; eTag: string }>;
+  }) {
+    return request<PerformanceMultipartCompleteResponse>("/api/performance/files/upload-comparison/multipart/complete", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+  },
+  abortPerformanceMultipart(uploadId: string, objectKey: string) {
+    const params = new URLSearchParams({ uploadId, objectKey });
+    return request<void>(`/api/performance/files/upload-comparison/multipart?${params.toString()}`, {
+      method: "DELETE"
+    });
+  },
+  comparePipelinePerformance(knowledgeBaseId: EntityId, file: File, waitTimeoutSeconds: number) {
+    const formData = new FormData();
+    formData.set("knowledgeBaseId", String(knowledgeBaseId));
+    formData.set("file", file);
+    formData.set("waitTimeoutSeconds", String(waitTimeoutSeconds));
+    return request<PerformancePipelineComparison>("/api/performance/files/pipeline-comparison", {
       method: "POST",
       body: formData
     });

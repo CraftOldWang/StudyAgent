@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 /**
- * 学习 Agent 接口层，提供会话创建和 SSE 流式执行入口。
+ * 学习 Agent 的唯一 HTTP 与 SSE 接口。
  */
 @RestController
 @RequestMapping("/api/learning")
@@ -25,7 +25,7 @@ public class LearningAgentController {
     private final LearningAgentService learningAgentService;
 
     /**
-     * 创建学习会话。
+     * 创建 Todo 驱动的新学习会话。
      */
     @PostMapping("/sessions")
     public ApiResponse<LearningSessionResponse> createSession(@Valid @RequestBody LearningSessionRequest request) {
@@ -33,7 +33,7 @@ public class LearningAgentController {
     }
 
     /**
-     * 通过 SSE 推进学习 Agent，并持续返回阶段、工具和内容事件。
+     * 通过 SSE 执行一次 Agent 交互。
      */
     @PostMapping(value = "/sessions/{sessionId}/agent/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamAgent(
@@ -43,7 +43,6 @@ public class LearningAgentController {
         SseEmitter emitter = new SseEmitter(0L);
         Thread.startVirtualThread(() -> {
             try {
-                // 使用虚拟线程承载长连接，避免阻塞普通请求处理线程。
                 learningAgentService.runSession(sessionId, request.message(), event -> send(emitter, event));
                 emitter.complete();
             } catch (Exception ex) {

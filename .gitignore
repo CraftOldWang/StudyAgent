@@ -16,4 +16,7 @@ frontend/vite-dev.*.log
 docker/rocketmq/参考用的broker.conf
 简历.md
 scripts/
-docs/
+
+.archive/
+.archify/
+

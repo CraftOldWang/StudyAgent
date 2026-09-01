@@ -9,6 +9,7 @@ public record IndexedChunk(
         Long knowledgeBaseId,
         Long userId,
         Long parentChunkId,
+        String chunkType,
         Integer chunkIndex,
         String documentTitle,
         String content,
