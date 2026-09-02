@@ -12,7 +12,7 @@
 
 1. **先骨架后血肉**：先搭通一条端到端链路（上传 → 检索 → agent 调用 → 返回），再补完整性
 2. **先评测后优化**：先建立 baseline 与评测，再做策略对比
-3. **先单机后分布式**：先本地文件 workspace，再切 Redis/PostgreSQL
+3. **先单机后分布式**：先验证本地 workspace 与 JSON state store；分布式 state store 方案在 SPI 与跨进程语义验证后由用户决定
 4. **先手工后自动化**：CI/CD 在功能稳定后补
 
 ### 1.2 质量门槛
@@ -35,14 +35,16 @@
 
 | ID | 任务 | 产出 | 验收 |
 |----|------|------|------|
-| 0.1 | 引入 AgentScope 依赖 | `pom.xml` 新增 `agentscope-harness` 2.0.1 + DashScope/DeepSeek 扩展 | 依赖下载成功 |
-| 0.2 | 配置 AgentScope + Spring Boot 集成 | `AgentScopeConfig.java` 创建 `HarnessAgent` bean | bean 加载成功 |
-| 0.3 | 配置 workspace 本地文件系统 | `application.yml` 指定 workspace 路径 `~/agentscope-workspace/` | 目录创建成功 |
-| 0.4 | 配置 DashScope / DeepSeek provider | 环境变量 `DASHSCOPE_API_KEY` / `DEEPSEEK_API_KEY` | ModelRegistry 可解析 `dashscope:qwen-plus` |
+| 0.1 | 引入 AgentScope 依赖 | `pom.xml` 新增 `agentscope-harness` 2.0.1 + DashScope / OpenAI-compatible 扩展 | 依赖下载成功 |
+| 0.2 | 配置 AgentScope + Spring Boot 集成 | `AgentScopeConfig.java` 显式创建 `HarnessAgent` bean；builder 注入 `Model` 与 workspace `Path` | 使用 stub Model 的 Bean 测试通过；生产 Bean 所需依赖边界明确 |
+| 0.3 | 配置 workspace 本地文件系统 | 类型化 workspace `Path` 配置，启动时显式 `Files.createDirectories(...)`；不原样传入 `~` | 临时目录集成测试证明目录创建及 Builder 接收路径 |
+| 0.4 | 配置 DashScope / DeepSeek provider | `DashScopeModelProvider` 与 OpenAI-compatible 扩展中的 `DeepSeekModelProvider`；registry 分别使用 `dashscope:<model>` / `deepseek:<model>` | ModelRegistry 可解析两类 provider；最终模型 ID 与远端调用另行验收 |
 | 0.5 | 实现 `IdentityResolver` | 从请求头 `X-User-Id` 解析 userId | 解析成功 |
 | 0.6 | 实现 `DataIsolationInterceptor` | MyBatis-Plus 拦截器自动注入 `user_id` 条件 | SELECT 查询自动带 `user_id` |
 | 0.7 | 创建 `users` 表与初始数据 | Flyway 迁移 `V1__create_users.sql` | 表创建 + 插入 user_id=1 测试用户 |
 | 0.8 | 端到端测试：最简 agent | POST `/api/agent/hello` 调用 `HarnessAgent.call("hello")` | 返回模型回复 |
+
+0.2 的生产 Bean 同时依赖 0.3 的 workspace 与 0.4 的 Model；0.2 / 0.3 / 0.4 是合并还是重排待用户决定。本阶段也不预设主模型、DeepSeek model ID、是否启用 `fallbackModel(...)`、`maxRetries` 或 Spring AI 的去留。
 
 **验收标准**：
 - `mvn clean compile` 通过
@@ -94,7 +96,7 @@
 
 | ID | 任务 | 产出 | 验收 |
 |----|------|------|------|
-| 2.1 | 实现 `KnowledgeSearchTool` | 实现 `ToolCallback` 接口，参数 `String query`，调用 `RetrievalService` | agent 可调用 `knowledge_search` |
+| 2.1 | 实现 `KnowledgeSearchTool` | 按 AgentScope `AgentTool` / `Toolkit` 公开 API 注册，参数 `String query`，调用 `RetrievalService` | agent 可调用 `knowledge_search` |
 | 2.2 | 实现 `ReviewCardWriteTool` | 参数 `List<CardDraft>`，写入 `review_cards` 表 | agent 可调用 `review_card_write` |
 | 2.3 | 实现 `ToolGovernanceInterceptor` | 拦截工具调用，检查配额（`review_card_write` 最多 5 张/次） | 超配额返回错误 + 记录警告 |
 | 2.4 | 实现写入条数上限逻辑 | `review_card_write` 模型返回 200 张，只写前 5 张 + 日志警告 | 日志显示"截断至 5 张" |
@@ -107,7 +109,7 @@
 - agent 对话触发 `knowledge_search`，返回检索结果
 - agent 生成 3 张卡片，`review_cards` 表有 3 行
 - 模拟返回 10 张卡片，只写入 5 张，日志有警告
-- AgentScope trace (`*.log.jsonl`) 包含完整工具调用记录
+- 显式 `JsonlTraceExporter` 的结构化输出包含本任务所需工具调用字段；`AgentTraceMiddleware` 的 SLF4J 日志与 `SessionTree` JSONL 不作为替代
 
 ---
 
@@ -124,8 +126,8 @@
 | 3.3 | 定义 `ExplainSkill` Markdown 模板 | `workspace/skills/explain.md`，包含输入/输出 schema | AgentScope 可加载 skill |
 | 3.4 | 定义 `QuizSkill` Markdown 模板 | 生成 5 道选择题，schema 定义题目/选项/答案/解析 | 同上 |
 | 3.5 | 定义 `CardSkill` Markdown 模板 | 生成 3-5 张 Anki 卡片，schema 定义 front/back/source | 同上 |
-| 3.6 | 实现 `SubagentOrchestrator` | 使用 AgentScope `agent_spawn` 同步委派 | subagent 返回结构化结果 |
-| 3.7 | 实现知识点完成后 context compaction | 调用 AgentScope `CompactionConfig` | 历史压缩，保留目标/状态/发现 |
+| 3.6 | 实现 `SubagentOrchestrator` | 使用 `AgentSpawnTool.agentSpawn` 同步委派 | subagent 返回结构化结果 |
+| 3.7 | 实现知识点完成后 context compaction | 使用 `CompactionConfig` / `CompactionMiddleware` 配置并触发 | 用固定输入断言目标/状态/发现等项目必需信息的实际保留结果 |
 | 3.8 | 实现 `LearningSignalPublisher` | 向 `profile` 投递学习信号（知识点完成、测验结果） | MQ 消息投递成功 |
 | 3.9 | 端到端测试：完整学习一个知识点 | "教我 Java 泛型" → 讲解 → 测验 → 卡片 → 完成 | 状态流转正确，trace 完整 |
 | 3.10 | 测验自一致性检查 | 模型只看源 chunk 回答自己出的题，答错即判不合格打回重出 | 接入生成流程，拦截案例可查（简历 B3 支撑） |
@@ -134,8 +136,8 @@
 **验收标准**：
 - 输入"学习 Java 面向对象"，返回 3-5 个知识点计划
 - 推进第一个知识点：讲解 → 生成 5 道题 → 生成 3 张卡片
-- Subagent trace 记录委派过程（parent → child lineage）
-- Context compaction 触发，`memory/YYYY-MM-DD.md` 有新记录
+- 显式 trace exporter 经运行测试证明能建立所需 parent → child lineage；若框架字段不足，停下交由用户决定补强范围
+- Context compaction 触发且压缩质量测试通过；memory 文件变化按实际 Harness 文件布局验收
 - `learning_sessions` / `knowledge_points` / `review_cards` 表数据正确
 
 ---
@@ -263,12 +265,13 @@ src/test/java/            # 单元测试 + 集成测试
 
 frontend/                 # React 前端
 
-workspace/                # AgentScope workspace（gitignore）
-  ├── agents/
-  │   └── <agentId>/
-  │       ├── sessions/   # *.log.jsonl
-  │       └── context/    # StateModule 快照
+workspace/                # AgentScope workspace 示例（gitignore；实际位置待用户决定）
+  ├── sessions/           # SessionTree 日志，非完整产品 trace
+  ├── memory/             # Harness 文件记忆，实际布局以集成测试为准
   └── skills/             # Markdown skill 模板
+
+${user.home}/.agentscope/state/<agentId>/
+                          # JsonFileAgentStateStore 默认目录；与 workspace 分离，是否改址待用户决定
 
 docs/
   ├── design/             # 设计文档
@@ -301,7 +304,7 @@ docs/
 
 | 方向 | 优先级 | 说明 |
 |------|--------|------|
-| **分布式 Session** | P0 | AgentScope Session 后端切 Redis / PostgreSQL |
+| **分布式 Session** | P0 | 基于 `AgentStateStore` SPI 评估自建或引入实现；当前 2.0.1 JAR 未发现 Redis / PostgreSQL store |
 | **查询改写** | P1 | 扩展查询、同义词、拼写纠正 |
 | **多模态检索** | P2 | 图表、公式、代码片段 |
 | **自适应分块** | P2 | 根据文档类型智能选 window |
@@ -346,7 +349,7 @@ docs/
 
 ### Q2: Spring AI 会不会和 AgentScope 冲突？
 
-**A**: 不会。Spring AI 降级为备用 provider adapter，优先用 AgentScope 的 DashScope/DeepSeek 扩展。如果后续 AgentScope 扩展满足需求，可移除 Spring AI。
+**A**: AgentScope 已有 DashScope 与 OpenAI-compatible DeepSeek provider，并支持应用显式配置 fallback；不会因为多个 provider 共存而自动降级。Spring AI 是否保留、若保留时承担什么职责，以及是否启用 AgentScope fallback / `maxRetries`，待用户决定。
 
 ### Q3: 为什么不做 FSRS 调度？
 
@@ -362,7 +365,7 @@ docs/
 
 ### Q6: Context compaction 会不会丢信息？
 
-**A**: AgentScope 的结构化压缩保留目标/状态/发现/计划，且 `*.log.jsonl` 永不压缩可回溯。关键是自定义 compaction prompt，单测覆盖压缩质量。
+**A**: AgentScope 提供 `CompactionConfig` / `CompactionMiddleware`，但不会凭 API 签名保证固定保留目标/状态/发现/计划。项目必须用明确 prompt、固定输入和断言验证压缩质量；回溯依赖显式 trace exporter 与项目保留策略，不能把 `SessionTree` JSONL 当成完整 trace。
 
 ### Q7: 知识图谱为什么不用 Neo4j？
 

@@ -14,7 +14,7 @@
 - 轻量知识图谱（实体-关系 + 前置知识回溯）
 - 工具治理补强（写入配额、条数上限）
 
-不是通用 Agent 框架。AgentScope 提供 Loop / Context / Memory / Checkpoint / Trace，我们专注于垂类问题与策略优化。
+不是通用 Agent 框架。AgentScope 2.0.1 已证实提供 Loop、RuntimeContext/AgentState、Memory/Compaction、AgentStateStore、Trace exporter 与 Subagent 扩展点；checkpoint fork/replay 的恢复粒度尚未证明。我们专注于垂类问题、项目级映射与策略优化。
 
 ---
 
@@ -28,8 +28,8 @@
 | Spring Boot | 3.5.7 | 保持现有版本，不升级到 4.x |
 | **AgentScope Harness** | **2.0.1** | Agent Runtime 基座 |
 | AgentScope DashScope 扩展 | 2.0.1 | DashScope provider |
-| AgentScope DeepSeek 扩展 | 2.0.1 | DeepSeek provider（通过 OpenAI 兼容） |
-| Spring AI | 1.1.x | 备用 provider adapter（降级，可后续移除）|
+| AgentScope OpenAI-compatible 扩展 | 2.0.1 | DeepSeek provider（`deepseek:<model>`） |
+| Spring AI | 1.1.x | 是否保留及职责边界待用户决定 |
 | MyBatis-Plus | 3.5.16 | 持久化 |
 | Elasticsearch Java API Client | **8.15.x** | 替换手写 HttpClient |
 | Redisson | 3.52.0 | 分布式锁、去重 |
@@ -89,7 +89,7 @@
                       ▼
 ┌─────────────────────────────────────────────────┐
 │  AgentScope Harness (运行时基座)                  │
-│  Loop / Context / Memory / Checkpoint / Trace   │
+│  Loop / Context / Memory / State / Trace hooks  │
 │  Subagent / Skill / Workspace / Sandbox         │
 └─────────────────────────────────────────────────┘
                       ▼
@@ -188,7 +188,7 @@ CREATE TABLE users (
 - `ReviewCardWriteTool`：包装 `review` 模块的卡片写入服务
 - `ExplainSkill` / `QuizSkill` / `CardSkill`：skill 模板
 
-**不拥有**：Loop / Context / Memory / Checkpoint / Trace（AgentScope 提供）
+**不拥有**：AgentScope 已提供的 Loop、基础 Context/Memory/State 与 Trace 采集机制。checkpoint fork/replay、traceId 查询、业务映射与治理补强必须先按已证实扩展点实现或 Spike，不把未发现的框架 API 当成现成能力。
 
 ---
 
@@ -508,7 +508,7 @@ CREATE TABLE eval_judge_calibration (
 
 ## 5. 数据库表结构总览
 
-**9 个业务表族 + 1 个 AgentScope 元数据表族**：
+**9 个业务表族 + AgentScope 运行数据（不等同于一个 MySQL 表族）**：
 
 | 表族 | 表 | 说明 |
 |------|---|------|
@@ -519,12 +519,13 @@ CREATE TABLE eval_judge_calibration (
 | review | review_cards | 复习卡片 |
 | profile | user_profiles, kg_entities, kg_relations | 画像、图谱 |
 | eval | eval_golden_set, eval_runs, eval_judge_calibration | 评测 |
-| **AgentScope** | **（由框架管理）** | **workspace/agents/<agentId>/sessions/*.jsonl** |
+| **AgentScope** | **（由框架及项目配置管理）** | **workspace session/memory、AgentStateStore、显式 trace exporter 输出** |
 
-**AgentScope 的持久化不入 MySQL**：
-- Session 与 Memory 落盘为文件（`workspace/` 目录）
-- Trace 落为 `*.log.jsonl`
-- 我们只在业务表里记 `agentscope_session_id` 作为关联
+**AgentScope 2.0.1 当前已证实的默认持久化边界**：
+- workspace 内的 `SessionTree` 日志与 memory 文件由 workspace 管理。
+- 默认 `JsonFileAgentStateStore` 使用 `${user.home}/.agentscope/state/<agentId>`，设置 workspace 不会同步改变该目录。
+- `AgentTraceMiddleware` 只写 SLF4J；结构化轨迹需要显式配置 `JsonlTraceExporter`。`SessionTree` 的 JSONL 不能直接等同于完整 trace。
+- workspace、state store、trace exporter 的实际落盘位置，以及业务表需要保存哪些关联字段，均待用户决策和运行 Spike 后进入 V1 schema。
 
 ---
 
@@ -534,17 +535,16 @@ CREATE TABLE eval_judge_calibration (
 
 | 维度 | 自建 | AgentScope | 选择 |
 |------|------|------------|------|
-| Loop / Context / Memory / Checkpoint / Trace | 从零实现，2-3 周 | 开箱即用 | ✅ AgentScope |
+| Loop / Context / Memory / State / Trace 采集 | 从零实现，2-3 周 | 已有基础 API 与扩展点；checkpoint fork/replay、traceId 查询仍需项目验证 | ✅ AgentScope 基座 + 项目级补强 |
 | 面试讲点 | "我造了个框架"（必输比较） | "我如何在通用 runtime 上构建垂类 + 优化策略 + 评测" | ✅ 后者更有差异化 |
 | 工具治理 | 完全自定义 | 大结果 offload + 权限，配额/条数需自建 | ⚠️ 补强即可 |
 | 时间预算分配 | Runtime 占 60%，垂类占 40% | Runtime 占 10%，垂类 + RAG + 评测占 90% | ✅ 后者高杠杆 |
 
 ### 6.2 Spring AI 保留还是移除
 
-**保留但降级为备用 provider adapter**（D-009）：
-- AgentScope 已有 DashScope / DeepSeek 扩展，首选它们
-- Spring AI 1.1.x 保留作为 fallback
-- 如果 AgentScope provider 扩展满足需求，后续可移除 Spring AI
+AgentScope 已有 DashScope provider，以及 OpenAI-compatible 扩展中的 DeepSeek provider。`HarnessAgent.Builder.fallbackModel(...)` / `maxRetries(...)` 支持显式 fallback，但多个 provider 同时存在不会触发自动 fallback。
+
+Spring AI 是保留、移除还是仅作为显式备用 adapter，以及是否启用框架 fallback、fallback 指向和 `maxRetries`，均待用户决定；不得用旧 D-009 代替当前选择。
 
 ### 6.3 ES 访问方式
 
@@ -568,7 +568,7 @@ CREATE TABLE eval_judge_calibration (
 
 **单纯 Markdown skill 含金量低。采用 subagent 执行 + skill 定义规范 + 评测 skill 质量的组合**：
 - Skill 是模板与契约（输入 schema、输出 schema、预算限制）
-- Subagent 是执行者（`agent_spawn` 委派）
+- Subagent 是执行者（`AgentSpawnTool.agentSpawn` 委派）
 - 评测证明质量（judge 打分、与人工标注一致率）
 
 ---
@@ -588,17 +588,17 @@ CREATE TABLE eval_judge_calibration (
 
 | 维度 | 要求 |
 |------|------|
-| Session 恢复 | AgentScope checkpoint，重启后可恢复 |
+| Session 恢复 | 以 `AgentState` / `AgentStateStore` 做运行 Spike；重启恢复粒度与 checkpoint fork 尚未证明 |
 | 失败可见 | pipeline_status 明确，错误信息记录 |
-| Trace 审计 | `*.log.jsonl` 永久保留，可回溯 |
+| Trace 审计 | 显式 `JsonlTraceExporter` 输出并由项目建立 traceId 映射/查询；保留策略待设计 |
 
 ### 7.3 扩展性
 
 | 维度 | 方案 |
 |------|------|
-| 多租户 | `user_id` 隔离 + AgentScope `NamespaceFactory` |
-| 分布式 Session | AgentScope 支持 Redis / MySQL / PostgreSQL 后端 |
-| 水平扩展 | 无状态 Controller + AgentScope StateModule |
+| 多租户 | 服务端 `user_id` 隔离；workspace/state 路径隔离只作为补充，不能替代权限条件 |
+| 分布式 Session | 基于 `AgentStateStore` SPI 评估自建或额外依赖；当前 JAR 未发现 Redis / MySQL / PostgreSQL 实现 |
+| 水平扩展 | 先验证 state store 与 workspace 跨进程语义，再决定部署方案 |
 
 ---
 
@@ -633,7 +633,7 @@ CREATE TABLE eval_judge_calibration (
 本地开发：
 - IDE 启动 Spring Boot
 - docker-compose 启动 MySQL / Redis / ES / RocketMQ / RustFS / Canal
-- AgentScope workspace 在本地文件系统（`~/agentscope-workspace/`）
+- AgentScope workspace 在本地文件系统；具体位置待用户决定，配置必须解析为真实 `Path` 并显式创建目录，不能把 `~` 原样传给 Builder
 
 前端：
 - Vite dev server (localhost:5173)
@@ -645,8 +645,8 @@ CREATE TABLE eval_judge_calibration (
 ```text
 Kubernetes:
 - Spring Boot 打包为 Docker 镜像
-- AgentScope workspace 挂 PVC
-- Session 后端切到 Redis / PostgreSQL
+- workspace 是否挂 PVC、state store 是否同盘管理待用户决定
+- 若需要 Redis / PostgreSQL state store，须基于 SPI 自建或引入经验证实现；2.0.1 当前 JAR 未内置
 - ES / RocketMQ / S3 托管服务
 ```
 
@@ -665,16 +665,17 @@ Kubernetes:
 | 概念 | 说明 |
 |------|------|
 | `HarnessAgent` | AgentScope 的主 Agent 类，封装 ReActAgent |
-| `RuntimeContext` | 绑定 `userId` / `sessionId` / workspace |
-| `StateModule` | 可序列化状态，支持 checkpoint |
-| `WorkspaceSession` | Session 后端，存 StateModule 快照 |
-| `SessionTree` | JSONL 文件管理，`*.log.jsonl` 永不压缩 |
-| `Memory` | 双层：日志(`memory/YYYY-MM-DD.md`) + 长期(`MEMORY.md`) |
-| `Compaction` | 结构化压缩，保留目标/状态/发现/计划 |
+| `RuntimeContext` | 绑定 `userId` / `sessionId`；不携带 workspace |
+| `AgentState` / `AgentStateStore` | 可保存 agent state；checkpoint fork/replay 需运行验证 |
+| `JsonFileAgentStateStore` | 默认写入 `${user.home}/.agentscope/state/<agentId>`，与 workspace 分离 |
+| `SessionTree` | workspace 内的 session/transcript/compaction JSONL 管理，不等同于完整 trace |
+| `AgentTraceMiddleware` / `JsonlTraceExporter` | 前者写 SLF4J；后者显式输出结构化 JSONL，traceId 查询需项目实现 |
+| `Memory` | 框架 memory 接口与 Harness 文件记忆能力；具体布局和策略以集成测试为准 |
+| `CompactionConfig` / `CompactionMiddleware` | 可配置压缩；保留哪些业务信息必须通过 prompt 与测试验证 |
 | `Skill` | Markdown 模板，成功模式自动保存 |
-| `agent_spawn` | 委派 subagent |
-| `ToolCallback` | 工具定义接口 |
-| `NamespaceFactory` | 多租户路径隔离 |
+| `AgentSpawnTool.agentSpawn` | 委派 subagent 的 Java API |
+| `AgentTool` / `Toolkit` | 工具定义与注册入口 |
+| `NamespaceFactory` | 可参与 workspace 命名空间隔离，但不替代服务端权限校验 |
 
 ### 12.2 参考资料
 
