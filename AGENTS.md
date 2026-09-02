@@ -17,7 +17,7 @@
 - 需要问的：架构、分层、存储选型、算法选择、库和框架引入、数据模型、协议与契约、任何会写进简历的实现方式。
 - 不需要问的：纯机械跟进——重命名、套用已经确认过的模式、修编译错误、补充已确认设计下的样板代码。
 - 明令禁止的借口："采用合理默认值""业界通用做法""先实现一版后面再调"。这些都不能替代询问。
-- §7 的未决问题清单内的任何一项，一律不得自行决定。
+- 待决策清单内的任何一项，一律不得自行决定（当前所有前置决策已完成，待决策清单已清空）。
 
 ## 2. 主 agent 与 subagent 的分工
 
@@ -43,20 +43,24 @@ src/main/java/com/studyagent/
   mapper/            所有 MyBatis-Plus Mapper
   algo/              纯算法，不依赖 Spring：fsrs/ rrf/ metric/ chunk/
   agent/
-    loop/            Agent Loop 内核、迭代与终止控制
-    planner/  writer/
-    prompt/          prompt 模板
-    codec/           结构化输出解析、校验、修复
-    tool/            工具定义与工具治理
-    memory/          短期与长期记忆、压缩策略
-    checkpoint/      会话快照与恢复
-    trace/           traceId、事件、回放
-    subagent/        子 agent 委派
+    integration/     AgentScope 与 Spring Boot 胶水层
+    governance/      工具治理补强（配额、写入条数上限、重试）
+    skill/           学习垂类 skill 定义
+    web/             Agent HTTP 入口（或顶层 web/agent/）
+  rag/
+    retrieval/  index/  embedding/  eval/
     web/
-  rag/               retrieval/ index/ embedding/ eval/ web/
-  ingest/            upload/ storage/ parse/ chunk/ pipeline/ sync/ web/
+  ingest/
+    upload/  storage/  parse/  chunk/  pipeline/  sync/
+    web/
+  learning/            学习垂类流程：计划、知识点生命周期、委派编排
+    web/
   review/
-  profile/           用户画像、长期记忆、知识图谱
+    web/
+  profile/             用户画像、长期记忆、轻量知识图谱
+    web/
+  eval/                RAG 评测、LLM as judge、黄金集、回归门槛
+    web/
 ```
 
 约定：
@@ -64,7 +68,7 @@ src/main/java/com/studyagent/
 - `model/` 只放表实体，不写行为。
 - `algo/` 只放纯算法，不允许出现 Spring 注解或框架依赖，必须能纯单元测试。
 - `mapper/` 与 `model/` 全局共享。这是刻意的：旧结构把实体和 Mapper 关在模块私有包里，反而逼出了六处"跨模块 import 对方 Mapper"和一组双向依赖。提到全局是为了溶解那个问题，不是偷懒。
-- Controller 及其 Request/Response 放在各子域的 `web/` 下。持久化全局、Web 局部，这个不对称是有意的。
+- **Controller 及其 Request/Response 放在各子域的 `web/` 下**（或顶层 `web/<子域>/`，二者等价，D-020）。持久化全局、Web 局部，这个不对称是有意的：`mapper`/`model` 全局是为了溶解依赖问题，Controller 局部是因为 HTTP 入口天然属于一个业务域。
 - **禁止再出现 `application/domain/infrastructure/interfaces` 四层结构。** 旧结构里 27 个 domain 文件只有 9 个有方法，四个模块的 domain 包是零方法的表实体集合；不要复制这种分层。
 - 一个包对应一种职责。新增包之前先确认它不是已有包的同义词。
 
@@ -95,36 +99,41 @@ src/main/java/com/studyagent/
 - **禁止删除未被 git 跟踪的文件。** 本仓库有相当数量的未跟踪文件，删除即不可恢复。需要删除时先向用户确认。
 - 禁止 `git commit` 与 `git push`，除非用户明确要求。
 - 禁止引用已作废的历史文档作为设计依据（见 §0）。
-- 禁止在 §7 的未决问题上自行决定。
 
-## 7. 未决问题（不得自行决定，必须问用户）
+## 7. Codex 执行约束
 
-以下每一项都还没有结论。实现时如果撞上其中任何一项，停下来上报。
+Codex (gpt-5.6-sol, xhigh thinking) 很容易过度工程。必须遵守：
 
-- 技术栈是否更换：Spring AI 是否保留、是否引入真正的 vector store 客户端。
-- Agent Loop 由谁拥有：是否关闭框架内置的工具执行循环、由应用层接管迭代与终止。
-- 工具治理的具体形态：结果体积上限、写入条数配额、超时、重试。
-- Context 管理：是否引入真正的消息列表、token 预算、分层压缩策略。
-- 记忆形态：文件形式的短期/长期记忆与数据库各承担什么。
-- Session 与 checkpoint：恢复粒度、快照内容、崩溃后的接管方式。
-- 多 agent 协作模型：进程内并发还是消息驱动，子 agent 的边界。
-- Prompt 管理：模板放哪、是否版本化、结构化输出契约的唯一来源在哪。
-- 分块策略与检索策略：分块参数、中文分词器、相关性阈值。
-- 音视频摄入：ASR 方案。
-- Trace 与回放：traceId 传播方式、事件模型、回放需要落库哪些字段。
-- 评测：LLM as judge 的形态、轨迹评测口径。
-- 用户身份：目前 `DEFAULT_USER_ID = 1L` 硬编码且零鉴权，用户画像与长期记忆没有主体可挂。这一项会牵动几乎所有表。
-- 数据库 schema 重建方案：已确认可以重开，但新表设计本身未定。
+- **做最小可行改动。** 只实现明确要求的功能，不添加"可能用得上"的扩展点。
+- **不超出 scope。** 任务边界外的问题停下上报，不要顺手改掉。
+- **不做过度防御性编程。** 不为几乎不可能出现、当前没遇到的问题编写解决方案和大量无用代码。
+- **不虚构可能的问题。** 只解决实际遇到的问题，不预设未来可能的边界情况。
+- **任务必须明确边界与目标。** 布置任务时应说清要达到什么状态、哪些不在范围内。
 
-## 8. 已知问题（是缺陷，不是可参照的设计）
+示例：
+- ❌ "可能以后会有多种存储后端，先抽象一个 interface"（当前只用一种）
+- ✅ "实现 MySQL 存储，后续需要切换时再抽象"
+- ❌ "用户可能会输入超大文件，加个流式处理"（当前限制 10MB，没遇到问题）
+- ✅ "按当前 10MB 限制实现，超限返回错误"
+
+## 8. 任务验收标准
+
+一个任务算完成，必须满足：
+
+1. **功能完整**：明确要求的功能全部实现，没有"TODO" 或"暂时跳过"。
+2. **编译通过**：`mvn compile` 零错误。
+3. **测试通过**：相关测试执行且全部通过；新功能有测试覆盖。
+4. **文档同步**：如果改动影响 API / 配置 / 部署，对应文档已更新。
+5. **无明显缺陷**：独立验收 agent 审查后未发现逻辑错误、资源泄漏、安全问题。
+
+## 9. 已知问题（是缺陷，不是可参照的设计）
 
 改到相关位置时不要照抄，也不要假设它们是有意为之。
 
-- `application.yml` 里三个 API key 以 `${ENV:默认值}` 形式提交了真实值，且该文件被 git 跟踪。视为已泄露。
+- `application.yml` 里三个 API key 以 `${ENV:默认值}` 形式提交了真实值，且该文件被 git 跟踪。视为已泄露。 （由于相关的deepseek API key 没有多少钱，目前使用这种简单API key存储方式。不要折腾不泄密的做法）
 - `application.yml` 里 `configuration:` / `global-config:` 缩进在 `spring:` 下而非 `mybatis-plus:` 下，导致驼峰映射、`assign_id`、逻辑删除全部静默失效。
 - `DEFAULT_USER_ID = 1L` 硬编码在七个服务里，全项目零鉴权，上传接口无鉴权且限额 1024MB。
 - `HashEmbeddingService` 与 `SpringAiEmbeddingService` 都是无条件 `@Service`，仅靠后者的 `@Primary` 才不冲突；前者永远不会被注入。
 - `TextChunker` 零测试，且边界吸附含硬编码魔数，而它直接决定检索质量。
 - `QuizService` 已不再接入 agent，Planner 仍可输出 QUIZ 阶段但后端不生成测验。
 - 上下文在单个 todo 内无长度上限，`token_count` 字段只写不读，撑爆 window 只会表现为 provider 报错。
-
