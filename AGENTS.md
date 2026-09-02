@@ -97,8 +97,14 @@ src/main/java/com/studyagent/
 - 禁止把 userId、知识库 ID 等权限条件交给模型决定。权限参数一律服务端注入。
 - 禁止把密钥、token 写进任何文件、日志或提交。
 - **禁止删除未被 git 跟踪的文件。** 本仓库有相当数量的未跟踪文件，删除即不可恢复。需要删除时先向用户确认。
-- 禁止 `git commit` 与 `git push`，除非用户明确要求。
 - 禁止引用已作废的历史文档作为设计依据（见 §0）。
+
+## 6.5 允许
+
+- 允许使用 `git commit` 和 `git push`，在完成某一个开发任务之后应该 commit 存档。
+- 允许使用 worktree 并使用 subagent 进行不相关的模块的并行开发。
+- 允许使用 subagent 来开发和验收。
+- 允许使用 `gh` 来控制本项目关联的 github project。
 
 ## 7. Codex 执行约束
 
