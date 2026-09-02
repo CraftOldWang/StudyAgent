@@ -46,6 +46,15 @@ rocketmq:
 study-agent:
   agentscope:
     workspace: ${AGENTSCOPE_WORKSPACE:${user.dir}/.agentscope/workspace}
+    model:
+      primary-model-id: deepseek:deepseek-chat
+      max-retries: 1
+      dashscope:
+        api-key: ${study-agent.ai.embedding.api-key}
+        base-url: ${study-agent.ai.embedding.base-url}
+      deepseek:
+        api-key: ${study-agent.ai.chat.api-key}
+        base-url: ${study-agent.ai.chat.base-url}
   object-storage:
     endpoint: http://localhost:9000
     access-key: study
