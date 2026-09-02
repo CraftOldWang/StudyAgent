@@ -44,6 +44,8 @@ rocketmq:
     group: study-agent-producer
 
 study-agent:
+  agentscope:
+    workspace: ${AGENTSCOPE_WORKSPACE:${user.dir}/.agentscope/workspace}
   object-storage:
     endpoint: http://localhost:9000
     access-key: study
