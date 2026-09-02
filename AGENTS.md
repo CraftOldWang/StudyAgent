@@ -31,6 +31,7 @@
 - 重复性、机械性的工作使用较小的模型（sonnet），不浪费在大模型上。
 - 相互独立的 subagent 在一条消息里一次性发起，让它们并行。
 - **subagent 不得擅自扩大任务范围。** 遇到任务边界外的问题、或遇到需要决策的分歧，停下并上报，不要顺手改掉，也不要自行选择一种做法。
+- GitHub Issues / Project / commit / push 的重复同步工作固定委托给可复用的 `github_sync` subagent；主线程只向它传递任务状态、验收证据和精确文件范围，不保留批量同步细节。GitHub 写入仍需由不同 subagent 独立验收。
 
 ## 3. 包结构（已定，方案三：按子域分包，子域内按职责分包）
 
@@ -102,7 +103,7 @@ src/main/java/com/studyagent/
 
 ## 6.5 允许
 
-- 用户已持续授权开发过程中的 `git commit`：单项任务通过独立验收后，使用精确 pathspec 提交，不再逐次确认。`git push` 不包含在这项持续授权内，只按用户当次明确的 push 范围执行；禁止 force push。
+- 用户已持续授权本私有仓库开发过程中的 `git commit` 与普通 `git push`：单项任务通过独立验收后，使用精确 pathspec 提交并同步到远端，不再逐次确认；禁止 force push。
 - 允许使用 worktree 并使用 subagent 进行不相关的模块的并行开发。
 - 允许使用 subagent 来开发和验收。
 - 允许使用 `gh` 来控制本项目关联的 github project。
