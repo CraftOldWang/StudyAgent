@@ -88,17 +88,22 @@ javap -classpath <jars> -c -p <targeted-class>
 - 区分 `AgentTraceMiddleware`、`JsonlTraceExporter` 与 `SessionTree`，去掉现成 traceId 查询和完整 trace 的过度承诺。
 - 去掉框架已内置 Redis / MySQL / PostgreSQL state store 的过度承诺。
 
-## 5. 仍需用户决定或运行 Spike 的事项
+## 5. 后续决策状态与仍需确认事项
 
-以下事项没有在本次文档修订中替用户选择：
+### 5.1 后续已收敛的决策
+
+本次 Spike 当时只记录 API 事实，没有替用户选择模型与迁移策略；后续任务已经收敛为：
+
+- 任务 0.4 将主模型确定为 `deepseek:deepseek-chat`，Phase 0 不配置 fallback，`maxRetries=1`。
+- AgentScope 是唯一目标 Agent Runtime。Spring AI Chat/Tool 调用链仅为迁移期遗留，禁止新增消费者，待 Harness、工具与学习流程迁移完成后由任务 3.12 删除。
+- Spring AI Embedding 只属于 RAG provider adapter，其去留仍在 RAG 阶段单独决定，不纳入任务 3.12。
+
+### 5.2 仍需用户决定或运行 Spike 的事项
 
 1. workspace 与 state store 的实际落盘位置及是否同盘管理。
 2. 任务 0.2 / 0.3 / 0.4 是合并还是重排；生产 `HarnessAgent` Bean 同时依赖 workspace 与 Model。
-3. 主模型、DeepSeek model ID。
-4. 是否启用 fallback、fallback 指向及 `maxRetries`。
-5. Spring AI 保留还是移除，以及若保留时的职责边界。
-6. trace 重跑默认复用工具结果还是重新执行。
-7. checkpoint fork/replay、跨进程 workspace 并发、subagent trace lineage 与 compaction 质量的运行验收契约。
+3. trace 重跑默认复用工具结果还是重新执行。
+4. checkpoint fork/replay、跨进程 workspace 并发、subagent trace lineage 与 compaction 质量的运行验收契约。
 
 ## 6. 验收状态
 

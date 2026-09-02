@@ -44,7 +44,7 @@
 | 0.7 | 创建 `users` 表与初始数据 | Flyway 迁移 `V1__create_users.sql` | 表创建 + 插入 user_id=1 测试用户 |
 | 0.8 | 端到端测试：最简 agent | POST `/api/agent/hello` 调用 `HarnessAgent.call("hello")` | 返回模型回复 |
 
-0.2 的生产 Bean 同时依赖 0.3 的 workspace 与 0.4 的 Model；0.2 / 0.3 / 0.4 是合并还是重排待用户决定。本阶段也不预设主模型、DeepSeek model ID、是否启用 `fallbackModel(...)`、`maxRetries` 或 Spring AI 的去留。
+0.2 的生产 Bean 同时依赖 0.3 的 workspace 与 0.4 的 Model；0.2 / 0.3 / 0.4 是合并还是重排待用户决定。任务 0.4 只配置 AgentScope 原生 provider，不提前删除尚有消费者的迁移期 Spring AI Chat/Tool 遗留；AgentScope 仍是唯一目标 Runtime，旧 Chat/Tool 运行链在任务 3.12 统一清理，Embedding adapter 的去留在 RAG 阶段单独决定。
 
 **验收标准**：
 - `mvn clean compile` 通过
@@ -132,6 +132,9 @@
 | 3.9 | 端到端测试：完整学习一个知识点 | "教我 Java 泛型" → 讲解 → 测验 → 卡片 → 完成 | 状态流转正确，trace 完整 |
 | 3.10 | 测验自一致性检查 | 模型只看源 chunk 回答自己出的题，答错即判不合格打回重出 | 接入生成流程，拦截案例可查（简历 B3 支撑） |
 | 3.11 | 串行 vs 委派 A/B | 对比主对话阻塞时间、主 agent context 规模 | 数据入 `docs/eval/`（简历 B4 数字来源） |
+| 3.12 | 清理旧 Spring AI Chat/Tool 运行链 | 删除旧 `ChatModel` / `ChatGenerationService` / `ToolCallbackProvider` 消费者、实现与不再使用的依赖；不包含 Embedding adapter | 代码搜索无 Spring AI Chat/Tool 消费者，相关模块通过完整批次的编译、测试与独立验收 |
+
+任务 3.12 依赖 0.2 的 AgentScope Harness 入口、2.1-2.7 的工具迁移，以及 3.1-3.10 的学习主流程、compaction 与 subagent 迁移完成；依赖未满足前，旧链路只允许维持现有消费者，不得新增调用。
 
 **验收标准**：
 - 输入"学习 Java 面向对象"，返回 3-5 个知识点计划
@@ -139,6 +142,7 @@
 - 显式 trace exporter 经运行测试证明能建立所需 parent → child lineage；若框架字段不足，停下交由用户决定补强范围
 - Context compaction 触发且压缩质量测试通过；memory 文件变化按实际 Harness 文件布局验收
 - `learning_sessions` / `knowledge_points` / `review_cards` 表数据正确
+- Spring AI Chat/Tool 旧运行链及无用依赖已删除；Embedding adapter 不在本阶段清理范围
 
 ---
 
@@ -204,7 +208,7 @@
 | 阶段 0 | 1 周 | AgentScope 集成骨架 + 最简 agent | ✅ 基础设施就绪 |
 | 阶段 1 | 2 周 | RAG 全链路 + baseline 评测 | ✅ 检索链路通 |
 | 阶段 2 | 1.5 周 | 工具集成与治理 | ✅ Agent 可调用检索 |
-| 阶段 3 | 2 周 | 学习流程 + subagent 委派 | ✅ 垂类流程完整 |
+| 阶段 3 | 2 周 | 学习流程 + subagent 委派 + 旧 Chat/Tool 运行链清理 | ✅ 垂类流程完整 |
 | 阶段 4 | 2.5 周 | 画像 + 知识图谱 + 音视频 ASR | ✅ 画像/图谱/ASR 可用 |
 | 阶段 5 | 1.5 周 | 评测体系 + 策略对比 | ✅ 量化优化效果 |
 | **总计** | **10.5 周** | **完整系统** | **MVP 就绪** |
@@ -349,7 +353,7 @@ docs/
 
 ### Q2: Spring AI 会不会和 AgentScope 冲突？
 
-**A**: AgentScope 已有 DashScope 与 OpenAI-compatible DeepSeek provider，并支持应用显式配置 fallback；不会因为多个 provider 共存而自动降级。Spring AI 是否保留、若保留时承担什么职责，以及是否启用 AgentScope fallback / `maxRetries`，待用户决定。
+**A**: 不会形成长期双 Runtime。AgentScope 是唯一目标 Agent Runtime；现有 Spring AI Chat/Tool 调用链仅在消费者迁移期间兼容存续，禁止新增消费者，并由任务 3.12 在 Harness、工具和学习流程迁完后删除。Spring AI Embedding 若暂留只是 RAG provider adapter，其去留在 RAG 阶段单独决定。AgentScope 不会因多个 provider 共存自动降级，fallback 与重试按任务 0.4 的已记录选择执行。
 
 ### Q3: 为什么不做 FSRS 调度？
 

@@ -16,6 +16,8 @@
 
 不是通用 Agent 框架。AgentScope 2.0.1 已证实提供 Loop、RuntimeContext/AgentState、Memory/Compaction、AgentStateStore、Trace exporter 与 Subagent 扩展点；checkpoint fork/replay 的恢复粒度尚未证明。我们专注于垂类问题、项目级映射与策略优化。
 
+**Runtime 目标态**：AgentScope 是唯一 Agent Runtime。现有 Spring AI `ChatModel` / `ChatGenerationService` / `ToolCallbackProvider` 调用链仅作为换轴期间的迁移遗留存在，禁止新增消费者；AgentScope Harness、工具与学习流程消费者迁移完成后，由执行任务 3.12 统一删除。Spring AI Embedding 即使在 RAG 阶段暂留，也只是 provider adapter，不属于 Agent Runtime。
+
 ---
 
 ## 2. 技术栈
@@ -29,7 +31,7 @@
 | **AgentScope Harness** | **2.0.1** | Agent Runtime 基座 |
 | AgentScope DashScope 扩展 | 2.0.1 | DashScope provider |
 | AgentScope OpenAI-compatible 扩展 | 2.0.1 | DeepSeek provider（`deepseek:<model>`） |
-| Spring AI | 1.1.x | 是否保留及职责边界待用户决定 |
+| Spring AI | 1.1.x | 迁移期遗留；Chat/Tool 运行链由任务 3.12 删除，Embedding adapter 在 RAG 阶段单独决定 |
 | MyBatis-Plus | 3.5.16 | 持久化 |
 | Elasticsearch Java API Client | **8.15.x** | 替换手写 HttpClient |
 | Redisson | 3.52.0 | 分布式锁、去重 |
@@ -540,11 +542,11 @@ CREATE TABLE eval_judge_calibration (
 | 工具治理 | 完全自定义 | 大结果 offload + 权限，配额/条数需自建 | ⚠️ 补强即可 |
 | 时间预算分配 | Runtime 占 60%，垂类占 40% | Runtime 占 10%，垂类 + RAG + 评测占 90% | ✅ 后者高杠杆 |
 
-### 6.2 Spring AI 保留还是移除
+### 6.2 Spring AI Chat/Tool 迁移边界与 Embedding 区分
 
-AgentScope 已有 DashScope provider，以及 OpenAI-compatible 扩展中的 DeepSeek provider。`HarnessAgent.Builder.fallbackModel(...)` / `maxRetries(...)` 支持显式 fallback，但多个 provider 同时存在不会触发自动 fallback。
+AgentScope 已有 DashScope provider，以及 OpenAI-compatible 扩展中的 DeepSeek provider。目标态由 AgentScope 独立承担 Agent Runtime；现有 Spring AI `ChatModel`、`ChatGenerationService`、`ToolCallbackProvider` 及其消费者仅用于换轴期间维持未迁移链路，禁止新增消费者，不是长期双 Runtime 方案。待 AgentScope Harness 入口、工具、学习主流程、compaction 与 subagent 消费者迁移完成后，任务 3.12 删除该旧 Chat/Tool 运行链及无用依赖。
 
-Spring AI 是保留、移除还是仅作为显式备用 adapter，以及是否启用框架 fallback、fallback 指向和 `maxRetries`，均待用户决定；不得用旧 D-009 代替当前选择。
+Spring AI Embedding 属于 RAG provider adapter，不负责 Agent Loop、工具调用或会话运行，因此不等同于 Agent Runtime，其保留或替换在 RAG 阶段单独决定，不纳入任务 3.12。AgentScope 模型 fallback 与重试是另一条配置边界，按任务 0.4 的已记录选择执行，不以 Spring AI 作为隐式降级链路。
 
 ### 6.3 ES 访问方式
 
