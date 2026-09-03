@@ -64,7 +64,9 @@ study-agent:
     path-style-access: true
   elasticsearch:
     endpoint: http://localhost:9200
-    chunk-index: study-agent-chunks
+    physical-index: chunks-v1
+    read-alias: chunks-v1-read
+    write-alias: chunks-v1-write
     vector-dimensions: 1024
   rag:
     top-k: 6

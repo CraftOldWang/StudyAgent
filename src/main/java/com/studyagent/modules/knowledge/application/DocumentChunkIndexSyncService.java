@@ -2,12 +2,12 @@ package com.studyagent.modules.knowledge.application;
 
 import com.studyagent.common.exception.BusinessException;
 import com.studyagent.infrastructure.embedding.EmbeddingService;
-import com.studyagent.infrastructure.search.ElasticsearchChunkIndexer;
-import com.studyagent.infrastructure.search.IndexedChunk;
 import com.studyagent.modules.knowledge.domain.Document;
 import com.studyagent.modules.knowledge.domain.DocumentChunk;
 import com.studyagent.modules.knowledge.infrastructure.DocumentChunkMapper;
 import com.studyagent.modules.knowledge.infrastructure.DocumentMapper;
+import com.studyagent.rag.index.ElasticsearchChunkDocument;
+import com.studyagent.rag.index.ElasticsearchIndexer;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,7 +26,7 @@ public class DocumentChunkIndexSyncService {
     private final DocumentMapper documentMapper;
     private final DocumentChunkMapper documentChunkMapper;
     private final EmbeddingService embeddingService;
-    private final ElasticsearchChunkIndexer elasticsearchChunkIndexer;
+    private final ElasticsearchIndexer elasticsearchIndexer;
 
     /**
      * 同步单个 chunk 到 ES。已同步或当前文档状态不允许索引时返回 false。
@@ -48,18 +48,20 @@ public class DocumentChunkIndexSyncService {
         // 父块和子块都写入 ES：子块用于召回，父块用于通过 parent_chunk_id 补全上下文。
         // 这里为父块也生成 embedding，是为了复用同一个 ES mapping；查询阶段会显式过滤 CHILD，避免父块参与召回排序。
         float[] embedding = embeddingService.embed(chunk.getContent());
-        String esDocId = elasticsearchChunkIndexer.index(new IndexedChunk(
-                chunk.getId(),
-                chunk.getDocumentId(),
-                chunk.getKnowledgeBaseId(),
-                chunk.getUserId(),
-                chunk.getParentChunkId(),
+        String esDocId = elasticsearchIndexer.index(new ElasticsearchChunkDocument(
+                chunk.getUserId() == null ? null : String.valueOf(chunk.getUserId()),
+                String.valueOf(chunk.getKnowledgeBaseId()),
+                String.valueOf(chunk.getDocumentId()),
+                String.valueOf(chunk.getId()),
+                chunk.getParentChunkId() == null ? null : String.valueOf(chunk.getParentChunkId()),
                 chunk.getChunkType(),
                 chunk.getChunkIndex(),
-                document.getTitle(),
                 chunk.getContent(),
-                chunk.getMetadataJson(),
-                embedding
+                null,
+                embedding,
+                null,
+                null,
+                chunk.getCreatedAt()
         ));
         // 条件回填避免并发重试覆盖已经写入的 ES 文档 ID。
         documentChunkMapper.updateEsDocIdIfMissing(chunk.getId(), esDocId);

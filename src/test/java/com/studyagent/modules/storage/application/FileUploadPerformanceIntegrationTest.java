@@ -75,7 +75,9 @@ import org.springframework.util.MultiValueMap;
 @EnabledIfSystemProperty(named = "studyagent.perf.enabled", matches = "true")
 @TestPropertySource(properties = {
         "study-agent.canal.enabled=false",
-        "study-agent.elasticsearch.chunk-index=study-agent-perf-chunks",
+        "study-agent.elasticsearch.physical-index=study-agent-perf-chunks-v1",
+        "study-agent.elasticsearch.read-alias=study-agent-perf-chunks-v1-read",
+        "study-agent.elasticsearch.write-alias=study-agent-perf-chunks-v1-write",
         "spring.servlet.multipart.max-file-size=512MB",
         "spring.servlet.multipart.max-request-size=540MB"
 })

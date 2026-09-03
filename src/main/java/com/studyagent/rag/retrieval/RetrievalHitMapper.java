@@ -1,0 +1,28 @@
+package com.studyagent.rag.retrieval;
+
+import co.elastic.clients.elasticsearch.core.search.Hit;
+import com.studyagent.common.exception.BusinessException;
+import com.studyagent.rag.index.ElasticsearchChunkDocument;
+
+final class RetrievalHitMapper {
+
+    private RetrievalHitMapper() {
+    }
+
+    static RetrievalHit map(
+            Hit<ElasticsearchChunkDocument> hit,
+            RetrievalStrategy strategy
+    ) {
+        ElasticsearchChunkDocument source = hit.source();
+        if (source == null) {
+            throw new BusinessException("Elasticsearch 检索命中缺少 _source: id=" + hit.id());
+        }
+        return new RetrievalHit(
+                source.chunkId(),
+                source.parentChunkId(),
+                source.content(),
+                hit.score() == null ? 0.0 : hit.score(),
+                strategy
+        );
+    }
+}

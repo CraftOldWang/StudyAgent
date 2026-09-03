@@ -8,7 +8,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "study-agent.elasticsearch")
 public record ElasticsearchProperties(
         String endpoint,
-        String chunkIndex,
+        String physicalIndex,
+        String readAlias,
+        String writeAlias,
         int vectorDimensions
 ) {
 }

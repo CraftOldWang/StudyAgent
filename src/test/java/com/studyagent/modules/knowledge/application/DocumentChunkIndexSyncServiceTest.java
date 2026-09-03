@@ -7,12 +7,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.studyagent.infrastructure.embedding.EmbeddingService;
-import com.studyagent.infrastructure.search.ElasticsearchChunkIndexer;
-import com.studyagent.infrastructure.search.IndexedChunk;
 import com.studyagent.modules.knowledge.domain.Document;
 import com.studyagent.modules.knowledge.domain.DocumentChunk;
 import com.studyagent.modules.knowledge.infrastructure.DocumentChunkMapper;
 import com.studyagent.modules.knowledge.infrastructure.DocumentMapper;
+import com.studyagent.rag.index.ElasticsearchChunkDocument;
+import com.studyagent.rag.index.ElasticsearchIndexer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -30,7 +30,7 @@ class DocumentChunkIndexSyncServiceTest {
     @Mock
     private EmbeddingService embeddingService;
     @Mock
-    private ElasticsearchChunkIndexer elasticsearchChunkIndexer;
+    private ElasticsearchIndexer elasticsearchIndexer;
 
     @InjectMocks
     private DocumentChunkIndexSyncService syncService;
@@ -45,7 +45,7 @@ class DocumentChunkIndexSyncServiceTest {
 
         assertThat(synced).isFalse();
         verify(embeddingService, never()).embed(any());
-        verify(elasticsearchChunkIndexer, never()).index(any());
+        verify(elasticsearchIndexer, never()).index(any());
     }
 
     @Test
@@ -55,16 +55,18 @@ class DocumentChunkIndexSyncServiceTest {
         when(documentChunkMapper.selectById(1L)).thenReturn(chunk);
         when(documentMapper.selectById(10L)).thenReturn(document);
         when(embeddingService.embed("chunk content")).thenReturn(new float[]{0.1f, 0.2f});
-        when(elasticsearchChunkIndexer.index(any(IndexedChunk.class))).thenReturn("1");
+        when(elasticsearchIndexer.index(any(ElasticsearchChunkDocument.class))).thenReturn("1");
         when(documentChunkMapper.countByDocumentId(10L)).thenReturn(1);
         when(documentChunkMapper.countMissingEsDocIdByDocumentId(10L)).thenReturn(0);
 
         boolean synced = syncService.syncChunk(1L);
 
         assertThat(synced).isTrue();
-        ArgumentCaptor<IndexedChunk> indexedChunk = ArgumentCaptor.forClass(IndexedChunk.class);
-        verify(elasticsearchChunkIndexer).index(indexedChunk.capture());
-        assertThat(indexedChunk.getValue().documentTitle()).isEqualTo("demo");
+        ArgumentCaptor<ElasticsearchChunkDocument> indexedChunk =
+                ArgumentCaptor.forClass(ElasticsearchChunkDocument.class);
+        verify(elasticsearchIndexer).index(indexedChunk.capture());
+        assertThat(indexedChunk.getValue().userId()).isEqualTo("30");
+        assertThat(indexedChunk.getValue().documentId()).isEqualTo("10");
         assertThat(indexedChunk.getValue().chunkType()).isEqualTo(DocumentChunk.TYPE_CHILD);
         verify(documentChunkMapper).updateEsDocIdIfMissing(1L, "1");
         verify(documentMapper).updateById(document);
@@ -80,15 +82,16 @@ class DocumentChunkIndexSyncServiceTest {
         when(documentChunkMapper.selectById(1L)).thenReturn(chunk);
         when(documentMapper.selectById(10L)).thenReturn(document());
         when(embeddingService.embed("chunk content")).thenReturn(new float[]{0.1f, 0.2f});
-        when(elasticsearchChunkIndexer.index(any(IndexedChunk.class))).thenReturn("1");
+        when(elasticsearchIndexer.index(any(ElasticsearchChunkDocument.class))).thenReturn("1");
         when(documentChunkMapper.countByDocumentId(10L)).thenReturn(1);
         when(documentChunkMapper.countMissingEsDocIdByDocumentId(10L)).thenReturn(0);
 
         boolean synced = syncService.syncChunk(1L);
 
         assertThat(synced).isTrue();
-        ArgumentCaptor<IndexedChunk> indexedChunk = ArgumentCaptor.forClass(IndexedChunk.class);
-        verify(elasticsearchChunkIndexer).index(indexedChunk.capture());
+        ArgumentCaptor<ElasticsearchChunkDocument> indexedChunk =
+                ArgumentCaptor.forClass(ElasticsearchChunkDocument.class);
+        verify(elasticsearchIndexer).index(indexedChunk.capture());
         assertThat(indexedChunk.getValue().chunkType()).isEqualTo(DocumentChunk.TYPE_PARENT);
         assertThat(indexedChunk.getValue().parentChunkId()).isNull();
     }
@@ -105,7 +108,7 @@ class DocumentChunkIndexSyncServiceTest {
 
         assertThat(synced).isFalse();
         verify(embeddingService, never()).embed(any());
-        verify(elasticsearchChunkIndexer, never()).index(any());
+        verify(elasticsearchIndexer, never()).index(any());
     }
 
     @Test
@@ -115,7 +118,7 @@ class DocumentChunkIndexSyncServiceTest {
         when(documentChunkMapper.selectById(1L)).thenReturn(chunk);
         when(documentMapper.selectById(10L)).thenReturn(document());
         when(embeddingService.embed("chunk content")).thenReturn(new float[]{0.1f, 0.2f});
-        when(elasticsearchChunkIndexer.index(any(IndexedChunk.class))).thenReturn("1");
+        when(elasticsearchIndexer.index(any(ElasticsearchChunkDocument.class))).thenReturn("1");
         when(documentChunkMapper.countByDocumentId(10L)).thenReturn(1);
         when(documentChunkMapper.countMissingEsDocIdByDocumentId(10L)).thenReturn(0);
 
