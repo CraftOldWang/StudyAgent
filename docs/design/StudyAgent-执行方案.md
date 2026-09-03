@@ -64,19 +64,22 @@
 | 1.1 | 引入 Elasticsearch Java API Client | `pom.xml` 新增依赖，`ElasticsearchConfig.java` 创建 client bean | client 连接 ES 成功 |
 | 1.2 | 设计 ES 索引结构 | `chunks-v1` 物理索引 + `chunks-v1-read/write` 别名 | 索引创建成功 |
 | 1.3 | 实现 `ElasticsearchIndexer`（替换手写 HttpClient） | 使用官方 client 的 `IndexRequest` / `BulkRequest` | bulk 写入成功 |
-| 1.4 | 实现 `BM25Retriever` | ES `match` 查询 + `_score` 排序 | 返回 topK 结果 |
-| 1.5 | 实现 `VectorRetriever` | ES `knn` 查询 + cosine 相似度 | 返回 topK 结果 |
+| 1.4 | 实现 `BM25Retriever` | ES `match` 查询 + `_score` 排序，服务端注入 `user_id + knowledge_base_id` 过滤 | 返回 topK；跨用户或未授权知识库 chunk 不可命中 |
+| 1.5 | 实现 `VectorRetriever` | ES `knn` 查询 + cosine 相似度，服务端注入 `user_id + knowledge_base_id` filter | 返回 topK；跨用户或未授权知识库 chunk 不可命中 |
 | 1.6 | 实现 `RRFusion` | k=60 融合 BM25 + 向量结果 | 融合后返回 topK |
 | 1.7 | 实现 `ParentAggregator` | child 召回 → 根据 `parent_chunk_id` 查 parent | 返回 parent 内容 + child provenance |
 | 1.8 | 实现 `RetrievalService` | 编排 BM25 / 向量 / RRF / 父子，暴露统一接口 | 单测覆盖四种策略 |
-| 1.9 | 实现 `StructuredChunker` | 按标题 / 段落 / 列表切分 | 输入 Markdown 返回分块列表 |
-| 1.10 | 实现 `TokenWindowChunker` | 超长块 fallback，900/120 for child | 单测覆盖边界 |
-| 1.11 | 实现 `DocumentPipeline` | 状态机：PARSING → CHUNKING → EMBEDDING → INDEXING | pipeline 执行成功，状态正确流转 |
+| 1.9 | 实现 `StructuredChunker` | 按标题 / 段落 / 列表切分，返回 `ChunkSegment` | Markdown 分块保留 `[startOffset,endOffset)`、`headingPath` 与统一 `tokenCount` |
+| 1.10 | 实现 `TokenWindowChunker` | 使用固定版本本地 `TokenCounter` 对超长 `ChunkSegment` 做 900/120 fallback | 单测证明 token 上限与重叠使用同一计量口径，且 fallback 不丢失来源坐标 |
 | 1.12 | 表迁移：ingest 三张表 | `V2__create_ingest_tables.sql` | 表创建成功 |
+| 1.12a | 对齐 ingest 全局 `model/mapper` | 将 `FileRecord` / `Document` / `DocumentChunk` 及其 Mapper 迁至全局 `model/`、`mapper/`，字段与 V2 schema 一一对应；机械更新直接编译消费者 | 旧包不再保留这六个类型，实体字段与 Mapper SQL 不引用 V2 外列，直接消费者完成 import/字段访问对齐；不在本任务实现 pipeline |
+| 1.11 | 实现 `DocumentPipeline` | 状态机：PARSING → CHUNKING → EMBEDDING → INDEXING | pipeline 执行成功，状态正确流转 |
 | 1.13 | 端到端测试：上传 PDF → 检索 | POST `/api/files/upload` + POST `/api/rag/search` | 检索返回相关段落 |
 | 1.14 | 构建检索黄金集 | 从已索引 chunk 反向合成 100-200 条查询（ground truth = 源 chunk id），人工抽检 20% 剔除坏例；另自标注 30-50 条真实查询 | 黄金集入库 `eval_golden_set` |
 | 1.15 | 中文分词器三方对比 | standard / IK / SmartCN 在黄金集上的 BM25 Recall@K 对比，择优引入 | 对比报告 + 决策记录（简历 B2 数字来源） |
 | 1.16 | 相关性阈值实验 | 多档阈值跑 precision-recall 曲线，按检索器分别选点 | 曲线 + 选定阈值（简历 B2 数字来源） |
+
+**1.12a 依赖与范围**：执行顺序固定为 `1.12（Issue #20）→ 1.12a → 1.11（Issue #19）`。1.12a 以 V2 schema 为唯一字段基线，只迁移上述三张 ingest 表对应的实体与 Mapper，并更新因此无法编译的直接消费者；允许做保持现有控制流的 import、构造和字段访问机械调整，不新增或重写解析、分块、嵌入、索引、状态流转、补偿或重试逻辑。`KnowledgeBase`、`UploadSession` 等其他实体/Mapper 不在本任务范围内，pipeline 行为与状态正确性只由 1.11 实现和验收。
 
 **验收标准**：
 - 上传一份 Java 教程 PDF，pipeline 走完，ES 有数据

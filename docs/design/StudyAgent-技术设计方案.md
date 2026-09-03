@@ -215,6 +215,7 @@ CREATE TABLE users (
 {
   "mappings": {
     "properties": {
+      "user_id": {"type": "keyword"},
       "knowledge_base_id": {"type": "keyword"},
       "document_id": {"type": "keyword"},
       "chunk_id": {"type": "keyword"},
@@ -243,6 +244,8 @@ CREATE TABLE users (
 }
 ```
 
+**检索隔离**：所有索引写入都必须保存 `user_id`；BM25、向量与 parent 二跳查询由服务端同时注入 `user_id` 和允许访问的 `knowledge_base_id` 过滤条件，模型不得决定权限参数。数据库中的知识库归属校验可以保留，但不能替代 ES 查询自身的双重范围过滤（ADR-0003）。
+
 **别名管理**：
 - `chunks-v1-read` / `chunks-v1-write`：当前活跃索引
 - 策略变更时新建 `chunks-v2`，bulk 重建，评测通过后原子切 alias
@@ -266,7 +269,12 @@ CREATE TABLE users (
 **分块策略**（详见 D-011）：
 1. 优先结构切分：按标题 / 章节 / 段落 / 列表 / 代码 / 表格
 2. 超长块 fallback：paragraph → sentence → token window (900/120 for child, 2400/240 for parent)
-3. 保留来源坐标：章节号 / 页码 / 段落索引
+3. 保留来源坐标：Phase 1 固定保存解析文本 offset 与标题路径；页码等仅在解析器能够提供时补充
+
+**Phase 1 分块契约**：
+- `StructuredChunker` 与 `TokenWindowChunker` 复用固定算法和版本的本地确定性 `TokenCounter`；窗口、重叠、`tokenCount` 与测试均使用该口径，不使用字符数估算，也不依赖 provider 请求后的 usage。
+- 两级 chunker 统一输入/输出 `ChunkSegment(content, tokenCount, sourceLocation)`；`SourceLocation` 至少包含解析器输出文本的 `[startOffset, endOffset)` 与 `headingPath`，fallback 后必须保持原坐标系。
+- token 计量算法变化时提升 `chunker_version`，重新分块、索引并运行检索回归（ADR-0002）。
 
 **关键类**：
 - `UploadController`：分片上传接口
@@ -318,7 +326,7 @@ CREATE TABLE document_chunks (
     chunk_index INT NOT NULL,
     content TEXT NOT NULL,
     content_hash VARCHAR(64) NOT NULL,
-    source_location JSON,  -- {chapter, page, paragraph}
+    source_location JSON,  -- Phase 1: {startOffset, endOffset, headingPath}
     embedding_status VARCHAR(32),  -- PENDING / COMPLETED / FAILED
     indexed_at DATETIME,
     created_at DATETIME NOT NULL,
@@ -598,7 +606,7 @@ Spring AI Embedding 属于 RAG provider adapter，不负责 Agent Loop、工具�
 
 | 维度 | 方案 |
 |------|------|
-| 多租户 | 服务端 `user_id` 隔离；workspace/state 路径隔离只作为补充，不能替代权限条件 |
+| 多租户 | 服务端注入权限条件；MySQL 按 `user_id` 隔离，ES 同时按 `user_id + knowledge_base_id` 过滤；workspace/state 路径隔离只作为补充 |
 | 分布式 Session | 基于 `AgentStateStore` SPI 评估自建或额外依赖；当前 JAR 未发现 Redis / MySQL / PostgreSQL 实现 |
 | 水平扩展 | 先验证 state store 与 workspace 跨进程语义，再决定部署方案 |
 
@@ -609,7 +617,7 @@ Spring AI Embedding 属于 RAG provider adapter，不负责 Agent Loop、工具�
 | 维度 | 措施 |
 |------|------|
 | 身份鉴权 | 请求头 / API token 解析，不做完整登录产品 |
-| 数据隔离 | MyBatis-Plus 拦截器自动注入 `user_id` |
+| 数据隔离 | MyBatis-Plus 自动注入 `user_id`；ES 检索服务端注入 `user_id + knowledge_base_id` 双重过滤 |
 | 权限控制 | 工具权限服务端注入，模型不可篡改 |
 | 敏感信息 | API key 环境变量，不入库不打日志 |
 | 工具审计 | AgentScope trace 记录所有工具调用 |
