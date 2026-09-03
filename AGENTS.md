@@ -25,14 +25,14 @@
 
 主线程的上下文是稀缺资源，承载的是设计推理和用户的决策记录；文件内容、构建输出、测试日志都是可以随时重新生成的廉价信息，不应该占用主线程。
 
-- 主线程只做：设计讨论、决策记录、任务分解、验收结论。
-- subagent 做：仓库勘察、具体实现，以及在模块或明确批次实现完整后的编译、测试与独立验收。
+- 主 agent 仅负责只读的设计讨论与决策记录、任务分解与调度及验收结论；不得亲自修改项目文件、编写代码、运行测试/构建或执行独立验收。
+- subagent 负责：仓库勘察、具体实现、文件编辑，以及在模块或明确批次实现完整后的编译、测试、验证与独立验收。
 - **实现与验收必须由不同的 subagent 完成。** 实现者不得验收自己的任何实现；一个未参与相关实现的验收 subagent 可以在同一批次中验收多个不同模块。
 - subagent 返回结论与 `file:line` 证据，不返回文件内容。
-- 实际编码与机械实现 subagent 默认显式使用 `gpt-5.6-sol`、`medium` reasoning；需求细化、架构/API 边界研究与独立验收 subagent 显式使用 `gpt-5.6-sol`、`high` reasoning，均不继承主 agent 的档位。只有任务确实复杂时才提高实现 subagent 的 reasoning，并在派发任务时说明原因；主 agent 启动 subagent 时传递精简但完整的任务上下文。
+- 上述所有实际执行任务（包括写代码、文件编辑、测试/构建、验证、独立验收与 GitHub 同步）默认都必须委派给 `C:\Users\CraftOldW\.codex\agents\luna-worker.toml` 定义的 worker，并显式使用 `gpt-5.6-luna`、`max`；不得使用 `gpt-5.6-sol` 的 medium/high 或其它模型承担这些工作。主 agent 启动 subagent 时传递精简但完整的任务上下文。
 - 相互独立的 subagent 在一条消息里一次性发起，让它们并行。
 - **subagent 不得擅自扩大任务范围。** 遇到任务边界外的问题、或遇到需要决策的分歧，停下并上报，不要顺手改掉，也不要自行选择一种做法。
-- GitHub Issues / Project / commit / push 的重复同步工作固定委托给可复用的 `github_sync` subagent；主线程只向它传递任务状态、验收证据和精确文件范围，不保留批量同步细节。GitHub 写入仍需由不同 subagent 独立验收。
+- GitHub Issues / Project / commit / push 的重复同步工作固定委托给可复用的 `github_sync` luna worker，并显式使用 `gpt-5.6-luna`、`max`；主线程只向它传递任务状态、验收证据和精确文件范围，不保留批量同步细节。GitHub 写入仍需由不同 subagent 独立验收。
 
 ## 3. 包结构（已定，方案三：按子域分包，子域内按职责分包）
 
