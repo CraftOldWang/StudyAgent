@@ -39,8 +39,8 @@ public class RrfRanker {
             }
         }
         return itemMap.values().stream()
-                .sorted(Comparator.comparingDouble(MutableRankedItem::score).reversed()
-                        .thenComparing(item -> item.candidate.chunkId()))
+                // Stream 排序是稳定的；总分并列时保留首次召回顺序，避免用 chunkId 引入无关偏好。
+                .sorted(Comparator.comparingDouble(MutableRankedItem::score).reversed())
                 .map(MutableRankedItem::toRankedItem)
                 .toList();
     }
