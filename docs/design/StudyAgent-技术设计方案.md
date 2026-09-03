@@ -192,6 +192,8 @@ CREATE TABLE users (
 
 **不拥有**：AgentScope 已提供的 Loop、基础 Context/Memory/State 与 Trace 采集机制。checkpoint fork/replay、traceId 查询、业务映射与治理补强必须先按已证实扩展点实现或 Spike，不把未发现的框架 API 当成现成能力。
 
+**Phase 2 单知识库工具契约**（[ADR-0006](../adr/0006-phase2-single-kb-tool-scope.md)）：学习会话只绑定一个 `knowledge_base_id`。服务端先确认当前用户存在匹配的 `documents(user_id, knowledge_base_id)`，再构建带 `userId`、`sessionId` 和已验证 `knowledgeBaseId` extra 的 `RuntimeContext`；extra 只是传递 scope，权限判断仍由服务端完成。`knowledge_search` 的模型参数只有 `{query}`；`review_card_write` 的模型参数只有 `{drafts: [{front, back, sourceChunkId}]}`，`userId`、`knowledgePointId`、`knowledgeBaseId` 均由服务端绑定。Phase 2 不新增 `knowledge_bases` 表，多知识库或独立 KB 管理另行决策。
+
 ---
 
 ### 4.3 rag（检索与融合）
@@ -244,7 +246,9 @@ CREATE TABLE users (
 }
 ```
 
-**检索隔离**：所有索引写入都必须保存 `user_id`；BM25、向量与 parent 二跳查询由服务端同时注入 `user_id` 和允许访问的 `knowledge_base_id` 过滤条件，模型不得决定权限参数。数据库中的知识库归属校验可以保留，但不能替代 ES 查询自身的双重范围过滤（ADR-0003）。
+**检索隔离**：所有索引写入都必须保存 `user_id`；BM25、向量与 parent 二跳查询由服务端同时注入 `user_id` 和已验证的单一 `knowledge_base_id` 过滤条件，模型不得决定权限参数。Phase 2 工具只暴露 `query`，scope 来自 `RuntimeContext`；数据库中的知识库归属校验可以保留，但不能替代 ES 查询自身的双重范围过滤（ADR-0003、ADR-0006）。
+
+**索引文档 ID 与关系归属**：ES 文档 `_id` 固定使用 `document_chunks.chunk_id`，相同逻辑 chunk 重试时覆盖同一 `_id`。ES 中的 `user_id` / `knowledge_base_id` 是查询隔离所需的索引冗余，不要求回写到 MySQL `document_chunks`；关系归属仍通过 `document_chunks.document_id → documents`。
 
 **别名管理**：
 - `chunks-v1-read` / `chunks-v1-write`：当前活跃索引
@@ -294,7 +298,7 @@ CREATE TABLE file_records (
     knowledge_base_id BIGINT NOT NULL,
     filename VARCHAR(255) NOT NULL,
     file_size BIGINT NOT NULL,
-    file_hash VARCHAR(64) NOT NULL,
+    file_hash VARCHAR(64) NOT NULL,  -- 完整文件字节的 64 位小写 SHA-256
     storage_key VARCHAR(512) NOT NULL,
     status VARCHAR(32) NOT NULL,  -- UPLOADING / COMPLETED
     created_at DATETIME NOT NULL,
@@ -336,6 +340,10 @@ CREATE TABLE document_chunks (
 );
 ```
 
+`document_chunks` 只通过 `document_id` 关联 `documents`，不重复保存 `user_id` 或 `knowledge_base_id`。评测按 `chunk_id` 找到 chunk 后经该关系从 V2 `Document` 确定 scope；不得为评测或检索恢复 chunk 冗余字段。
+
+**V2 上传与文档响应契约**（[ADR-0005](../adr/0005-ingest-clean-cutover.md)）：上传预检在对象写入前以已验证的 `user_id + knowledge_base_id + file_hash` 去重；直传和分片完成时以最终字节复核同一 SHA-256。`DocumentResponse` 只包含 `id`、`knowledgeBaseId`、`fileRecordId`、`title`、`contentType`、`pipelineStatus`、`errorMessage`、`createdAt`、`updatedAt`，不再暴露 `fileId`、`sourceType`、`parseStatus` 或 `indexStatus`。切换批次删除历史上传性能 Controller/Service/Test，保留正常上传、分片续传、pipeline 与补偿。
+
 **Phase 1 pipeline 最小契约**：
 - `chunk_id` 是 64 位小写十六进制业务 ID：`SHA-256(UTF-8(documentId + chunkerVersion + chunkType + chunkIndex + contentHash))`；`documentId` 与 `chunkIndex` 使用十进制文本，`chunkType` 使用 `PARENT` / `CHILD`，字段按该固定顺序直接拼接。相同输入在失败重试时得到相同 ID。
 - `parser_version` 固定写 `tika-3.3.0`；`chunker_version` 固定写 `structured-jtokkit-cl100k-v1`；ES `embedding_model` 写索引时的实际配置值，当前为 `text-embedding-v3`，不得写与实际调用不一致的常量。
@@ -343,7 +351,7 @@ CREATE TABLE document_chunks (
 - MQ 消费或显式重试调用可以把 `FAILED` 重新 claim 为 `PARSING`；Canal 补偿只允许 claim `PENDING`，不得自动重试 `FAILED`。状态 claim 必须是条件更新，未取得 claim 的调用不执行 pipeline。
 - #19 不新增按 `document_id` 删除旧 ES 文档的流程；失败重试依靠确定性 `chunk_id` 对相同逻辑 chunk 覆盖写入，不扩展整文档清理能力。
 
-1.12a 与 #19 按 ADR-0004 分阶段切换：前者只新增严格 V2 的全局实体/Mapper，后者接线并切换消费者后再删除 legacy 六类型；两者同批验收，中间状态不可部署。
+1.12a 与 #19 按 ADR-0004、ADR-0005 分阶段切换：前者只新增严格 V2 的全局实体/Mapper，后者接线并切换消费者后再删除 legacy 六类型、旧响应状态和历史上传性能链；两者同批验收，中间状态不可部署。
 
 ---
 
@@ -399,6 +407,8 @@ CREATE TABLE knowledge_points (
 );
 ```
 
+Phase 2 的 `learning_sessions.knowledge_base_id` 是单知识库会话 scope；当前有效 KB 以当前用户在 `documents` 中存在匹配 `(user_id, knowledge_base_id)` 为准，不新增 `knowledge_bases` 表。多库会话、独立 KB 生命周期和成员管理不属于本 MVP。
+
 ---
 
 ### 4.6 review（复习卡片）
@@ -426,6 +436,8 @@ CREATE TABLE review_cards (
     INDEX idx_kp (knowledge_point_id)
 );
 ```
+
+`review_card_write` 只接收 `drafts[{front, back, sourceChunkId}]`。写入服务从已验证的会话和运行上下文绑定 `user_id`、`knowledge_point_id`、`knowledge_base_id`，并检查来源 chunk 属于同一文档 scope；这些字段不进入模型工具 schema。
 
 ---
 
@@ -488,6 +500,8 @@ CREATE TABLE kg_relations (
 - 人工标注黄金集（几十条）
 - Judge 一致率校准
 - 回归门槛：改动后分数不许掉
+
+评测 fixture 和黄金集以 `chunk_id` 作为证据标识，不在 `document_chunks` 保存重复的用户或知识库字段。评测读取 `document_chunks.document_id` 后关联 V2 `documents`，由 `Document.user_id` / `Document.knowledge_base_id` 确定本次评测 scope；缺失关联或跨 scope 证据直接拒绝。
 
 **关键类**：
 - `RetrievalEvaluator`：Recall@K 计算
@@ -685,7 +699,7 @@ Kubernetes:
 | 概念 | 说明 |
 |------|------|
 | `HarnessAgent` | AgentScope 的主 Agent 类，封装 ReActAgent |
-| `RuntimeContext` | 绑定 `userId` / `sessionId`；不携带 workspace |
+| `RuntimeContext` | 绑定 `userId` / `sessionId`；Phase 2 通过 extra 携带服务端验证的单一 `knowledgeBaseId`；不携带 workspace |
 | `AgentState` / `AgentStateStore` | 可保存 agent state；checkpoint fork/replay 需运行验证 |
 | `JsonFileAgentStateStore` | 默认写入 `${user.home}/.agentscope/state/<agentId>`，与 workspace 分离 |
 | `SessionTree` | workspace 内的 session/transcript/compaction JSONL 管理，不等同于完整 trace |

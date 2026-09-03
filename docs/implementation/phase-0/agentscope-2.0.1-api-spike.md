@@ -32,6 +32,7 @@ javap -classpath <jars> -c -p <targeted-class>
 - Builder 的最小关键依赖是 `model(io.agentscope.core.model.Model)`；workspace 通过 `workspace(Path)` 或 `workspace(String)` 单独配置。
 - Builder 公开 `fallbackModel(Model/String)` 和 `maxRetries(int)`，fallback 是应用显式配置，不会因为 classpath 中同时存在多个 provider 就自动发生。
 - `RuntimeContext.builder().userId(...).sessionId(...).build()` 负责调用身份；`RuntimeContext` 不绑定 workspace。
+- `RuntimeContext.Builder` 还公开 `put(String, Object)` / typed `put`，实例公开 `get` / `getExtra`；因此项目可以把已由服务端验证的单一 `knowledgeBaseId` 作为 extra 传给工具。extra 只是上下文载体，不提供权限校验，不能接受模型提交的 scope。
 - `HarnessAgent.call(String)` 与带 `RuntimeContext` 的调用入口可用。
 - 已安装 JAR 中未发现 Spring Boot 自动配置；0.2 应由应用显式创建 Spring Bean。
 
@@ -97,6 +98,7 @@ javap -classpath <jars> -c -p <targeted-class>
 - 任务 0.4 将主模型确定为 `deepseek:deepseek-chat`，Phase 0 不配置 fallback，`maxRetries=1`。
 - AgentScope 是唯一目标 Agent Runtime。Spring AI Chat/Tool 调用链仅为迁移期遗留，禁止新增消费者，待 Harness、工具与学习流程迁移完成后由任务 3.12 删除。
 - Spring AI Embedding 只属于 RAG provider adapter，其去留仍在 RAG 阶段单独决定，不纳入任务 3.12。
+- Phase 2 已确定单知识库工具 scope：服务端先以 `documents(user_id, knowledge_base_id)` 存在性验证单一 KB，再通过 `RuntimeContext` extra 传递；`knowledge_search` 只暴露 `query`，`review_card_write` 只暴露 `drafts` 内容字段。
 
 ### 5.2 仍需用户决定或运行 Spike 的事项
 

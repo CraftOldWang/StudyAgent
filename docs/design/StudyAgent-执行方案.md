@@ -71,17 +71,17 @@
 | 1.8 | 实现 `RetrievalService` | 编排 BM25 / 向量 / RRF / 父子，暴露统一接口 | 单测覆盖四种策略 |
 | 1.9 | 实现 `StructuredChunker` | 按标题 / 段落 / 列表切分，返回 `ChunkSegment` | Markdown 分块保留 `[startOffset,endOffset)`、`headingPath` 与统一 `tokenCount` |
 | 1.10 | 实现 `TokenWindowChunker` | 使用固定版本本地 `TokenCounter` 对超长 `ChunkSegment` 做 900/120 fallback | 单测证明 token 上限与重叠使用同一计量口径，且 fallback 不丢失来源坐标 |
-| 1.12 | 表迁移：ingest 三张表 | `V2__create_ingest_tables.sql` | 表创建成功 |
-| 1.12a | 新增 ingest 全局 `model/mapper` | 在全局 `model/`、`mapper/` 新增严格对应 V2 的 `FileRecord` / `Document` / `DocumentChunk` 及其 Mapper；暂不修改旧消费者或删除旧六类型 | 新六类型字段与 Mapper SQL 不引用 V2 外列；legacy 链保持原样；任务只标记实现完成、等待与 1.11 同批验收 |
-| 1.11 | 实现并切换 `DocumentPipeline` | 使用新全局模型完成 PARSING → CHUNKING → EMBEDDING → INDEXING，切换必要消费者后清理旧六类型 | 状态、重试、版本和确定性 `chunk_id` 符合最小契约；不新增按 document 删除旧 ES；与 1.12a 同批验收 |
+| 1.12 | 表迁移：ingest 三张表 | `V2__create_ingest_tables.sql`，`file_hash` 统一为 SHA-256 | 表创建成功；上传预检按 SHA-256 去重 |
+| 1.12a | 新增 ingest 全局 `model/mapper` | 在全局 `model/`、`mapper/` 新增严格对应 V2 的 `FileRecord` / `Document` / `DocumentChunk` 及其 Mapper；暂不修改旧消费者或删除旧六类型 | 新六类型字段与 Mapper SQL 不引用 V2 外列；不恢复旧哈希、状态或 chunk scope 字段；与 1.11 同批验收 |
+| 1.11 | 实现并切换 `DocumentPipeline` | 使用新全局模型完成 PARSING → CHUNKING → EMBEDDING → INDEXING，切换 V2 消费者、响应契约和索引 ID 后清理旧链 | 状态、重试、版本和确定性 `chunk_id` 符合最小契约；ES `_id=chunk_id`；删除历史上传性能 Controller/Service/Test；与 1.12a 同批验收 |
 | 1.13 | 端到端测试：上传 PDF → 检索 | POST `/api/files/upload` + POST `/api/rag/search` | 检索返回相关段落 |
 | 1.14 | 构建检索黄金集 | 从已索引 chunk 反向合成 100-200 条查询（ground truth = 源 chunk id），人工抽检 20% 剔除坏例；另自标注 30-50 条真实查询 | 黄金集入库 `eval_golden_set` |
 | 1.15 | 中文分词器三方对比 | standard / IK / SmartCN 在黄金集上的 BM25 Recall@K 对比，择优引入 | 对比报告 + 决策记录（简历 B2 数字来源） |
 | 1.16 | 相关性阈值实验 | 多档阈值跑 precision-recall 曲线，按检索器分别选点 | 曲线 + 选定阈值（简历 B2 数字来源） |
 
-**1.12a / 1.11 迁移边界**：执行顺序固定为 `1.12（Issue #20）→ 1.12a → 1.11（Issue #19）`。1.12a 以 V2 schema 为唯一字段基线，只新增三实体与三 Mapper，不修改 legacy 消费者、不删除旧六类型、不实现 pipeline；`KnowledgeBase`、`UploadSession` 等其他实体/Mapper也不在范围内。1.11 使用新模型接线、迁移 V1 仍需保留的直接消费者并删除旧六类型；不借切换重写上传、S3、MQ、Canal 等工程件。两项属于同一验收批次，1.12a 中间态不可部署或独立关闭（ADR-0004）。
+**1.12a / 1.11 迁移边界**：执行顺序固定为 `1.12（Issue #20）→ 1.12a → 1.11（Issue #19）`。1.12a 以 V2 schema 为唯一字段基线，只新增三实体与三 Mapper，不修改 legacy 消费者、不删除旧六类型、不实现 pipeline；`KnowledgeBase`、`UploadSession` 等其他实体/Mapper也不在范围内。1.11 使用新模型接线、迁移 V1 仍需保留的直接消费者并删除旧六类型；`file_hash` 只使用完整 SHA-256，`DocumentResponse` 只保留 `fileRecordId`、`contentType`、`pipelineStatus` 等 V2 字段，移除 `parseStatus` / `indexStatus` 及历史上传性能 Controller/Service/Test；不借切换重写上传、S3、MQ、Canal 等工程件。评测由 `document_chunks.document_id → documents` 取得 user/KB scope，不给 chunk 恢复冗余字段。两项属于同一验收批次，1.12a 中间态不可部署或独立关闭（ADR-0004、ADR-0005）。
 
-**1.11 最小契约**：业务 `chunk_id = SHA-256(documentId + chunkerVersion + chunkType + chunkIndex + contentHash)`；写入 `parser_version=tika-3.3.0`、`chunker_version=structured-jtokkit-cl100k-v1` 和实际配置的 `embedding_model`。任一阶段失败统一为 `FAILED` 且 `error_message` 带失败阶段；MQ/显式调用可将 `FAILED` 条件 claim 到 `PARSING`，Canal 只 claim `PENDING`。失败重试复用确定性 chunk ID 覆盖写，不增加按 `document_id` 删除旧 ES 的流程。
+**1.11 最小契约**：业务 `chunk_id = SHA-256(documentId + chunkerVersion + chunkType + chunkIndex + contentHash)`，并作为 ES 文档 `_id`；写入 `parser_version=tika-3.3.0`、`chunker_version=structured-jtokkit-cl100k-v1` 和实际配置的 `embedding_model`。任一阶段失败统一为 `FAILED` 且 `error_message` 带失败阶段；MQ/显式调用可将 `FAILED` 条件 claim 到 `PARSING`，Canal 只 claim `PENDING`。失败重试复用确定性 chunk ID 覆盖写，不增加按 `document_id` 删除旧 ES 的流程。
 
 **验收标准**：
 - 上传一份 Java 教程 PDF，pipeline 走完，ES 有数据
@@ -101,14 +101,16 @@
 
 | ID | 任务 | 产出 | 验收 |
 |----|------|------|------|
-| 2.1 | 实现 `KnowledgeSearchTool` | 按 AgentScope `AgentTool` / `Toolkit` 公开 API 注册，参数 `String query`，调用 `RetrievalService` | agent 可调用 `knowledge_search` |
-| 2.2 | 实现 `ReviewCardWriteTool` | 参数 `List<CardDraft>`，写入 `review_cards` 表 | agent 可调用 `review_card_write` |
-| 2.3 | 实现 `ToolGovernanceInterceptor` | 拦截工具调用，检查配额（`review_card_write` 最多 5 张/次） | 超配额返回错误 + 记录警告 |
+| 2.1 | 实现 `KnowledgeSearchTool` | 按 AgentScope `AgentTool` / `Toolkit` 公开 API 注册，模型参数仅 `{query}`；user/单 KB scope 从服务端 `RuntimeContext` 注入 | agent 可调用 `knowledge_search` |
+| 2.2 | 实现 `ReviewCardWriteTool` | 模型参数仅 `{drafts: [{front, back, sourceChunkId}]}`；服务端绑定 user/knowledgePoint/单 KB 后写入 `review_cards` | agent 可调用 `review_card_write` |
+| 2.3 | 实现 `ToolGovernanceInterceptor` | 拦截工具调用，检查配额（`review_card_write` 最多 5 张/次） | 超配额截断至 5 张 + 记录警告 |
 | 2.4 | 实现写入条数上限逻辑 | `review_card_write` 模型返回 200 张，只写前 5 张 + 日志警告 | 日志显示"截断至 5 张" |
 | 2.5 | 实现业务级重试 | 检索超时重试 3 次，其他工具失败不重试 | 单测覆盖重试逻辑 |
-| 2.6 | 表迁移：review 与 learning | `V3__create_review_learning_tables.sql` | 表创建成功 |
-| 2.7 | 端到端测试：agent 调用检索 + 写卡片 | agent 对话"教我 Java 多态"，调用 `knowledge_search` 后生成卡片 | trace 显示工具调用，卡片入库 |
+| 2.6 | 表迁移：review 与 learning | `V3__create_review_learning_tables.sql`；learning session 单 `knowledge_base_id`，不新增 `knowledge_bases` 表 | 表创建成功 |
+| 2.7 | 端到端测试：agent 调用检索 + 写卡片 | 单用户、单 KB fixture；`documents(user_id,knowledge_base_id)` 存在性提供 scope，工具模型参数不含权限字段 | trace 显示工具调用，卡片入库 |
 | 2.8 | 治理效果量化 | 统计配额拦截案例；对比体积治理前后单次工具调用 token 用量 | 数据入 `docs/eval/`（简历 B5 数字来源） |
+
+**Phase 2 依赖与 2.7 fixture 边界**（[ADR-0006](../adr/0006-phase2-single-kb-tool-scope.md)）：最终验收顺序固定为 `2.6 → 2.6a → scope/RuntimeContext 接线 → 2.1/2.2 → 2.3/2.4/2.5 → 2.7`。2.7 fixture 只准备一个用户、一个 `knowledgeBaseId`、匹配的 V2 `documents` 行、学习会话、知识点、来源 `document_chunks` 和对应 ES chunk；不创建 `knowledge_bases`，不覆盖多 KB、空 KB 或独立 KB 管理。评测以 `chunk_id` 为证据并通过 `Document` 跨表确定 user/KB。
 
 **验收标准**：
 - agent 对话触发 `knowledge_search`，返回检索结果
