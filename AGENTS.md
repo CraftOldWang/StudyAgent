@@ -29,7 +29,7 @@
 - subagent 做：仓库勘察、具体实现，以及在模块或明确批次实现完整后的编译、测试与独立验收。
 - **实现与验收必须由不同的 subagent 完成。** 实现者不得验收自己的任何实现；一个未参与相关实现的验收 subagent 可以在同一批次中验收多个不同模块。
 - subagent 返回结论与 `file:line` 证据，不返回文件内容。
-- 后续开发与验收 subagent 显式使用 `gpt-5.6-sol`、`high` reasoning，不继承主 agent 的 `xhigh`；主 agent 启动 subagent 时传递精简但完整的任务上下文。
+- 实际编码与机械实现 subagent 默认显式使用 `gpt-5.6-sol`、`medium` reasoning；需求细化、架构/API 边界研究与独立验收 subagent 显式使用 `gpt-5.6-sol`、`high` reasoning，均不继承主 agent 的档位。只有任务确实复杂时才提高实现 subagent 的 reasoning，并在派发任务时说明原因；主 agent 启动 subagent 时传递精简但完整的任务上下文。
 - 相互独立的 subagent 在一条消息里一次性发起，让它们并行。
 - **subagent 不得擅自扩大任务范围。** 遇到任务边界外的问题、或遇到需要决策的分歧，停下并上报，不要顺手改掉，也不要自行选择一种做法。
 - GitHub Issues / Project / commit / push 的重复同步工作固定委托给可复用的 `github_sync` subagent；主线程只向它传递任务状态、验收证据和精确文件范围，不保留批量同步细节。GitHub 写入仍需由不同 subagent 独立验收。
