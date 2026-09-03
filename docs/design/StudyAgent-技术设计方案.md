@@ -272,9 +272,9 @@ CREATE TABLE users (
 3. 保留来源坐标：Phase 1 固定保存解析文本 offset 与标题路径；页码等仅在解析器能够提供时补充
 
 **Phase 1 分块契约**：
-- `StructuredChunker` 与 `TokenWindowChunker` 复用固定算法和版本的本地确定性 `TokenCounter`；窗口、重叠、`tokenCount` 与测试均使用该口径，不使用字符数估算，也不依赖 provider 请求后的 usage。
+- `StructuredChunker` 与 `TokenWindowChunker` 复用基于 `com.knuddels:jtokkit:1.1.0`、`EncodingType.CL100K_BASE` 的本地确定性 `TokenCounter`；窗口、重叠、`tokenCount` 与测试均使用这一稳定、可复现的分块口径，不使用字符数估算，也不依赖 provider 请求后的 usage。该口径不等于 DeepSeek 或其他模型供应商的计费 token。
 - 两级 chunker 统一输入/输出 `ChunkSegment(content, tokenCount, sourceLocation)`；`SourceLocation` 至少包含解析器输出文本的 `[startOffset, endOffset)` 与 `headingPath`，fallback 后必须保持原坐标系。
-- token 计量算法变化时提升 `chunker_version`，重新分块、索引并运行检索回归（ADR-0002）。
+- token 计量算法、jtokkit 版本或 encoding 变化时提升 `chunker_version`，重新分块、重新索引并运行检索回归（ADR-0002）。
 
 **关键类**：
 - `UploadController`：分片上传接口
