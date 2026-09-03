@@ -1,0 +1,41 @@
+package com.studyagent.model;
+
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import java.time.LocalDateTime;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@TableName("knowledge_points")
+public class KnowledgePoint {
+
+    @TableId("id")
+    private Long id;
+
+    @TableField("session_id")
+    private Long sessionId;
+
+    @TableField("user_id")
+    private Long userId;
+
+    @TableField("topic")
+    private String topic;
+
+    @TableField("status")
+    private String status;
+
+    @TableField("started_at")
+    private LocalDateTime startedAt;
+
+    @TableField("completed_at")
+    private LocalDateTime completedAt;
+
+    @TableField("created_at")
+    private LocalDateTime createdAt;
+
+    @TableField("updated_at")
+    private LocalDateTime updatedAt;
+}

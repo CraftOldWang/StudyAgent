@@ -26,7 +26,6 @@ class UserSchemaMigrationIntegrationTest {
             "learning_todos",
             "quiz_answers",
             "quiz_questions",
-            "review_cards",
             "review_records",
             "tool_call_records",
             "upload_sessions"
