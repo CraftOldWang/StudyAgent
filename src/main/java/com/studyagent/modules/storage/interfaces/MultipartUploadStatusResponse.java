@@ -10,7 +10,7 @@ public record MultipartUploadStatusResponse(
         Long uploadSessionId,
         Long knowledgeBaseId,
         String filename,
-        String md5,
+        String fileHash,
         long fileSize,
         int chunkSize,
         int totalChunks,

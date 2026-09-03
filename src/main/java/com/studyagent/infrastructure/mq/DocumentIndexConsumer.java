@@ -1,7 +1,7 @@
 package com.studyagent.infrastructure.mq;
 
+import com.studyagent.ingest.pipeline.DocumentPipeline;
 import com.studyagent.modules.knowledge.application.DocumentIndexMessage;
-import com.studyagent.modules.knowledge.application.DocumentProcessingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 )
 public class DocumentIndexConsumer implements RocketMQListener<DocumentIndexMessage> {
 
-    private final DocumentProcessingService documentProcessingService;
+    private final DocumentPipeline documentPipeline;
 
     /**
      * 消费文档处理消息。
@@ -31,7 +31,7 @@ public class DocumentIndexConsumer implements RocketMQListener<DocumentIndexMess
         Long documentId = message == null ? null : message.documentId();
         log.info("收到 RocketMQ 文档索引消息: documentId={}", documentId);
         try {
-            documentProcessingService.process(documentId);
+            documentPipeline.process(documentId);
             log.info(
                     "RocketMQ 文档索引消息消费完成: documentId={}, consumeMillis={}",
                     documentId,

@@ -81,7 +81,7 @@ public class DeepseekEvalCaseClient {
                     {
                       "question": "问题文本",
                       "expectedAnswer": "简短参考答案",
-                      "expectedChunkIds": [123],
+                       "expectedChunkIds": ["chunk-id"],
                       "reason": "为什么这些 chunk 支撑该问题"
                     }
                   ]

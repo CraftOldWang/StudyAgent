@@ -5,7 +5,7 @@ import com.alibaba.otter.canal.client.CanalConnectors;
 import com.alibaba.otter.canal.protocol.CanalEntry;
 import com.alibaba.otter.canal.protocol.Message;
 import com.studyagent.config.CanalProperties;
-import com.studyagent.modules.knowledge.application.DocumentChunkIndexSyncService;
+import com.studyagent.ingest.pipeline.DocumentPipeline;
 import jakarta.annotation.PreDestroy;
 import java.net.InetSocketAddress;
 import java.util.List;
@@ -18,7 +18,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 /**
- * Canal binlog 监听器，用于捕获 document_chunks/documents 变化并补偿 ES 索引同步。
+ * Canal binlog 监听器，用于捕获待处理 documents 变化并补偿触发 pipeline。
  *
  * <p>该组件默认由配置开关控制，适合作为 RocketMQ 处理链路之外的最终一致性补偿。</p>
  */
@@ -28,11 +28,10 @@ import org.springframework.stereotype.Component;
 @ConditionalOnProperty(prefix = "study-agent.canal", name = "enabled", havingValue = "true")
 public class DocumentChunkCanalListener {
 
-    private static final String DOCUMENT_CHUNKS_TABLE = "document_chunks";
     private static final String DOCUMENTS_TABLE = "documents";
 
     private final CanalProperties properties;
-    private final DocumentChunkIndexSyncService documentChunkIndexSyncService;
+    private final DocumentPipeline documentPipeline;
     private volatile boolean running;
     private Thread worker;
 
@@ -124,27 +123,14 @@ public class DocumentChunkCanalListener {
      * 根据表名分派处理逻辑。
      */
     private void handleRow(String tableName, CanalEntry.EventType eventType, CanalEntry.RowData rowData) {
-        if (DOCUMENTS_TABLE.equals(tableName)) {
-            handleDocumentRow(eventType, rowData);
+        if (!DOCUMENTS_TABLE.equals(tableName)) {
             return;
         }
-        if (!DOCUMENT_CHUNKS_TABLE.equals(tableName)) {
-            return;
-        }
-        List<CanalEntry.Column> columns = eventType == CanalEntry.EventType.DELETE
-                ? rowData.getBeforeColumnsList()
-                : rowData.getAfterColumnsList();
-        Long chunkId = longColumn(columns, "id");
-        String esDocId = stringColumn(columns, "es_doc_id");
-        if (chunkId == null || hasText(esDocId)) {
-            return;
-        }
-        // 只同步尚未回填 es_doc_id 的 chunk，避免重复写索引。
-        documentChunkIndexSyncService.syncChunk(chunkId);
+        handleDocumentRow(eventType, rowData);
     }
 
     /**
-     * 文档进入 PARSED + INDEXING/FAILED 时，补偿同步缺失 chunk。
+     * 只为进入 PENDING 的文档触发一次 pipeline；FAILED 由 MQ 或显式调用负责重试。
      */
     private void handleDocumentRow(CanalEntry.EventType eventType, CanalEntry.RowData rowData) {
         if (eventType != CanalEntry.EventType.INSERT && eventType != CanalEntry.EventType.UPDATE) {
@@ -152,14 +138,11 @@ public class DocumentChunkCanalListener {
         }
         List<CanalEntry.Column> columns = rowData.getAfterColumnsList();
         Long documentId = longColumn(columns, "id");
-        String parseStatus = stringColumn(columns, "parse_status");
-        String indexStatus = stringColumn(columns, "index_status");
-        if (documentId == null
-                || !"PARSED".equals(parseStatus)
-                || (!"INDEXING".equals(indexStatus) && !"FAILED".equals(indexStatus))) {
+        String pipelineStatus = stringColumn(columns, "pipeline_status");
+        if (documentId == null || !"PENDING".equals(pipelineStatus)) {
             return;
         }
-        documentChunkIndexSyncService.syncMissingChunks(documentId);
+        documentPipeline.processPending(documentId);
     }
 
     /**

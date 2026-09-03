@@ -32,9 +32,9 @@ public class FileUploadController {
      */
     @GetMapping("/dedup")
     public ApiResponse<FileDedupCheckResponse> checkDuplicate(
-            @RequestParam String md5,
-            @RequestParam(required = false) String sha256) {
-        return ApiResponse.ok(fileUploadService.checkDuplicate(md5, sha256));
+            @RequestParam Long knowledgeBaseId,
+            @RequestParam String sha256) {
+        return ApiResponse.ok(fileUploadService.checkDuplicate(knowledgeBaseId, sha256));
     }
 
     /**

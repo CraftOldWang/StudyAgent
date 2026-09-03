@@ -1,22 +1,21 @@
 package com.studyagent.modules.storage.application;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.studyagent.config.ObjectStorageProperties;
 import com.studyagent.common.exception.BusinessException;
 import com.studyagent.infrastructure.mq.DocumentIndexProducer;
 import com.studyagent.infrastructure.objectstorage.ObjectStorageService;
 import com.studyagent.modules.knowledge.application.KnowledgeBaseService;
-import com.studyagent.modules.knowledge.domain.Document;
-import com.studyagent.modules.knowledge.infrastructure.DocumentMapper;
-import com.studyagent.modules.storage.domain.FileRecord;
 import com.studyagent.modules.storage.domain.UploadSession;
-import com.studyagent.modules.storage.infrastructure.FileRecordMapper;
 import com.studyagent.modules.storage.infrastructure.UploadSessionMapper;
 import com.studyagent.modules.storage.interfaces.FileDedupCheckResponse;
 import com.studyagent.modules.storage.interfaces.InitMultipartUploadRequest;
 import com.studyagent.modules.storage.interfaces.InitMultipartUploadResponse;
 import com.studyagent.modules.storage.interfaces.MultipartUploadStatusResponse;
 import com.studyagent.modules.storage.interfaces.UploadResultResponse;
+import com.studyagent.mapper.DocumentMapper;
+import com.studyagent.mapper.FileRecordMapper;
+import com.studyagent.model.Document;
+import com.studyagent.model.FileRecord;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
@@ -50,7 +49,6 @@ public class FileUploadService {
     private final UploadSessionMapper uploadSessionMapper;
     private final DocumentMapper documentMapper;
     private final ObjectStorageService objectStorageService;
-    private final ObjectStorageProperties storageProperties;
     private final RedissonClient redissonClient;
     private final StringRedisTemplate stringRedisTemplate;
     private final DocumentIndexProducer documentIndexProducer;
@@ -58,9 +56,9 @@ public class FileUploadService {
     /**
      * 根据客户端计算出的哈希检查文件是否已经入库，用于前端上传前的秒传判断。
      */
-    public FileDedupCheckResponse checkDuplicate(String md5, String sha256) {
-        String normalizedMd5 = normalizeMd5(md5);
-        FileRecord existing = findDuplicate(normalizedMd5, normalizeSha256(sha256));
+    public FileDedupCheckResponse checkDuplicate(Long knowledgeBaseId, String sha256) {
+        String normalizedSha256 = normalizeSha256(sha256);
+        FileRecord existing = findDuplicate(DEFAULT_USER_ID, knowledgeBaseId, normalizedSha256);
         if (existing == null) {
             return new FileDedupCheckResponse(false, null, "NOT_FOUND");
         }
@@ -72,24 +70,39 @@ public class FileUploadService {
      */
     @Transactional
     public UploadResultResponse uploadSingle(Long knowledgeBaseId, MultipartFile file) {
-        String md5 = calculateMd5(file);
-        String sha256 = calculateSha256(file);
-        RLock lock = redissonClient.getLock("lock:file:dedup:" + md5);
+        String fileHash = calculateSha256(file);
+        RLock lock = redissonClient.getLock("lock:file:dedup:" + fileHash);
         lock.lock();
         try {
             // 哈希相同的文件只复用文件实体，但仍然为当前知识库创建新的文档记录。
-            FileRecord existing = findDuplicate(md5, sha256);
+            FileRecord existing = findDuplicate(DEFAULT_USER_ID, knowledgeBaseId, fileHash);
             if (existing != null) {
-                Document document = createDocument(DEFAULT_USER_ID, knowledgeBaseId, existing, file.getOriginalFilename());
+                Document document = createDocument(
+                        DEFAULT_USER_ID,
+                        knowledgeBaseId,
+                        existing,
+                        file.getOriginalFilename(),
+                        file.getContentType());
                 documentIndexProducer.send(document.getId());
                 return new UploadResultResponse(existing.getId(), document.getId(), "DUPLICATED");
             }
 
             // 对象 key 使用哈希分区，避免同名文件覆盖，同时保留原始文件名便于排查。
-            String objectKey = "files/" + md5 + "/" + safeFilename(file.getOriginalFilename());
+            String objectKey = "files/" + fileHash + "/" + safeFilename(file.getOriginalFilename());
             objectStorageService.putObject(objectKey, fileInputStream(file), file.getSize(), contentType(file.getContentType()));
-            FileRecord fileRecord = createFileRecord(md5, sha256, objectKey, file.getOriginalFilename(), file.getContentType(), file.getSize());
-            Document document = createDocument(DEFAULT_USER_ID, knowledgeBaseId, fileRecord, file.getOriginalFilename());
+            FileRecord fileRecord = createFileRecord(
+                    DEFAULT_USER_ID,
+                    knowledgeBaseId,
+                    fileHash,
+                    objectKey,
+                    file.getOriginalFilename(),
+                    file.getSize());
+            Document document = createDocument(
+                    DEFAULT_USER_ID,
+                    knowledgeBaseId,
+                    fileRecord,
+                    file.getOriginalFilename(),
+                    file.getContentType());
             documentIndexProducer.send(document.getId());
             return new UploadResultResponse(fileRecord.getId(), document.getId(), "UPLOADED");
         } finally {
@@ -102,16 +115,20 @@ public class FileUploadService {
      */
     @Transactional
     public InitMultipartUploadResponse initMultipart(InitMultipartUploadRequest request) {
-        String md5 = normalizeMd5(request.md5());
-        String sha256 = normalizeSha256(request.sha256());
+        String fileHash = normalizeSha256(request.sha256());
         validateInitRequest(request);
-        RLock lock = redissonClient.getLock("lock:file:dedup:" + md5);
+        RLock lock = redissonClient.getLock("lock:file:dedup:" + fileHash);
         lock.lock();
         try {
             // 初始化阶段就做去重，客户端可以跳过后续所有分片上传。
-            FileRecord existing = findDuplicate(md5, sha256);
+            FileRecord existing = findDuplicate(DEFAULT_USER_ID, request.knowledgeBaseId(), fileHash);
             if (existing != null) {
-                Document document = createDocument(DEFAULT_USER_ID, request.knowledgeBaseId(), existing, request.filename());
+                Document document = createDocument(
+                        DEFAULT_USER_ID,
+                        request.knowledgeBaseId(),
+                        existing,
+                        request.filename(),
+                        request.contentType());
                 documentIndexProducer.send(document.getId());
                 return new InitMultipartUploadResponse(null, true, existing.getId(), document.getId(), "DUPLICATED", 0, request.totalChunks());
             }
@@ -119,7 +136,7 @@ public class FileUploadService {
             UploadSession activeSession = uploadSessionMapper.selectActiveSession(
                     DEFAULT_USER_ID,
                     request.knowledgeBaseId(),
-                    md5
+                    fileHash
             );
             if (activeSession != null) {
                 // Redis Bitmap 是短期状态，返回前同步一次 MySQL 中的 uploadedChunks。
@@ -140,7 +157,7 @@ public class FileUploadService {
             UploadSession session = new UploadSession();
             session.setUserId(DEFAULT_USER_ID);
             session.setKnowledgeBaseId(request.knowledgeBaseId());
-            session.setFileMd5(md5);
+            session.setFileHash(fileHash);
             session.setFilename(request.filename());
             session.setContentType(request.contentType());
             session.setChunkSize(request.chunkSize());
@@ -212,52 +229,54 @@ public class FileUploadService {
             throw new BusinessException("分片未上传完整，缺少分片: " + missingChunks);
         }
 
-        RLock lock = redissonClient.getLock("lock:file:dedup:" + session.getFileMd5());
+        RLock lock = redissonClient.getLock("lock:file:dedup:" + session.getFileHash());
         lock.lock();
         try {
-            // 完成阶段再次检查 MD5，处理并发上传中其他会话已经完成的情况。
-            FileRecord existing = findByMd5(session.getFileMd5());
-            if (existing != null) {
-                session.setStatus("COMPLETED");
-                session.setCompletedFileId(existing.getId());
-                session.setUpdatedAt(LocalDateTime.now());
-                Document document = createDocument(DEFAULT_USER_ID, knowledgeBaseId, existing, session.getFilename());
-                session.setCompletedDocumentId(document.getId());
-                uploadSessionMapper.updateById(session);
-                documentIndexProducer.send(document.getId());
-                return new UploadResultResponse(existing.getId(), document.getId(), "DUPLICATED");
+            // 完成阶段重新计算所有分片的 SHA-256，不能只信任客户端声明的哈希。
+            String actualFileHash = calculateMergedHash(session);
+            if (!session.getFileHash().equalsIgnoreCase(actualFileHash)) {
+                throw new BusinessException("合并文件 SHA-256 与初始化 SHA-256 不一致");
             }
 
-            FileHashes hashes = calculateMergedHashes(session);
-            String actualMd5 = hashes.md5();
-            if (!session.getFileMd5().equalsIgnoreCase(actualMd5)) {
-                throw new BusinessException("合并文件 MD5 与初始化 MD5 不一致");
-            }
-            String actualSha256 = hashes.sha256();
-            // 合并后的 SHA256 也参与去重，弥补仅依赖 MD5 的碰撞风险。
-            FileRecord duplicateAfterHash = findDuplicate(actualMd5, actualSha256);
+            // 完成时再次按最终字节哈希检查并发上传中其他会话已经完成的情况。
+            FileRecord duplicateAfterHash = findDuplicate(DEFAULT_USER_ID, knowledgeBaseId, actualFileHash);
             if (duplicateAfterHash != null) {
                 session.setStatus("COMPLETED");
                 session.setCompletedFileId(duplicateAfterHash.getId());
                 session.setUpdatedAt(LocalDateTime.now());
-                Document document = createDocument(DEFAULT_USER_ID, knowledgeBaseId, duplicateAfterHash, session.getFilename());
+                Document document = createDocument(
+                        DEFAULT_USER_ID,
+                        knowledgeBaseId,
+                        duplicateAfterHash,
+                        session.getFilename(),
+                        session.getContentType());
                 session.setCompletedDocumentId(document.getId());
                 uploadSessionMapper.updateById(session);
                 documentIndexProducer.send(document.getId());
                 return new UploadResultResponse(duplicateAfterHash.getId(), document.getId(), "DUPLICATED");
             }
 
-            String objectKey = "files/" + session.getFileMd5() + "/" + safeFilename(session.getFilename());
+            String objectKey = "files/" + actualFileHash + "/" + safeFilename(session.getFilename());
             // 这里按顺序读取临时分片形成一个连续流，避免把大文件完整加载到内存。
             putMergedObject(session, objectKey);
-            FileRecord fileRecord = createFileRecord(session.getFileMd5(), actualSha256, objectKey, session.getFilename(),
-                    session.getContentType(), session.getFileSize());
+            FileRecord fileRecord = createFileRecord(
+                    DEFAULT_USER_ID,
+                    knowledgeBaseId,
+                    actualFileHash,
+                    objectKey,
+                    session.getFilename(),
+                    session.getFileSize());
 
             session.setStatus("COMPLETED");
             session.setCompletedFileId(fileRecord.getId());
             session.setUpdatedAt(LocalDateTime.now());
 
-            Document document = createDocument(DEFAULT_USER_ID, knowledgeBaseId, fileRecord, session.getFilename());
+            Document document = createDocument(
+                    DEFAULT_USER_ID,
+                    knowledgeBaseId,
+                    fileRecord,
+                    session.getFilename(),
+                    session.getContentType());
             session.setCompletedDocumentId(document.getId());
             uploadSessionMapper.updateById(session);
             documentIndexProducer.send(document.getId());
@@ -268,27 +287,22 @@ public class FileUploadService {
     }
 
     /**
-     * 按分片顺序流式计算合并后文件的 MD5 和 SHA256。
+     * 按分片顺序流式计算合并后文件的 SHA-256。
      */
-    private FileHashes calculateMergedHashes(UploadSession session) {
-        MessageDigest md5Digest = messageDigest("MD5", "创建 MD5 摘要失败");
-        MessageDigest sha256Digest = messageDigest("SHA-256", "创建 SHA256 摘要失败");
+    private String calculateMergedHash(UploadSession session) {
+        MessageDigest digest = messageDigest("SHA-256", "创建 SHA-256 摘要失败");
         byte[] buffer = new byte[8192];
         for (int i = 0; i < session.getTotalChunks(); i++) {
             try (InputStream inputStream = objectStorageService.getObject(chunkObjectKey(session, i))) {
                 int read;
                 while ((read = inputStream.read(buffer)) != -1) {
-                    md5Digest.update(buffer, 0, read);
-                    sha256Digest.update(buffer, 0, read);
+                    digest.update(buffer, 0, read);
                 }
             } catch (IOException | RuntimeException ex) {
                 throw new BusinessException("读取分片失败: " + i);
             }
         }
-        return new FileHashes(
-                HexFormat.of().formatHex(md5Digest.digest()),
-                HexFormat.of().formatHex(sha256Digest.digest())
-        );
+        return HexFormat.of().formatHex(digest.digest());
     }
 
     /**
@@ -314,45 +328,37 @@ public class FileUploadService {
     }
 
     /**
-     * 先按 MD5 再按 SHA256 查找已入库文件。
+     * 在当前用户和知识库范围内按完整文件 SHA-256 查找已入库文件。
      */
-    private FileRecord findDuplicate(String md5, String sha256) {
-        FileRecord existing = findByMd5(md5);
-        if (existing != null) {
-            return existing;
-        }
-        if (sha256 == null || sha256.isBlank()) {
-            return null;
-        }
+    private FileRecord findDuplicate(Long userId, Long knowledgeBaseId, String fileHash) {
         return fileRecordMapper.selectOne(new LambdaQueryWrapper<FileRecord>()
-                .eq(FileRecord::getSha256, sha256)
-                .last("LIMIT 1"));
-    }
-
-    private FileRecord findByMd5(String md5) {
-        return fileRecordMapper.selectOne(new LambdaQueryWrapper<FileRecord>()
-                .eq(FileRecord::getMd5, md5)
+                .eq(FileRecord::getUserId, userId)
+                .eq(FileRecord::getKnowledgeBaseId, knowledgeBaseId)
+                .eq(FileRecord::getFileHash, fileHash)
                 .last("LIMIT 1"));
     }
 
     /**
      * 创建文件元数据，文件内容已经在对象存储中落盘。
      */
-    private FileRecord createFileRecord(String md5, String sha256, String objectKey, String filename, String contentType, long size) {
+    private FileRecord createFileRecord(
+            Long userId,
+            Long knowledgeBaseId,
+            String fileHash,
+            String objectKey,
+            String filename,
+            long size
+    ) {
         LocalDateTime now = LocalDateTime.now();
         FileRecord fileRecord = new FileRecord();
-        fileRecord.setUserId(DEFAULT_USER_ID);
-        fileRecord.setMd5(md5);
-        fileRecord.setSha256(sha256);
-        fileRecord.setBucket(storageProperties.bucket());
-        fileRecord.setObjectKey(objectKey);
+        fileRecord.setUserId(userId);
+        fileRecord.setKnowledgeBaseId(knowledgeBaseId);
         fileRecord.setFilename(safeFilename(filename));
-        fileRecord.setContentType(contentType(contentType));
-        fileRecord.setSize(size);
-        fileRecord.setStorageProvider("RUSTFS_S3");
-        fileRecord.setStatus("ACTIVE");
+        fileRecord.setFileSize(size);
+        fileRecord.setFileHash(fileHash);
+        fileRecord.setStorageKey(objectKey);
+        fileRecord.setStatus("COMPLETED");
         fileRecord.setCreatedAt(now);
-        fileRecord.setUpdatedAt(now);
         fileRecordMapper.insert(fileRecord);
         return fileRecord;
     }
@@ -360,16 +366,21 @@ public class FileUploadService {
     /**
      * 为文件在指定知识库下创建文档记录，并等待异步解析和索引。
      */
-    private Document createDocument(Long userId, Long knowledgeBaseId, FileRecord fileRecord, String title) {
+    private Document createDocument(
+            Long userId,
+            Long knowledgeBaseId,
+            FileRecord fileRecord,
+            String title,
+            String contentType
+    ) {
         LocalDateTime now = LocalDateTime.now();
         Document document = new Document();
         document.setUserId(userId);
         document.setKnowledgeBaseId(knowledgeBaseId);
-        document.setFileId(fileRecord.getId());
+        document.setFileRecordId(fileRecord.getId());
         document.setTitle(safeFilename(title));
-        document.setSourceType("UPLOAD");
-        document.setParseStatus("UPLOADED");
-        document.setIndexStatus("PENDING");
+        document.setContentType(contentType(contentType));
+        document.setPipelineStatus("PENDING");
         document.setCreatedAt(now);
         document.setUpdatedAt(now);
         documentMapper.insert(document);
@@ -377,24 +388,7 @@ public class FileUploadService {
     }
 
     /**
-     * 计算 MultipartFile 的 MD5；调用方会用该值进入去重锁。
-     */
-    private String calculateMd5(MultipartFile file) {
-        try (InputStream inputStream = file.getInputStream()) {
-            MessageDigest digest = MessageDigest.getInstance("MD5");
-            byte[] buffer = new byte[8192];
-            int read;
-            while ((read = inputStream.read(buffer)) != -1) {
-                digest.update(buffer, 0, read);
-            }
-            return HexFormat.of().formatHex(digest.digest());
-        } catch (Exception ex) {
-            throw new BusinessException("计算文件 MD5 失败");
-        }
-    }
-
-    /**
-     * 计算 MultipartFile 的 SHA256，作为 MD5 之外的辅助去重依据。
+     * 计算完整 MultipartFile 字节的 SHA-256，作为上传前去重依据。
      */
     private String calculateSha256(MultipartFile file) {
         try (InputStream inputStream = file.getInputStream()) {
@@ -406,18 +400,8 @@ public class FileUploadService {
             }
             return HexFormat.of().formatHex(digest.digest());
         } catch (Exception ex) {
-            throw new BusinessException("计算文件 SHA256 失败");
+            throw new BusinessException("计算文件 SHA-256 失败");
         }
-    }
-
-    private String calculateMd5(byte[] bytes) {
-        MessageDigest digest = messageDigest("MD5", "计算合并文件 MD5 失败");
-        return HexFormat.of().formatHex(digest.digest(bytes));
-    }
-
-    private String calculateSha256(byte[] bytes) {
-        MessageDigest digest = messageDigest("SHA-256", "计算合并文件 SHA256 失败");
-        return HexFormat.of().formatHex(digest.digest(bytes));
     }
 
     private MessageDigest messageDigest(String algorithm, String errorMessage) {
@@ -558,7 +542,7 @@ public class FileUploadService {
                 session.getId(),
                 session.getKnowledgeBaseId(),
                 session.getFilename(),
-                session.getFileMd5(),
+                session.getFileHash(),
                 session.getFileSize(),
                 session.getChunkSize(),
                 session.getTotalChunks(),
@@ -573,29 +557,15 @@ public class FileUploadService {
     }
 
     /**
-     * 统一规范化 MD5，避免大小写差异造成重复文件。
-     */
-    private String normalizeMd5(String md5) {
-        if (md5 == null || md5.isBlank()) {
-            throw new BusinessException("文件 MD5 不能为空");
-        }
-        String normalized = md5.toLowerCase(Locale.ROOT);
-        if (normalized.length() != 32 || !isHex(normalized)) {
-            throw new BusinessException("文件 MD5 格式不正确");
-        }
-        return normalized;
-    }
-
-    /**
-     * 统一规范化 SHA256；没有提供时允许只按 MD5 判断。
+     * 统一规范化完整文件 SHA-256。
      */
     private String normalizeSha256(String sha256) {
         if (sha256 == null || sha256.isBlank()) {
-            return null;
+            throw new BusinessException("文件 SHA-256 不能为空");
         }
         String normalized = sha256.toLowerCase(Locale.ROOT);
         if (normalized.length() != 64 || !isHex(normalized)) {
-            throw new BusinessException("文件 SHA256 格式不正确");
+            throw new BusinessException("文件 SHA-256 格式不正确");
         }
         return normalized;
     }
@@ -621,9 +591,6 @@ public class FileUploadService {
             return "application/octet-stream";
         }
         return contentType;
-    }
-
-    private record FileHashes(String md5, String sha256) {
     }
 
     /**

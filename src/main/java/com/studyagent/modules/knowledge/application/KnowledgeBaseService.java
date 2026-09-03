@@ -2,10 +2,10 @@ package com.studyagent.modules.knowledge.application;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.studyagent.common.exception.BusinessException;
-import com.studyagent.modules.knowledge.domain.Document;
 import com.studyagent.modules.knowledge.domain.KnowledgeBase;
-import com.studyagent.modules.knowledge.infrastructure.DocumentMapper;
 import com.studyagent.modules.knowledge.infrastructure.KnowledgeBaseMapper;
+import com.studyagent.mapper.DocumentMapper;
+import com.studyagent.model.Document;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

@@ -22,12 +22,12 @@ public final class RecallMetricCalculator {
      * <p>检索结果可能因为父子上下文扩展出现重复 chunkId，因此这里先保留顺序去重。
      * expectedChunkIds 也去重，避免人工标注里误重复导致分母被放大。</p>
      */
-    public static double recallAtK(List<Long> expectedChunkIds, List<Long> retrievedChunkIds, int k) {
+    public static <T> double recallAtK(List<T> expectedChunkIds, List<T> retrievedChunkIds, int k) {
         if (expectedChunkIds == null || expectedChunkIds.isEmpty() || k <= 0) {
             return 0.0d;
         }
-        Set<Long> expected = new LinkedHashSet<>(expectedChunkIds);
-        List<Long> topK = orderedDistinct(retrievedChunkIds).stream()
+        Set<T> expected = new LinkedHashSet<>(expectedChunkIds);
+        List<T> topK = orderedDistinct(retrievedChunkIds).stream()
                 .limit(k)
                 .toList();
         long hits = topK.stream()
@@ -39,7 +39,7 @@ public final class RecallMetricCalculator {
     /**
      * 保留检索顺序的去重。
      */
-    public static List<Long> orderedDistinct(List<Long> chunkIds) {
+    public static <T> List<T> orderedDistinct(List<T> chunkIds) {
         if (chunkIds == null || chunkIds.isEmpty()) {
             return List.of();
         }

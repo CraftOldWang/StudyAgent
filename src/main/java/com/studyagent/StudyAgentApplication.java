@@ -16,8 +16,9 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
  */
 @SpringBootApplication
 @MapperScan({
-        "com.studyagent.modules.storage.infrastructure",
+        "com.studyagent.mapper",
         "com.studyagent.modules.knowledge.infrastructure",
+        "com.studyagent.modules.storage.infrastructure",
         "com.studyagent.modules.learning.infrastructure",
         "com.studyagent.modules.tool.infrastructure",
         "com.studyagent.modules.review.infrastructure"

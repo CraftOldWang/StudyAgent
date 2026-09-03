@@ -5,15 +5,22 @@ import com.studyagent.common.exception.BusinessException;
 import com.studyagent.infrastructure.embedding.EmbeddingService;
 import com.studyagent.infrastructure.search.ElasticsearchChunkIndexer;
 import com.studyagent.infrastructure.search.SearchHitChunk;
+import com.studyagent.mapper.DocumentChunkMapper;
+import com.studyagent.mapper.DocumentMapper;
+import com.studyagent.model.Document;
+import com.studyagent.model.DocumentChunk;
 import com.studyagent.modules.evaluation.domain.RagRetrievalStrategy;
 import com.studyagent.algo.metric.RecallMetricCalculator;
 import com.studyagent.modules.knowledge.application.KnowledgeBaseService;
 import com.studyagent.algo.rrf.RrfRanker;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +39,8 @@ public class RagRecallEvaluationService {
     private final EmbeddingService embeddingService;
     private final ElasticsearchChunkIndexer elasticsearchChunkIndexer;
     private final RagProperties ragProperties;
+    private final DocumentChunkMapper documentChunkMapper;
+    private final DocumentMapper documentMapper;
 
     /**
      * 执行 Recall 评测。
@@ -39,6 +48,7 @@ public class RagRecallEvaluationService {
     public RagRecallEvaluationReport evaluate(RagRecallEvaluationRequest request) {
         Long userId = request.userId() == null ? KnowledgeBaseService.DEFAULT_USER_ID : request.userId();
         validateRequest(request);
+        validateExpectedChunks(userId, request.knowledgeBaseIds(), request.cases());
         List<Integer> topKValues = normalizeTopKValues(request.topKValues());
         int maxTopK = topKValues.stream().mapToInt(Integer::intValue).max().orElse(1);
         List<RagRetrievalStrategy> strategies = normalizeStrategies(request.strategies());
@@ -87,8 +97,8 @@ public class RagRecallEvaluationService {
         long totalLatencyMillis = 0L;
 
         for (RagEvalCase evalCase : cases) {
-            List<Long> expectedSeedChunkIds = RecallMetricCalculator.orderedDistinct(evalCase.expectedChunkIds());
-            List<Long> expectedContextChunkIds = resolveExpectedContextChunkIds(
+            List<String> expectedSeedChunkIds = RecallMetricCalculator.orderedDistinct(evalCase.expectedChunkIds());
+            List<String> expectedContextChunkIds = resolveExpectedContextChunkIds(
                     userId,
                     knowledgeBaseIds,
                     expectedSeedChunkIds,
@@ -168,11 +178,9 @@ public class RagRecallEvaluationService {
             ));
             case HYBRID_RRF -> childOnlyResultFromIds(hybridRrf(userId, knowledgeBaseIds, question).stream()
                     .limit(maxTopK)
-                    .map(RrfRanker.RrfRankedItem::chunkId)
                     .toList());
             case HYBRID_RRF_PARENT -> parentChildResult(userId, knowledgeBaseIds, hybridRrf(userId, knowledgeBaseIds, question).stream()
                     .limit(maxTopK)
-                    .map(RrfRanker.RrfRankedItem::chunkId)
                     .toList());
         };
     }
@@ -181,8 +189,8 @@ public class RagRecallEvaluationService {
         return childOnlyResultFromIds(hits.stream().map(SearchHitChunk::chunkId).toList());
     }
 
-    private RetrievalResult childOnlyResultFromIds(List<Long> seedChunkIds) {
-        List<Long> distinctSeedChunkIds = RecallMetricCalculator.orderedDistinct(seedChunkIds);
+    private RetrievalResult childOnlyResultFromIds(List<String> seedChunkIds) {
+        List<String> distinctSeedChunkIds = RecallMetricCalculator.orderedDistinct(seedChunkIds);
         return new RetrievalResult(distinctSeedChunkIds, distinctSeedChunkIds);
     }
 
@@ -194,7 +202,7 @@ public class RagRecallEvaluationService {
     /**
      * 双路召回后用 RRF 融合。RRF 只比较各路排名，不直接比较 BM25 分数和向量分数。
      */
-    private List<RrfRanker.RrfRankedItem> hybridRrf(Long userId, List<Long> knowledgeBaseIds, String question) {
+    private List<String> hybridRrf(Long userId, List<Long> knowledgeBaseIds, String question) {
         List<SearchHitChunk> bm25Hits = elasticsearchChunkIndexer.bm25Search(
                 userId,
                 knowledgeBaseIds,
@@ -207,16 +215,50 @@ public class RagRecallEvaluationService {
                 question,
                 ragProperties.vectorCandidateSize()
         );
+        Map<String, Long> surrogateIdByChunkId = new LinkedHashMap<>();
+        Map<Long, SearchHitChunk> hitBySurrogateId = new LinkedHashMap<>();
+        registerHits(bm25Hits, surrogateIdByChunkId, hitBySurrogateId);
+        registerHits(vectorHits, surrogateIdByChunkId, hitBySurrogateId);
         return new RrfRanker(ragProperties.rrfK()).rank(List.of(
-                candidates("bm25", bm25Hits),
-                candidates("vector", vectorHits)
-        ));
+                        candidates("bm25", bm25Hits, surrogateIdByChunkId),
+                        candidates("vector", vectorHits, surrogateIdByChunkId)
+                )).stream()
+                .map(item -> chunkIdBySurrogateId(surrogateIdByChunkId, item.chunkId()))
+                .filter(java.util.Objects::nonNull)
+                .toList();
     }
 
-    private List<RrfRanker.RrfCandidate> candidates(String source, List<SearchHitChunk> hits) {
+    private List<RrfRanker.RrfCandidate> candidates(
+            String source,
+            List<SearchHitChunk> hits,
+            Map<String, Long> surrogateIdByChunkId
+    ) {
         return hits.stream()
-                .map(hit -> new RrfRanker.RrfCandidate(hit.chunkId(), source, hit.score()))
+                .map(hit -> new RrfRanker.RrfCandidate(surrogateIdByChunkId.get(hit.chunkId()), source, hit.score()))
                 .toList();
+    }
+
+    private void registerHits(
+            List<SearchHitChunk> hits,
+            Map<String, Long> surrogateIdByChunkId,
+            Map<Long, SearchHitChunk> hitBySurrogateId
+    ) {
+        for (SearchHitChunk hit : hits) {
+            Long surrogateId = surrogateIdByChunkId.computeIfAbsent(
+                    hit.chunkId(),
+                    ignored -> (long) surrogateIdByChunkId.size() + 1L
+            );
+            hitBySurrogateId.putIfAbsent(surrogateId, hit);
+        }
+    }
+
+    private String chunkIdBySurrogateId(Map<String, Long> surrogateIdByChunkId, Long surrogateId) {
+        for (Map.Entry<String, Long> entry : surrogateIdByChunkId.entrySet()) {
+            if (entry.getValue().equals(surrogateId)) {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
 
     /**
@@ -225,23 +267,23 @@ public class RagRecallEvaluationService {
      * <p>注意：这里的 Recall@K 是对最终返回的 chunk 顺序计算的。
      * 因此 HYBRID_RRF_PARENT 可以回答“父块补全后，正确证据是否进入最终上下文”。</p>
      */
-    private RetrievalResult parentChildResult(Long userId, List<Long> knowledgeBaseIds, List<Long> seedChunkIds) {
-        List<Long> distinctSeedChunkIds = RecallMetricCalculator.orderedDistinct(seedChunkIds);
-        List<Long> contextChunkIds = parentChildContext(userId, knowledgeBaseIds, distinctSeedChunkIds);
+    private RetrievalResult parentChildResult(Long userId, List<Long> knowledgeBaseIds, List<String> seedChunkIds) {
+        List<String> distinctSeedChunkIds = RecallMetricCalculator.orderedDistinct(seedChunkIds);
+        List<String> contextChunkIds = parentChildContext(userId, knowledgeBaseIds, distinctSeedChunkIds);
         return new RetrievalResult(distinctSeedChunkIds, contextChunkIds);
     }
 
-    private List<Long> parentChildContext(Long userId, List<Long> knowledgeBaseIds, List<Long> seedChunkIds) {
+    private List<String> parentChildContext(Long userId, List<Long> knowledgeBaseIds, List<String> seedChunkIds) {
         if (seedChunkIds.isEmpty()) {
             return List.of();
         }
-        Map<Long, SearchHitChunk> seedHitMap = new LinkedHashMap<>();
+        Map<String, SearchHitChunk> seedHitMap = new LinkedHashMap<>();
         for (SearchHitChunk hit : elasticsearchChunkIndexer.searchByChunkIds(userId, seedChunkIds)) {
             seedHitMap.put(hit.chunkId(), hit);
         }
-        Map<Long, Long> parentIds = new LinkedHashMap<>();
-        List<Long> fallbackSeedChunkIds = new ArrayList<>();
-        for (Long seedChunkId : seedChunkIds) {
+        Map<String, String> parentIds = new LinkedHashMap<>();
+        List<String> fallbackSeedChunkIds = new ArrayList<>();
+        for (String seedChunkId : seedChunkIds) {
             SearchHitChunk seed = seedHitMap.get(seedChunkId);
             if (seed == null) {
                 continue;
@@ -252,8 +294,8 @@ public class RagRecallEvaluationService {
             }
             parentIds.putIfAbsent(seed.parentChunkId(), seed.parentChunkId());
         }
-        Map<Long, SearchHitChunk> parentMap = new LinkedHashMap<>();
-        Map<Long, Long> contextChunkIds = new LinkedHashMap<>();
+        Map<String, SearchHitChunk> parentMap = new LinkedHashMap<>();
+        Map<String, String> contextChunkIds = new LinkedHashMap<>();
         if (!parentIds.isEmpty()) {
             for (SearchHitChunk parentChunk : elasticsearchChunkIndexer.searchParentChunks(
                     userId,
@@ -263,14 +305,14 @@ public class RagRecallEvaluationService {
                 parentMap.put(parentChunk.chunkId(), parentChunk);
             }
             // ES terms 查询不承诺返回顺序；这里按 RRF 种子映射出的父块顺序重排，保证 Recall@K 可解释。
-            for (Long parentId : parentIds.keySet()) {
+            for (String parentId : parentIds.keySet()) {
                 SearchHitChunk parentChunk = parentMap.get(parentId);
                 if (parentChunk != null) {
                     contextChunkIds.putIfAbsent(parentChunk.chunkId(), parentChunk.chunkId());
                 }
             }
         }
-        for (Long fallbackSeedChunkId : fallbackSeedChunkIds) {
+        for (String fallbackSeedChunkId : fallbackSeedChunkIds) {
             contextChunkIds.putIfAbsent(fallbackSeedChunkId, fallbackSeedChunkId);
         }
         return new ArrayList<>(contextChunkIds.keySet());
@@ -284,10 +326,10 @@ public class RagRecallEvaluationService {
      * 前者回答“命中点是否召回”，后者回答“最终上下文是否覆盖”。这里从 ES 读取子文档元数据，
      * 保持评测链路和线上父子检索一致，不再回 MySQL 取父块正文。</p>
      */
-    private List<Long> resolveExpectedContextChunkIds(
+    private List<String> resolveExpectedContextChunkIds(
             Long userId,
             List<Long> knowledgeBaseIds,
-            List<Long> expectedSeedChunkIds,
+            List<String> expectedSeedChunkIds,
             RagRetrievalStrategy strategy
     ) {
         if (expectedSeedChunkIds.isEmpty()) {
@@ -297,7 +339,7 @@ public class RagRecallEvaluationService {
             // 非父子策略最终上下文仍然是子 chunk，因此上下文 Recall 与种子 Recall 使用同一组真值。
             return expectedSeedChunkIds;
         }
-        Map<Long, Long> contextIds = new LinkedHashMap<>();
+        Map<String, String> contextIds = new LinkedHashMap<>();
         for (SearchHitChunk chunk : elasticsearchChunkIndexer.searchByChunkIds(userId, expectedSeedChunkIds)) {
             if (knowledgeBaseIds.contains(chunk.knowledgeBaseId()) && chunk.parentChunkId() != null) {
                 contextIds.putIfAbsent(chunk.parentChunkId(), chunk.parentChunkId());
@@ -324,6 +366,66 @@ public class RagRecallEvaluationService {
             }
             if (evalCase.expectedChunkIds() == null || evalCase.expectedChunkIds().isEmpty()) {
                 throw new BusinessException("expectedChunkIds 不能为空");
+            }
+            if (evalCase.expectedChunkIds().stream().anyMatch(id -> id == null || id.isBlank())) {
+                throw new BusinessException("expectedChunkIds 只能包含非空字符串");
+            }
+        }
+    }
+
+    /**
+     * 在开始检索前校验所有真值 chunk 的 V2 归属，避免缺失或越权数据被静默计为低召回。
+     */
+    private void validateExpectedChunks(
+            Long userId,
+            List<Long> knowledgeBaseIds,
+            List<RagEvalCase> cases
+    ) {
+        Set<String> expectedChunkIds = new LinkedHashSet<>();
+        for (RagEvalCase evalCase : cases) {
+            expectedChunkIds.addAll(evalCase.expectedChunkIds());
+        }
+        List<DocumentChunk> chunks = documentChunkMapper.selectList(
+                new LambdaQueryWrapper<DocumentChunk>()
+                        .in(DocumentChunk::getChunkId, expectedChunkIds)
+        );
+        Map<String, DocumentChunk> chunksByChunkId = new LinkedHashMap<>();
+        for (DocumentChunk chunk : chunks) {
+            chunksByChunkId.put(chunk.getChunkId(), chunk);
+        }
+        List<String> missingChunkIds = expectedChunkIds.stream()
+                .filter(chunkId -> !chunksByChunkId.containsKey(chunkId))
+                .toList();
+        if (!missingChunkIds.isEmpty()) {
+            throw new BusinessException("评测真值 chunk 不存在: " + missingChunkIds);
+        }
+
+        Set<Long> documentIds = new LinkedHashSet<>();
+        for (DocumentChunk chunk : chunksByChunkId.values()) {
+            if (chunk.getDocumentId() == null) {
+                throw new BusinessException("评测真值 chunk 缺少 document 归属: " + chunk.getChunkId());
+            }
+            documentIds.add(chunk.getDocumentId());
+        }
+        List<Document> documents = documentMapper.selectList(
+                new LambdaQueryWrapper<Document>().in(Document::getId, documentIds)
+        );
+        Map<Long, Document> documentsById = new LinkedHashMap<>();
+        for (Document document : documents) {
+            documentsById.put(document.getId(), document);
+        }
+        for (DocumentChunk chunk : chunksByChunkId.values()) {
+            Document document = documentsById.get(chunk.getDocumentId());
+            if (document == null) {
+                throw new BusinessException(
+                        "评测真值 chunk 关联 document 不存在: " + chunk.getChunkId()
+                );
+            }
+            if (!userId.equals(document.getUserId())
+                    || !knowledgeBaseIds.contains(document.getKnowledgeBaseId())) {
+                throw new BusinessException(
+                        "评测真值 chunk 超出 user/knowledgeBase scope: " + chunk.getChunkId()
+                );
             }
         }
     }
@@ -363,8 +465,8 @@ public class RagRecallEvaluationService {
     }
 
     private record RetrievalResult(
-            List<Long> seedChunkIds,
-            List<Long> contextChunkIds
+            List<String> seedChunkIds,
+            List<String> contextChunkIds
     ) {
     }
 }

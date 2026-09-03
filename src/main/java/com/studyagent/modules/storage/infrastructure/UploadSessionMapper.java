@@ -18,7 +18,7 @@ public interface UploadSessionMapper extends BaseMapper<UploadSession> {
             FROM upload_sessions
             WHERE user_id = #{userId}
               AND knowledge_base_id = #{knowledgeBaseId}
-              AND file_md5 = #{fileMd5}
+              AND file_hash = #{fileHash}
               AND status = 'UPLOADING'
               AND expires_at > NOW()
             ORDER BY created_at DESC
@@ -27,6 +27,6 @@ public interface UploadSessionMapper extends BaseMapper<UploadSession> {
     UploadSession selectActiveSession(
             @Param("userId") Long userId,
             @Param("knowledgeBaseId") Long knowledgeBaseId,
-            @Param("fileMd5") String fileMd5
+            @Param("fileHash") String fileHash
     );
 }

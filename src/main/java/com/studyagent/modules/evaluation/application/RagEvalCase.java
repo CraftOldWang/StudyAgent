@@ -15,7 +15,7 @@ import java.util.Map;
  */
 public record RagEvalCase(
         @NotBlank String question,
-        @NotEmpty List<Long> expectedChunkIds,
+        @NotEmpty List<String> expectedChunkIds,
         String expectedAnswer,
         Map<String, Object> metadata
 ) {

@@ -36,10 +36,10 @@ public record RagRecallEvaluationReport(
      */
     public record CaseResult(
             String question,
-            List<Long> expectedSeedChunkIds,
-            List<Long> expectedContextChunkIds,
-            List<Long> retrievedSeedChunkIds,
-            List<Long> retrievedContextChunkIds,
+            List<String> expectedSeedChunkIds,
+            List<String> expectedContextChunkIds,
+            List<String> retrievedSeedChunkIds,
+            List<String> retrievedContextChunkIds,
             Map<Integer, Double> seedRecallAtK,
             Map<Integer, Double> contextRecallAtK,
             long latencyMillis

@@ -2,17 +2,15 @@ package com.studyagent.modules.evaluation.application;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.studyagent.common.exception.BusinessException;
+import com.studyagent.mapper.DocumentChunkMapper;
+import com.studyagent.mapper.DocumentMapper;
+import com.studyagent.model.Document;
+import com.studyagent.model.DocumentChunk;
 import com.studyagent.modules.knowledge.application.KnowledgeBaseService;
-import com.studyagent.modules.knowledge.domain.Document;
-import com.studyagent.modules.knowledge.domain.DocumentChunk;
-import com.studyagent.modules.knowledge.infrastructure.DocumentChunkMapper;
-import com.studyagent.modules.knowledge.infrastructure.DocumentMapper;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -47,10 +45,17 @@ public class DeepseekEvalCaseGenerationService {
         int maxChunkChars = clamp(request.maxChunkChars(), DEFAULT_MAX_CHUNK_CHARS, 100, MAX_CHUNK_CHARS);
         boolean indexedOnly = request.indexedOnly() == null || request.indexedOnly();
 
-        List<DocumentChunk> chunks = loadCandidateChunks(
+        List<Document> documents = loadCandidateDocuments(
                 userId,
                 request.knowledgeBaseIds(),
                 request.documentIds(),
+                indexedOnly
+        );
+        if (documents.isEmpty()) {
+            throw new BusinessException("没有找到当前用户和知识库范围内的可用 documents");
+        }
+        List<DocumentChunk> chunks = loadCandidateChunks(
+                documents.stream().map(Document::getId).toList(),
                 indexedOnly,
                 Math.max(maxSourceChunks * 4, maxSourceChunks)
         );
@@ -58,9 +63,12 @@ public class DeepseekEvalCaseGenerationService {
             throw new BusinessException("没有找到可用于生成评测集的 document_chunks，请先上传、切分并索引文档");
         }
         List<DocumentChunk> sampledChunks = sampleEvenly(chunks, maxSourceChunks);
-        Map<Long, String> documentTitles = loadDocumentTitles(sampledChunks);
+        Map<Long, Document> documentsById = new HashMap<>();
+        for (Document document : documents) {
+            documentsById.put(document.getId(), document);
+        }
         List<GeneratedRagEvalDataset.SourceChunk> sourceChunks = sampledChunks.stream()
-                .map(chunk -> toSourceChunk(chunk, documentTitles.get(chunk.getDocumentId()), maxChunkChars))
+                .map(chunk -> toSourceChunk(chunk, documentsById.get(chunk.getDocumentId()), maxChunkChars))
                 .toList();
         return deepseekEvalCaseClient.generate(sourceChunks, caseCount);
     }
@@ -68,25 +76,38 @@ public class DeepseekEvalCaseGenerationService {
     /**
      * 加载候选 chunk。评测集默认只从已索引 chunk 生成，否则 Recall 会因为 ES 中缺数据而天然偏低。
      */
-    private List<DocumentChunk> loadCandidateChunks(
+    private List<Document> loadCandidateDocuments(
             Long userId,
             List<Long> knowledgeBaseIds,
+            List<Long> documentIds,
+            boolean indexedOnly
+    ) {
+        LambdaQueryWrapper<Document> wrapper = new LambdaQueryWrapper<Document>()
+                .eq(Document::getUserId, userId)
+                .in(Document::getKnowledgeBaseId, knowledgeBaseIds)
+                .orderByAsc(Document::getId);
+        if (documentIds != null && !documentIds.isEmpty()) {
+            wrapper.in(Document::getId, documentIds);
+        }
+        if (indexedOnly) {
+            wrapper.eq(Document::getPipelineStatus, "COMPLETED");
+        }
+        return documentMapper.selectList(wrapper);
+    }
+
+    private List<DocumentChunk> loadCandidateChunks(
             List<Long> documentIds,
             boolean indexedOnly,
             int limit
     ) {
         LambdaQueryWrapper<DocumentChunk> wrapper = new LambdaQueryWrapper<DocumentChunk>()
-                .eq(DocumentChunk::getUserId, userId)
-                .in(DocumentChunk::getKnowledgeBaseId, knowledgeBaseIds)
-                .eq(DocumentChunk::getChunkType, DocumentChunk.TYPE_CHILD)
+                .in(DocumentChunk::getDocumentId, documentIds)
+                .eq(DocumentChunk::getChunkType, "CHILD")
                 .orderByAsc(DocumentChunk::getDocumentId)
                 .orderByAsc(DocumentChunk::getChunkIndex)
                 .last("LIMIT " + limit);
-        if (documentIds != null && !documentIds.isEmpty()) {
-            wrapper.in(DocumentChunk::getDocumentId, documentIds);
-        }
         if (indexedOnly) {
-            wrapper.isNotNull(DocumentChunk::getEsDocId);
+            wrapper.isNotNull(DocumentChunk::getIndexedAt);
         }
         return documentChunkMapper.selectList(wrapper);
     }
@@ -110,33 +131,22 @@ public class DeepseekEvalCaseGenerationService {
         return sampled;
     }
 
-    /**
-     * 批量加载文档标题，让生成的问题和人工核对更容易定位来源。
-     */
-    private Map<Long, String> loadDocumentTitles(List<DocumentChunk> chunks) {
-        Set<Long> documentIds = new LinkedHashSet<>();
-        for (DocumentChunk chunk : chunks) {
-            documentIds.add(chunk.getDocumentId());
+    private GeneratedRagEvalDataset.SourceChunk toSourceChunk(
+            DocumentChunk chunk,
+            Document document,
+            int maxChunkChars
+    ) {
+        if (document == null) {
+            throw new BusinessException("chunk 关联的 document 不存在: " + chunk.getDocumentId());
         }
-        if (documentIds.isEmpty()) {
-            return Map.of();
-        }
-        Map<Long, String> titles = new LinkedHashMap<>();
-        for (Document document : documentMapper.selectBatchIds(documentIds)) {
-            titles.put(document.getId(), document.getTitle());
-        }
-        return titles;
-    }
-
-    private GeneratedRagEvalDataset.SourceChunk toSourceChunk(DocumentChunk chunk, String documentTitle, int maxChunkChars) {
         return new GeneratedRagEvalDataset.SourceChunk(
-                chunk.getId(),
+                chunk.getChunkId(),
                 chunk.getDocumentId(),
-                chunk.getKnowledgeBaseId(),
+                document.getKnowledgeBaseId(),
                 chunk.getParentChunkId(),
                 chunk.getChunkType(),
                 chunk.getChunkIndex(),
-                documentTitle,
+                document.getTitle(),
                 truncate(chunk.getContent(), maxChunkChars)
         );
     }

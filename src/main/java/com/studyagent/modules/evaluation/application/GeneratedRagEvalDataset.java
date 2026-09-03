@@ -18,10 +18,10 @@ public record GeneratedRagEvalDataset(
      * 生成问题时提供给模型的 chunk 摘要。
      */
     public record SourceChunk(
-            Long chunkId,
+            String chunkId,
             Long documentId,
             Long knowledgeBaseId,
-            Long parentChunkId,
+            String parentChunkId,
             String chunkType,
             Integer chunkIndex,
             String documentTitle,

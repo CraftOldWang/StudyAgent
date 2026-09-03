@@ -1,5 +1,6 @@
 package com.studyagent.modules.storage.domain;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 import lombok.Getter;
@@ -17,7 +18,8 @@ public class UploadSession {
     private Long id;
     private Long userId;
     private Long knowledgeBaseId;
-    private String fileMd5;
+    @TableField("file_hash")
+    private String fileHash;
     private String filename;
     private String contentType;
     private Integer chunkSize;

@@ -11,7 +11,6 @@ import com.studyagent.modules.rag.domain.RagAnswer;
 import com.studyagent.modules.rag.domain.RagReference;
 import com.studyagent.modules.rag.domain.RagSearchResult;
 import com.studyagent.algo.rrf.RrfRanker;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -64,28 +63,35 @@ public class RagService {
                 queryVector,
                 ragProperties.vectorCandidateSize()
         );
+        Map<String, Long> surrogateIdByChunkId = new LinkedHashMap<>();
+        Map<Long, SearchHitChunk> hitBySurrogateId = new LinkedHashMap<>();
+        registerHits(bm25Hits, surrogateIdByChunkId, hitBySurrogateId);
+        registerHits(vectorHits, surrogateIdByChunkId, hitBySurrogateId);
         List<RrfRanker.RrfRankedItem> rankedItems = new RrfRanker(ragProperties.rrfK()).rank(List.of(
-                candidates("bm25", bm25Hits),
-                candidates("vector", vectorHits)
+                candidates("bm25", bm25Hits, surrogateIdByChunkId),
+                candidates("vector", vectorHits, surrogateIdByChunkId)
         ));
         if (rankedItems.isEmpty()) {
             return new RagSearchResult(question, List.of());
         }
 
         // 融合后再按 chunkId 补取最新 ES 内容，避免候选列表中缺少排序后的命中文本。
-        Map<Long, SearchHitChunk> hitMap = new LinkedHashMap<>();
-        putHits(hitMap, bm25Hits);
-        putHits(hitMap, vectorHits);
-        List<Long> topChunkIds = rankedItems.stream()
+        List<String> topChunkIds = rankedItems.stream()
                 .limit(ragProperties.topK())
-                .map(RrfRanker.RrfRankedItem::chunkId)
+                .map(item -> chunkIdBySurrogateId(surrogateIdByChunkId, item.chunkId()))
+                .filter(java.util.Objects::nonNull)
                 .toList();
-        Map<Long, SearchHitChunk> freshHitMap = searchFreshHits(userId, topChunkIds);
-        hitMap.putAll(freshHitMap);
+        Map<String, SearchHitChunk> freshHitMap = searchFreshHits(userId, topChunkIds);
+        for (SearchHitChunk hit : freshHitMap.values()) {
+            Long surrogateId = surrogateIdByChunkId.get(hit.chunkId());
+            if (surrogateId != null) {
+                hitBySurrogateId.put(surrogateId, hit);
+            }
+        }
 
         List<RagReference> fusedReferences = rankedItems.stream()
                 .limit(ragProperties.topK())
-                .map(item -> toReference(hitMap.get(item.chunkId()), "rrf", item.score()))
+                .map(item -> toReference(hitBySurrogateId.get(item.chunkId()), "rrf", item.score()))
                 .filter(reference -> reference != null)
                 .toList();
         return new RagSearchResult(question, loadParentContext(userId, knowledgeBaseIds, fusedReferences));
@@ -109,23 +115,44 @@ public class RagService {
     /**
      * 将 ES 命中转换为 RRF 候选项，保留来源便于后续分析融合效果。
      */
-    private List<RrfRanker.RrfCandidate> candidates(String source, List<SearchHitChunk> hits) {
+    private List<RrfRanker.RrfCandidate> candidates(
+            String source,
+            List<SearchHitChunk> hits,
+            Map<String, Long> surrogateIdByChunkId
+    ) {
         return hits.stream()
-                .map(hit -> new RrfRanker.RrfCandidate(hit.chunkId(), source, hit.score()))
+                .map(hit -> new RrfRanker.RrfCandidate(surrogateIdByChunkId.get(hit.chunkId()), source, hit.score()))
                 .toList();
     }
 
-    private void putHits(Map<Long, SearchHitChunk> hitMap, Collection<SearchHitChunk> hits) {
+    private void registerHits(
+            List<SearchHitChunk> hits,
+            Map<String, Long> surrogateIdByChunkId,
+            Map<Long, SearchHitChunk> hitBySurrogateId
+    ) {
         for (SearchHitChunk hit : hits) {
-            hitMap.putIfAbsent(hit.chunkId(), hit);
+            Long surrogateId = surrogateIdByChunkId.computeIfAbsent(
+                    hit.chunkId(),
+                    ignored -> (long) surrogateIdByChunkId.size() + 1L
+            );
+            hitBySurrogateId.putIfAbsent(surrogateId, hit);
         }
+    }
+
+    private String chunkIdBySurrogateId(Map<String, Long> surrogateIdByChunkId, Long surrogateId) {
+        for (Map.Entry<String, Long> entry : surrogateIdByChunkId.entrySet()) {
+            if (entry.getValue().equals(surrogateId)) {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
 
     /**
      * 根据 chunkId 补查 ES 中最新命中内容。
      */
-    private Map<Long, SearchHitChunk> searchFreshHits(Long userId, List<Long> chunkIds) {
-        Map<Long, SearchHitChunk> hitMap = new HashMap<>();
+    private Map<String, SearchHitChunk> searchFreshHits(Long userId, List<String> chunkIds) {
+        Map<String, SearchHitChunk> hitMap = new HashMap<>();
         List<SearchHitChunk> hits = elasticsearchChunkIndexer.searchByChunkIds(userId, chunkIds);
         for (SearchHitChunk hit : hits) {
             hitMap.put(hit.chunkId(), hit);
@@ -168,9 +195,9 @@ public class RagService {
             List<Long> knowledgeBaseIds,
             List<RagReference> childReferences
     ) {
-        Map<Long, RagReference> bestChildByParent = new LinkedHashMap<>();
+        Map<String, RagReference> bestChildByParent = new LinkedHashMap<>();
         for (RagReference childReference : childReferences) {
-            Long parentChunkId = childReference.parentChunkId();
+            String parentChunkId = childReference.parentChunkId();
             if (parentChunkId == null) {
                 // 兼容历史数据：没有 parent_chunk_id 的旧子块无法回表到父块，只能作为子块引用返回。
                 bestChildByParent.putIfAbsent(childReference.chunkId(), childReference);
@@ -180,11 +207,11 @@ public class RagService {
                     candidate.score() > existing.score() ? candidate : existing);
         }
 
-        List<Long> parentChunkIds = bestChildByParent.keySet().stream().toList();
+        List<String> parentChunkIds = bestChildByParent.keySet().stream().toList();
         if (parentChunkIds.isEmpty()) {
             return List.of();
         }
-        Map<Long, SearchHitChunk> parentMap = new HashMap<>();
+        Map<String, SearchHitChunk> parentMap = new HashMap<>();
         for (SearchHitChunk parentChunk : elasticsearchChunkIndexer.searchParentChunks(userId, knowledgeBaseIds, parentChunkIds)) {
             parentMap.put(parentChunk.chunkId(), parentChunk);
         }
@@ -198,7 +225,7 @@ public class RagService {
     /**
      * 将父块内容包装成 RAG 引用。chunkId 继续保留命中的子块 ID，parentChunkId 指向实际上下文父块。
      */
-    private RagReference toParentReference(Long parentChunkId, RagReference childReference, SearchHitChunk parentChunk) {
+    private RagReference toParentReference(String parentChunkId, RagReference childReference, SearchHitChunk parentChunk) {
         if (parentChunk == null) {
             return childReference;
         }

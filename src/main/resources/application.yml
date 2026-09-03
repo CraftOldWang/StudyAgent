@@ -102,6 +102,6 @@ study-agent:
     destination: study_agent
     username:
     password:
-    subscribe-regex: 'study_agent\.(documents|document_chunks)'
+    subscribe-regex: 'study_agent\.documents'
     batch-size: 100
     empty-sleep-millis: 1000

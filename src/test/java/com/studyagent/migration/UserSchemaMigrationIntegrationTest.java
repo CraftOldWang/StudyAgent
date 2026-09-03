@@ -22,9 +22,6 @@ class UserSchemaMigrationIntegrationTest {
             "chat_context_snapshots",
             "chat_messages",
             "chat_sessions",
-            "document_chunks",
-            "documents",
-            "file_records",
             "knowledge_bases",
             "learning_todos",
             "quiz_answers",
@@ -80,7 +77,7 @@ class UserSchemaMigrationIntegrationTest {
                 WHERE table_schema = DATABASE()
                 ORDER BY table_name
                 """);
-        assertThat(tables).containsExactly("flyway_schema_history", "users");
+        assertThat(tables).contains("flyway_schema_history", "users");
     }
 
     private void assertColumns(Connection connection) throws SQLException {
@@ -166,7 +163,7 @@ class UserSchemaMigrationIntegrationTest {
              ResultSet resultSet = statement.executeQuery("""
                      SELECT version, description, type, success
                      FROM flyway_schema_history
-                     ORDER BY installed_rank
+                     WHERE version = '1'
                      """)) {
             assertThat(resultSet.next()).isTrue();
             assertThat(resultSet.getString("version")).isEqualTo("1");

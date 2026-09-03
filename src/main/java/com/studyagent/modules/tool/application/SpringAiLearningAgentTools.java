@@ -103,7 +103,7 @@ public class SpringAiLearningAgentTools {
      * 模型可阅读的引用片段信息，保留回答所需的引用标识和正文。
      */
     public record KnowledgeReferenceResult(
-            Long chunkId,
+            String chunkId,
             Long documentId,
             Long knowledgeBaseId,
             String documentTitle,

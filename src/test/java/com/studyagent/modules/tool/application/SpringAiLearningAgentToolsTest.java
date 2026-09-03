@@ -40,7 +40,7 @@ class SpringAiLearningAgentToolsTest {
         );
         ToolContext toolContext = toolContext();
         RagSearchResult searchResult = new RagSearchResult("RRF 是什么", List.of(new RagReference(
-                10L,
+                "chunk-10",
                 20L,
                 30L,
                 null,
@@ -57,7 +57,7 @@ class SpringAiLearningAgentToolsTest {
                 tools.searchKnowledge("RRF 是什么", toolContext);
 
         assertThat(result.hitCount()).isEqualTo(1);
-        assertThat(result.references().getFirst().chunkId()).isEqualTo(10L);
+        assertThat(result.references().getFirst().chunkId()).isEqualTo("chunk-10");
         verify(knowledgeSearchTool).search(100L, 200L, 1L, List.of(30L), "RRF 是什么");
     }
 

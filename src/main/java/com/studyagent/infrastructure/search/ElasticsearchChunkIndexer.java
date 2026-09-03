@@ -33,15 +33,6 @@ public class ElasticsearchChunkIndexer {
             .build();
 
     /**
-     * 删除指定文档下的全部 ES chunk，用于文档重新处理前清理旧索引。
-     */
-    public void deleteByDocumentId(Long documentId) {
-        ObjectNode root = objectMapper.createObjectNode();
-        root.putObject("query").putObject("term").put("document_id", documentId);
-        request("POST", "/" + properties.readAlias() + "/_delete_by_query?refresh=true", root.toString());
-    }
-
-    /**
      * 执行向量检索，过滤条件包含用户和知识库范围。
      */
     public List<SearchHitChunk> vectorSearch(Long userId, List<Long> knowledgeBaseIds, float[] queryVector, int topK) {
@@ -93,7 +84,7 @@ public class ElasticsearchChunkIndexer {
     /**
      * 根据子 chunkId 批量补取 ES 内容，并保留用户范围过滤。
      */
-    public List<SearchHitChunk> searchByChunkIds(Long userId, List<Long> chunkIds) {
+    public List<SearchHitChunk> searchByChunkIds(Long userId, List<String> chunkIds) {
         if (chunkIds == null || chunkIds.isEmpty()) {
             return List.of();
         }
@@ -106,7 +97,7 @@ public class ElasticsearchChunkIndexer {
         filter.add(childChunkFilter());
         ObjectNode terms = objectMapper.createObjectNode();
         ArrayNode ids = terms.putObject("terms").putArray("chunk_id");
-        for (Long chunkId : chunkIds) {
+        for (String chunkId : chunkIds) {
             ids.add(chunkId);
         }
         filter.add(terms);
@@ -121,7 +112,7 @@ public class ElasticsearchChunkIndexer {
      * <p>这是父子检索的第二跳：第一跳只召回 CHILD，第二跳用 CHILD.parent_chunk_id 到 ES 取 PARENT。
      * 用户和知识库过滤仍然在 ES 查询里完成，避免把越权父块带入模型上下文。</p>
      */
-    public List<SearchHitChunk> searchParentChunks(Long userId, List<Long> knowledgeBaseIds, List<Long> parentChunkIds) {
+    public List<SearchHitChunk> searchParentChunks(Long userId, List<Long> knowledgeBaseIds, List<String> parentChunkIds) {
         if (parentChunkIds == null || parentChunkIds.isEmpty()) {
             return List.of();
         }
@@ -142,7 +133,7 @@ public class ElasticsearchChunkIndexer {
 
         ObjectNode chunkIdTerms = objectMapper.createObjectNode();
         ArrayNode chunkIdArray = chunkIdTerms.putObject("terms").putArray("chunk_id");
-        for (Long parentChunkId : parentChunkIds) {
+        for (String parentChunkId : parentChunkIds) {
             chunkIdArray.add(parentChunkId);
         }
         filter.add(chunkIdTerms);
@@ -210,13 +201,13 @@ public class ElasticsearchChunkIndexer {
         for (JsonNode hit : response.path("hits").path("hits")) {
             JsonNode source = hit.path("_source");
             hits.add(new SearchHitChunk(
-                    source.path("chunk_id").asLong(),
+                    source.path("chunk_id").asText(null),
                     source.path("document_id").asLong(),
                     source.path("knowledge_base_id").asLong(),
                     source.path("user_id").asLong(),
                     source.path("parent_chunk_id").isMissingNode() || source.path("parent_chunk_id").isNull()
                             ? null
-                            : source.path("parent_chunk_id").asLong(),
+                            : source.path("parent_chunk_id").asText(null),
                     source.path("chunk_type").asText("CHILD"),
                     source.path("chunk_index").asInt(),
                     source.path("document_title").asText(null),

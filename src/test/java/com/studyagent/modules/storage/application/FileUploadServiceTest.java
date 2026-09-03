@@ -9,16 +9,18 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.studyagent.config.ObjectStorageProperties;
 import com.studyagent.common.exception.BusinessException;
 import com.studyagent.infrastructure.mq.DocumentIndexProducer;
 import com.studyagent.infrastructure.objectstorage.ObjectStorageService;
-import com.studyagent.modules.knowledge.infrastructure.DocumentMapper;
+import com.studyagent.mapper.DocumentMapper;
+import com.studyagent.mapper.FileRecordMapper;
+import com.studyagent.model.Document;
+import com.studyagent.model.FileRecord;
 import com.studyagent.modules.storage.domain.UploadSession;
-import com.studyagent.modules.storage.infrastructure.FileRecordMapper;
 import com.studyagent.modules.storage.infrastructure.UploadSessionMapper;
 import com.studyagent.modules.storage.interfaces.InitMultipartUploadRequest;
 import com.studyagent.modules.storage.interfaces.InitMultipartUploadResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,7 +65,6 @@ class FileUploadServiceTest {
                 uploadSessionMapper,
                 documentMapper,
                 objectStorageService,
-                new ObjectStorageProperties("http://localhost:9000", "ak", "sk", "bucket", "us-east-1", true),
                 redissonClient,
                 stringRedisTemplate,
                 documentIndexProducer
@@ -73,9 +74,9 @@ class FileUploadServiceTest {
     @Test
     void initMultipartShouldReuseActiveSessionForResume() {
         UploadSession session = uploadSession();
-        when(redissonClient.getLock("lock:file:dedup:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")).thenReturn(lock);
+        when(redissonClient.getLock("lock:file:dedup:" + HASH)).thenReturn(lock);
         when(fileRecordMapper.selectOne(any())).thenReturn(null);
-        when(uploadSessionMapper.selectActiveSession(1L, 1L, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")).thenReturn(session);
+        when(uploadSessionMapper.selectActiveSession(1L, 1L, HASH)).thenReturn(session);
         when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.getBit("upload:bitmap:1", 0)).thenReturn(true);
         when(valueOperations.getBit("upload:bitmap:1", 1)).thenReturn(false);
@@ -84,8 +85,7 @@ class FileUploadServiceTest {
                 1L,
                 "demo.txt",
                 "text/plain",
-                "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-                null,
+                HASH.toUpperCase(),
                 2L,
                 1,
                 2
@@ -96,6 +96,27 @@ class FileUploadServiceTest {
         assertThat(response.uploadedChunks()).isEqualTo(1);
         assertThat(response.totalChunks()).isEqualTo(2);
         verify(uploadSessionMapper, never()).insert(any(UploadSession.class));
+    }
+
+    @Test
+    void uploadSingleShouldDeduplicateBySha256BeforeWritingObject() {
+        String contentHash = "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824";
+        FileRecord existing = new FileRecord();
+        existing.setId(22L);
+        existing.setStatus("COMPLETED");
+        when(redissonClient.getLock("lock:file:dedup:" + contentHash)).thenReturn(lock);
+        when(fileRecordMapper.selectOne(any())).thenReturn(existing);
+
+        var response = fileUploadService.uploadSingle(
+                1L,
+                new MockMultipartFile("file", "demo.txt", "text/plain", "hello".getBytes(StandardCharsets.UTF_8))
+        );
+
+        assertThat(response.fileId()).isEqualTo(22L);
+        assertThat(response.status()).isEqualTo("DUPLICATED");
+        verify(objectStorageService, never()).putObject(any(), any(), anyLong(), any());
+        verify(documentMapper).insert(any(Document.class));
+        verify(documentIndexProducer).send(null);
     }
 
     @Test
@@ -141,7 +162,7 @@ class FileUploadServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("缺少分片");
 
-        verify(redissonClient, never()).getLock(eq("lock:file:dedup:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
+        verify(redissonClient, never()).getLock(eq("lock:file:dedup:" + HASH));
     }
 
     @Test
@@ -153,7 +174,7 @@ class FileUploadServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("知识库");
 
-        verify(redissonClient, never()).getLock(eq("lock:file:dedup:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
+        verify(redissonClient, never()).getLock(eq("lock:file:dedup:" + HASH));
     }
 
     private UploadSession uploadSession() {
@@ -161,7 +182,7 @@ class FileUploadServiceTest {
         session.setId(1L);
         session.setUserId(1L);
         session.setKnowledgeBaseId(1L);
-        session.setFileMd5("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+        session.setFileHash(HASH);
         session.setFilename("demo.txt");
         session.setContentType("text/plain");
         session.setChunkSize(1);
@@ -174,4 +195,6 @@ class FileUploadServiceTest {
         session.setUpdatedAt(LocalDateTime.now());
         return session;
     }
+
+    private static final String HASH = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 }

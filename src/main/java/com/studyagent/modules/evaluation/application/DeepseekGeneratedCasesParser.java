@@ -33,7 +33,7 @@ public class DeepseekGeneratedCasesParser {
         if (jsonContent == null || jsonContent.isBlank()) {
             throw new BusinessException("DeepSeek 未返回评测集内容");
         }
-        Set<Long> allowedChunkIds = new LinkedHashSet<>();
+        Set<String> allowedChunkIds = new LinkedHashSet<>();
         for (GeneratedRagEvalDataset.SourceChunk sourceChunk : sourceChunks) {
             allowedChunkIds.add(sourceChunk.chunkId());
         }
@@ -50,8 +50,8 @@ public class DeepseekGeneratedCasesParser {
                 index++;
                 String question = caseNode.path("question").asText("");
                 String expectedAnswer = caseNode.path("expectedAnswer").asText(null);
-                List<Long> expectedChunkIds = readExpectedChunkIds(caseNode.path("expectedChunkIds"));
-                List<Long> validChunkIds = expectedChunkIds.stream()
+                List<String> expectedChunkIds = readExpectedChunkIds(caseNode.path("expectedChunkIds"));
+                List<String> validChunkIds = expectedChunkIds.stream()
                         .filter(allowedChunkIds::contains)
                         .distinct()
                         .toList();
@@ -76,16 +76,16 @@ public class DeepseekGeneratedCasesParser {
     }
 
     /**
-     * 读取 expectedChunkIds，非数字字段会被忽略并由上层通过 warnings 暴露异常。
+     * 读取 expectedChunkIds，只接受字符串字段，其他字段会被忽略并由上层通过 warnings 暴露异常。
      */
-    private List<Long> readExpectedChunkIds(JsonNode expectedChunkIdsNode) {
+    private List<String> readExpectedChunkIds(JsonNode expectedChunkIdsNode) {
         if (!expectedChunkIdsNode.isArray()) {
             return List.of();
         }
-        List<Long> ids = new ArrayList<>();
+        List<String> ids = new ArrayList<>();
         for (JsonNode idNode : expectedChunkIdsNode) {
-            if (idNode.canConvertToLong()) {
-                ids.add(idNode.asLong());
+            if (idNode.isTextual() && !idNode.asText().isBlank()) {
+                ids.add(idNode.asText());
             }
         }
         return ids;
