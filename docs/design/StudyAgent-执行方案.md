@@ -72,14 +72,16 @@
 | 1.9 | 实现 `StructuredChunker` | 按标题 / 段落 / 列表切分，返回 `ChunkSegment` | Markdown 分块保留 `[startOffset,endOffset)`、`headingPath` 与统一 `tokenCount` |
 | 1.10 | 实现 `TokenWindowChunker` | 使用固定版本本地 `TokenCounter` 对超长 `ChunkSegment` 做 900/120 fallback | 单测证明 token 上限与重叠使用同一计量口径，且 fallback 不丢失来源坐标 |
 | 1.12 | 表迁移：ingest 三张表 | `V2__create_ingest_tables.sql` | 表创建成功 |
-| 1.12a | 对齐 ingest 全局 `model/mapper` | 将 `FileRecord` / `Document` / `DocumentChunk` 及其 Mapper 迁至全局 `model/`、`mapper/`，字段与 V2 schema 一一对应；机械更新直接编译消费者 | 旧包不再保留这六个类型，实体字段与 Mapper SQL 不引用 V2 外列，直接消费者完成 import/字段访问对齐；不在本任务实现 pipeline |
-| 1.11 | 实现 `DocumentPipeline` | 状态机：PARSING → CHUNKING → EMBEDDING → INDEXING | pipeline 执行成功，状态正确流转 |
+| 1.12a | 新增 ingest 全局 `model/mapper` | 在全局 `model/`、`mapper/` 新增严格对应 V2 的 `FileRecord` / `Document` / `DocumentChunk` 及其 Mapper；暂不修改旧消费者或删除旧六类型 | 新六类型字段与 Mapper SQL 不引用 V2 外列；legacy 链保持原样；任务只标记实现完成、等待与 1.11 同批验收 |
+| 1.11 | 实现并切换 `DocumentPipeline` | 使用新全局模型完成 PARSING → CHUNKING → EMBEDDING → INDEXING，切换必要消费者后清理旧六类型 | 状态、重试、版本和确定性 `chunk_id` 符合最小契约；不新增按 document 删除旧 ES；与 1.12a 同批验收 |
 | 1.13 | 端到端测试：上传 PDF → 检索 | POST `/api/files/upload` + POST `/api/rag/search` | 检索返回相关段落 |
 | 1.14 | 构建检索黄金集 | 从已索引 chunk 反向合成 100-200 条查询（ground truth = 源 chunk id），人工抽检 20% 剔除坏例；另自标注 30-50 条真实查询 | 黄金集入库 `eval_golden_set` |
 | 1.15 | 中文分词器三方对比 | standard / IK / SmartCN 在黄金集上的 BM25 Recall@K 对比，择优引入 | 对比报告 + 决策记录（简历 B2 数字来源） |
 | 1.16 | 相关性阈值实验 | 多档阈值跑 precision-recall 曲线，按检索器分别选点 | 曲线 + 选定阈值（简历 B2 数字来源） |
 
-**1.12a 依赖与范围**：执行顺序固定为 `1.12（Issue #20）→ 1.12a → 1.11（Issue #19）`。1.12a 以 V2 schema 为唯一字段基线，只迁移上述三张 ingest 表对应的实体与 Mapper，并更新因此无法编译的直接消费者；允许做保持现有控制流的 import、构造和字段访问机械调整，不新增或重写解析、分块、嵌入、索引、状态流转、补偿或重试逻辑。`KnowledgeBase`、`UploadSession` 等其他实体/Mapper 不在本任务范围内，pipeline 行为与状态正确性只由 1.11 实现和验收。
+**1.12a / 1.11 迁移边界**：执行顺序固定为 `1.12（Issue #20）→ 1.12a → 1.11（Issue #19）`。1.12a 以 V2 schema 为唯一字段基线，只新增三实体与三 Mapper，不修改 legacy 消费者、不删除旧六类型、不实现 pipeline；`KnowledgeBase`、`UploadSession` 等其他实体/Mapper也不在范围内。1.11 使用新模型接线、迁移 V1 仍需保留的直接消费者并删除旧六类型；不借切换重写上传、S3、MQ、Canal 等工程件。两项属于同一验收批次，1.12a 中间态不可部署或独立关闭（ADR-0004）。
+
+**1.11 最小契约**：业务 `chunk_id = SHA-256(documentId + chunkerVersion + chunkType + chunkIndex + contentHash)`；写入 `parser_version=tika-3.3.0`、`chunker_version=structured-jtokkit-cl100k-v1` 和实际配置的 `embedding_model`。任一阶段失败统一为 `FAILED` 且 `error_message` 带失败阶段；MQ/显式调用可将 `FAILED` 条件 claim 到 `PARSING`，Canal 只 claim `PENDING`。失败重试复用确定性 chunk ID 覆盖写，不增加按 `document_id` 删除旧 ES 的流程。
 
 **验收标准**：
 - 上传一份 Java 教程 PDF，pipeline 走完，ES 有数据

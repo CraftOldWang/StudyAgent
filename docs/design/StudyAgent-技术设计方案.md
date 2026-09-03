@@ -274,6 +274,7 @@ CREATE TABLE users (
 **Phase 1 分块契约**：
 - `StructuredChunker` 与 `TokenWindowChunker` 复用基于 `com.knuddels:jtokkit:1.1.0`、`EncodingType.CL100K_BASE` 的本地确定性 `TokenCounter`；窗口、重叠、`tokenCount` 与测试均使用这一稳定、可复现的分块口径，不使用字符数估算，也不依赖 provider 请求后的 usage。该口径不等于 DeepSeek 或其他模型供应商的计费 token。
 - 两级 chunker 统一输入/输出 `ChunkSegment(content, tokenCount, sourceLocation)`；`SourceLocation` 至少包含解析器输出文本的 `[startOffset, endOffset)` 与 `headingPath`，fallback 后必须保持原坐标系。
+- `tokenCount` 仅存在于 `ChunkSegment` 内部契约，V2 `document_chunks` 不持久化该字段。
 - token 计量算法、jtokkit 版本或 encoding 变化时提升 `chunker_version`，重新分块、重新索引并运行检索回归（ADR-0002）。
 
 **关键类**：
@@ -334,6 +335,15 @@ CREATE TABLE document_chunks (
     INDEX idx_parent (parent_chunk_id)
 );
 ```
+
+**Phase 1 pipeline 最小契约**：
+- `chunk_id` 是 64 位小写十六进制业务 ID：`SHA-256(UTF-8(documentId + chunkerVersion + chunkType + chunkIndex + contentHash))`；`documentId` 与 `chunkIndex` 使用十进制文本，`chunkType` 使用 `PARENT` / `CHILD`，字段按该固定顺序直接拼接。相同输入在失败重试时得到相同 ID。
+- `parser_version` 固定写 `tika-3.3.0`；`chunker_version` 固定写 `structured-jtokkit-cl100k-v1`；ES `embedding_model` 写索引时的实际配置值，当前为 `text-embedding-v3`，不得写与实际调用不一致的常量。
+- 文档状态只使用 `PENDING → PARSING → CHUNKING → EMBEDDING → INDEXING → COMPLETED`；任一阶段失败统一写 `FAILED`，`error_message` 必须包含失败阶段与原始错误摘要。
+- MQ 消费或显式重试调用可以把 `FAILED` 重新 claim 为 `PARSING`；Canal 补偿只允许 claim `PENDING`，不得自动重试 `FAILED`。状态 claim 必须是条件更新，未取得 claim 的调用不执行 pipeline。
+- #19 不新增按 `document_id` 删除旧 ES 文档的流程；失败重试依靠确定性 `chunk_id` 对相同逻辑 chunk 覆盖写入，不扩展整文档清理能力。
+
+1.12a 与 #19 按 ADR-0004 分阶段切换：前者只新增严格 V2 的全局实体/Mapper，后者接线并切换消费者后再删除 legacy 六类型；两者同批验收，中间状态不可部署。
 
 ---
 
