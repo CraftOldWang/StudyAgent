@@ -6,6 +6,7 @@ import com.alibaba.otter.canal.protocol.CanalEntry;
 import com.alibaba.otter.canal.protocol.Message;
 import com.studyagent.config.CanalProperties;
 import com.studyagent.ingest.pipeline.DocumentPipeline;
+import com.studyagent.identity.IdentityScope;
 import jakarta.annotation.PreDestroy;
 import java.net.InetSocketAddress;
 import java.util.List;
@@ -32,6 +33,7 @@ public class DocumentChunkCanalListener {
 
     private final CanalProperties properties;
     private final DocumentPipeline documentPipeline;
+    private final IdentityScope identityScope;
     private volatile boolean running;
     private Thread worker;
 
@@ -138,11 +140,14 @@ public class DocumentChunkCanalListener {
         }
         List<CanalEntry.Column> columns = rowData.getAfterColumnsList();
         Long documentId = longColumn(columns, "id");
+        Long userId = longColumn(columns, "user_id");
         String pipelineStatus = stringColumn(columns, "pipeline_status");
-        if (documentId == null || !"PENDING".equals(pipelineStatus)) {
+        if (documentId == null || userId == null || !"STORED".equals(pipelineStatus)) {
             return;
         }
-        documentPipeline.processPending(documentId);
+        try (IdentityScope.Binding ignored = identityScope.bind(userId)) {
+            documentPipeline.processPending(documentId);
+        }
     }
 
     /**

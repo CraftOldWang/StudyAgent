@@ -169,6 +169,8 @@ public class DocumentPipeline {
                     chunk.getChunkIndex(),
                     chunk.getContent(),
                     chunk.getContentHash(),
+                    document.getTitle(),
+                    chunk.getSourceLocation(),
                     embedded.embedding(),
                     CHUNKER_VERSION,
                     embeddingModel,

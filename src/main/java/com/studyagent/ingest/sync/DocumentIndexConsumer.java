@@ -1,7 +1,7 @@
 package com.studyagent.ingest.sync;
 
 import com.studyagent.ingest.pipeline.DocumentPipeline;
-import com.studyagent.ingest.sync.DocumentIndexMessage;
+import com.studyagent.identity.IdentityScope;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 public class DocumentIndexConsumer implements RocketMQListener<DocumentIndexMessage> {
 
     private final DocumentPipeline documentPipeline;
+    private final IdentityScope identityScope;
 
     /**
      * 消费文档处理消息。
@@ -31,7 +32,12 @@ public class DocumentIndexConsumer implements RocketMQListener<DocumentIndexMess
         Long documentId = message == null ? null : message.documentId();
         log.info("收到 RocketMQ 文档索引消息: documentId={}", documentId);
         try {
-            documentPipeline.process(documentId);
+            if (message == null || message.userId() == null) {
+                throw new IllegalArgumentException("文档索引消息缺少 userId");
+            }
+            try (IdentityScope.Binding ignored = identityScope.bind(message.userId())) {
+                documentPipeline.process(documentId);
+            }
             log.info(
                     "RocketMQ 文档索引消息消费完成: documentId={}, consumeMillis={}",
                     documentId,

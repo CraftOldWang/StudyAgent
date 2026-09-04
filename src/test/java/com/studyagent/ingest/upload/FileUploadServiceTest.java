@@ -17,6 +17,7 @@ import com.studyagent.mapper.FileRecordMapper;
 import com.studyagent.model.Document;
 import com.studyagent.model.FileRecord;
 import com.studyagent.model.UploadSession;
+import com.studyagent.rag.web.KnowledgeBaseService;
 import com.studyagent.mapper.UploadSessionMapper;
 import com.studyagent.ingest.web.InitMultipartUploadRequest;
 import com.studyagent.ingest.web.InitMultipartUploadResponse;
@@ -54,6 +55,8 @@ class FileUploadServiceTest {
     @Mock
     private DocumentIndexProducer documentIndexProducer;
     @Mock
+    private KnowledgeBaseService knowledgeBaseService;
+    @Mock
     private RLock lock;
 
     private FileUploadService fileUploadService;
@@ -67,7 +70,8 @@ class FileUploadServiceTest {
                 objectStorageService,
                 redissonClient,
                 stringRedisTemplate,
-                documentIndexProducer
+                documentIndexProducer,
+                knowledgeBaseService
         );
     }
 
@@ -81,10 +85,10 @@ class FileUploadServiceTest {
         when(valueOperations.getBit("upload:bitmap:1", 0)).thenReturn(true);
         when(valueOperations.getBit("upload:bitmap:1", 1)).thenReturn(false);
 
-        InitMultipartUploadResponse response = fileUploadService.initMultipart(new InitMultipartUploadRequest(
+        InitMultipartUploadResponse response = fileUploadService.initMultipart(1L, new InitMultipartUploadRequest(
                 1L,
-                "demo.txt",
-                "text/plain",
+                "demo.pdf",
+                "application/pdf",
                 HASH.toUpperCase(),
                 2L,
                 1,
@@ -103,31 +107,32 @@ class FileUploadServiceTest {
         String contentHash = "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824";
         FileRecord existing = new FileRecord();
         existing.setId(22L);
-        existing.setStatus("COMPLETED");
+        existing.setStatus("STORED");
         when(redissonClient.getLock("lock:file:dedup:" + contentHash)).thenReturn(lock);
         when(fileRecordMapper.selectOne(any())).thenReturn(existing);
 
         var response = fileUploadService.uploadSingle(
                 1L,
-                new MockMultipartFile("file", "demo.txt", "text/plain", "hello".getBytes(StandardCharsets.UTF_8))
+                1L,
+                new MockMultipartFile("file", "demo.pdf", "application/pdf", "hello".getBytes(StandardCharsets.UTF_8))
         );
 
         assertThat(response.fileId()).isEqualTo(22L);
         assertThat(response.status()).isEqualTo("DUPLICATED");
         verify(objectStorageService, never()).putObject(any(), any(), anyLong(), any());
         verify(documentMapper).insert(any(Document.class));
-        verify(documentIndexProducer).send(null);
+        verify(documentIndexProducer).send(null, 1L);
     }
 
     @Test
     void uploadChunkShouldNotRecountAlreadyUploadedChunk() {
         UploadSession session = uploadSession();
-        when(uploadSessionMapper.selectById(1L)).thenReturn(session);
+        when(uploadSessionMapper.selectOne(any())).thenReturn(session);
         when(redissonClient.getLock("lock:upload:chunk:1:0")).thenReturn(lock);
         when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.getBit("upload:bitmap:1", 0)).thenReturn(true);
 
-        fileUploadService.uploadChunk(1L, 0, new MockMultipartFile("chunk", "a".getBytes()));
+        fileUploadService.uploadChunk(1L, 1L, 0, new MockMultipartFile("chunk", "a".getBytes()));
 
         verify(objectStorageService, never()).putObject(any(), any(), anyLong(), any());
         verify(uploadSessionMapper, never()).updateById(any(UploadSession.class));
@@ -136,13 +141,13 @@ class FileUploadServiceTest {
     @Test
     void uploadChunkShouldMarkBitmapAndRefreshTtl() {
         UploadSession session = uploadSession();
-        when(uploadSessionMapper.selectById(1L)).thenReturn(session);
+        when(uploadSessionMapper.selectOne(any())).thenReturn(session);
         when(redissonClient.getLock("lock:upload:chunk:1:0")).thenReturn(lock);
         when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.getBit("upload:bitmap:1", 0)).thenReturn(false, true);
         when(valueOperations.getBit("upload:bitmap:1", 1)).thenReturn(false);
 
-        fileUploadService.uploadChunk(1L, 0, new MockMultipartFile("chunk", "a".getBytes()));
+        fileUploadService.uploadChunk(1L, 1L, 0, new MockMultipartFile("chunk", "a".getBytes()));
 
         verify(objectStorageService).putObject(eq("multipart/1/0.part"), any(), eq(1L), eq("application/octet-stream"));
         verify(valueOperations).setBit("upload:bitmap:1", 0, true);
@@ -153,12 +158,12 @@ class FileUploadServiceTest {
     @Test
     void completeMultipartShouldRejectMissingChunks() {
         UploadSession session = uploadSession();
-        when(uploadSessionMapper.selectById(1L)).thenReturn(session);
+        when(uploadSessionMapper.selectOne(any())).thenReturn(session);
         when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.getBit("upload:bitmap:1", 0)).thenReturn(true);
         when(valueOperations.getBit("upload:bitmap:1", 1)).thenReturn(false);
 
-        assertThatThrownBy(() -> fileUploadService.completeMultipart(1L, 1L))
+        assertThatThrownBy(() -> fileUploadService.completeMultipart(1L, 1L, 1L))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("缺少分片");
 
@@ -168,9 +173,9 @@ class FileUploadServiceTest {
     @Test
     void completeMultipartShouldRejectDifferentKnowledgeBase() {
         UploadSession session = uploadSession();
-        when(uploadSessionMapper.selectById(1L)).thenReturn(session);
+        when(uploadSessionMapper.selectOne(any())).thenReturn(session);
 
-        assertThatThrownBy(() -> fileUploadService.completeMultipart(1L, 2L))
+        assertThatThrownBy(() -> fileUploadService.completeMultipart(1L, 1L, 2L))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("知识库");
 
@@ -183,8 +188,8 @@ class FileUploadServiceTest {
         session.setUserId(1L);
         session.setKnowledgeBaseId(1L);
         session.setFileHash(HASH);
-        session.setFilename("demo.txt");
-        session.setContentType("text/plain");
+        session.setFilename("demo.pdf");
+        session.setContentType("application/pdf");
         session.setChunkSize(1);
         session.setTotalChunks(2);
         session.setUploadedChunks(1);

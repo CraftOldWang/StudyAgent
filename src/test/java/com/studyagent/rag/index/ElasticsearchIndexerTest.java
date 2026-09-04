@@ -88,6 +88,8 @@ class ElasticsearchIndexerTest {
                 0,
                 "content",
                 "content-hash",
+                "demo.pdf",
+                "{\"startOffset\":0}",
                 new float[]{0.1f, 0.2f},
                 "structured-v1",
                 "text-embedding-v3",
