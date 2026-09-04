@@ -1,84 +1,61 @@
-# 进展看板
+# StudyAgent 进展
 
-重构与重建的执行状态。决策本身记在 `DECISIONS.md`，本文件只记「做到哪了」。
+本文件是唯一实时任务看板，只记录成果和当前状态。产品范围见 `docs/design/001-全局设计与范围.md`，当前架构见 `docs/design/StudyAgent-技术设计方案.md`。
 
-约定：`[ ]` 未开始 · `[~]` 进行中 · `[x]` 已完成并验收 · `[!]` 被决策阻塞（括号内注明卡在哪个决策）
-每项完成后写一行结果，包含关键证据（文件路径、测试数、验收结论）。
+状态：`[x]` 已完成并在当前基线验证 · `[~]` 已实现但尚未完成当前里程碑验收，或正在进行 · `[ ]` 未开始 · `[!]` 被用户决策或外部条件阻塞。
 
-**关键变化（2026-09-02）**：
-- 采用 AgentScope Java 2.0 作为 Agent Runtime 基座（D-009），不自建 runtime
-- `agent` 模块收缩为：工具治理补强 + 胶水层 + skill 定义
-- 全局设计与执行方案已交付，见 `docs/design/`
+## 当前基线
 
----
+- [x] AgentScope Java 2.0.1 单 Runtime 方向、按子域分包和服务端权限注入已确定。
+- [x] Phase 0、Phase 1 与 ingest V2 的既有实现已经提交；RAG 底层已有上传、解析、分块、索引和混合检索基础。
+- [~] Phase 2 工具治理实现提交 `ade98b9` 已在本地 `main`，但 `origin/main` 仍停在 `9a14ef3`；尚待纳入远端主线并在新架构下整体验收。
+- [~] Agent hello 与 learning 的未跟踪 WIP 位于主工作树；不得把 WIP 状态写成已完成。
+- [~] Phase 3 compaction WIP 提交 `ae5cd49` 保存在 `codex/phase3-compaction`，尚未进入 `main`，需按新学习流程选择性迁移或重写。
+- [ ] 旧 `modules/`、顶层 `infrastructure/`、兼容层、Spring AI 代码和现有 `frontend/` 尚未完成清理或重写。
 
-## 阶段 -1 · 设计与规划（已完成）
+## M0 · 干净切换与真实 hello
 
-- [x] **决策批量落地**
-      D-009 ~ D-020 全部决策已记入 `DECISIONS.md`，待决策清单已清空。
-- [x] **AGENTS.md 更新**
-      补充 Codex 执行约束（§7）、任务验收标准（§8）、Controller 与 `web/` 包说明（§3）。
-- [x] **全局设计方案**
-      `docs/design/StudyAgent-技术设计方案.md` 已交付，包含架构、模块、技术栈、表设计、关键决策与 tradeoff。
-- [x] **执行方案**
-      `docs/design/StudyAgent-执行方案.md` 已交付，五阶段路线图（0-5）、任务清单、验收标准、里程碑、风险缓解。
-- [ ] **Issues + Project 迁移**
-      等设计方案讨论完善后再迁移（避免搬一份即将过期的看板）。
+- [ ] 把 Phase 2 已提交成果安全纳入远端 `main`，Phase 3 WIP 保留在独立分支。
+- [ ] 迁移仍有价值的旧实现后，删除旧 `modules/`、顶层 `infrastructure/` 与兼容层；不删除任何未跟踪文件。
+- [ ] 删除 Spring AI 代码与依赖，只保留 AgentScope 作为 Agent Runtime。
+- [ ] 修复 S3 endpoint 启动配置问题。
+- [ ] 创建 `username='default-user'` 的初始用户；`users` 表使用 InnoDB、utf8mb4、`utf8mb4_0900_ai_ci`。
+- [~] 用真实 DeepSeek 配置跑通 `/api/agent/hello`；当前仅有未跟踪 WIP，尚未完成模块测试和独立 review。
+- [ ] 完整批次测试通过并由独立 verifier review；模块完成后补实现文档。
 
----
+## M1 · 真实 PDF 到 RAG 工具
 
-## 阶段 0 · 基础设施与骨架（未开始）
+- [ ] 实现最小知识库创建、列表、重命名和文档列表；本里程碑不做知识库删除。
+- [~] 串起真实 PDF 上传至对象存储、Tika 解析、结构化分块；复核并迁移既有 ingest V2 成果。
+- [ ] 用官方 `dashscope-sdk-java` 实现 DOCUMENT/QUERY 两种 embedding。
+- [~] 串起 Elasticsearch 写入、BM25/向量/RRF 和父块回填；复核并迁移既有 Phase 1 成果。
+- [ ] 实现 AgentScope `Knowledge` 适配与自定义 `AgentTool` `knowledge_search`；模型只提交 query，服务端绑定 user/KB scope。
+- [ ] 返回 `chunkId`、`content`、`provenance`、`score`；无结果时明确无资料依据且不编造来源。
+- [ ] 删除现有前端并以 React 18 + TypeScript + Vite 重写知识库创建、上传、文档状态和检索演示页面。
+- [ ] 完整批次测试通过并由独立 verifier review；模块完成后补实现文档。
 
-详见 `docs/design/StudyAgent-执行方案.md` 阶段 0，共 8 项任务。
+## M2 · 单知识点学习闭环
 
-目标：AgentScope 集成骨架，能跑通最简 agent。
+- [ ] 实现学习计划和 `NEW → EXPLAINING → QUIZZING → CARD_GENERATING → COMPLETED` 状态机；失败留在当前状态，QUIZZING 中追问不回退。
+- [~] 迁移或重写当前 learning WIP：一个会话绑定一个用户、目标、知识库和 AgentScope session，同时只有一个活跃知识点。
+- [ ] 通过 `learningSessionId` 恢复；MySQL 保存业务事实，AgentState 只保存最新短期上下文。
+- [ ] 实现五题 JSON 聚合测验、提交评分与错题解释；不设首版及格门槛。
+- [ ] 生成并持久化三张复习卡片；本里程碑不接 AnkiConnect。
+- [~] 在知识点完成后的当前 Agent turn 结束处主动调用 public `ConversationCompactor`，用定制 `summaryPrompt` 压缩并保存 AgentState；现有独立分支 WIP 待迁移或重写。
+- [ ] 首版由主 Agent 完成讲解、测验和卡片生成，不启用学习 subagent。
+- [ ] 后端生成 traceId，并提供按 traceId 查询标准化时间线的 JSON API；不做 trace UI。
+- [ ] 以同步 REST 重写学习目标、计划、讲解/答疑、测验、卡片和状态页面；不做 SSE。
+- [ ] 完整批次测试通过并由独立 verifier review；模块完成后补实现文档。
 
----
+## 后续 Goal
 
-## 阶段 1 · RAG 检索链路（未开始）
+- [ ] AnkiConnect 单向导出与复习集成。
+- [ ] 用户画像、长期记忆和轻量知识图谱。
+- [ ] RAG 评测、黄金集、LLM-as-judge 和回归门槛。
+- [ ] 高级 checkpoint/replay、trace UI 与受 tool allowlist 限制的学习 subagent。
+- [ ] 音视频 ASR 与其它非首里程碑能力。
 
-详见执行方案阶段 1，共 16 项任务（含黄金集构建、分词器对比、阈值实验）。
+## 项目同步
 
-目标：ingest → ES 索引 → 检索全链路，建立 baseline。
-
----
-
-## 阶段 2 · Agent 工具集成与治理（未开始）
-
-详见执行方案阶段 2，共 8 项任务（含治理效果量化）。
-
-目标：工具包装与治理补强，agent 可调用检索。
-
----
-
-## 阶段 3 · 学习流程与 Subagent 委派（未开始）
-
-详见执行方案阶段 3，共 11 项任务（含测验自一致性检查、串行 vs 委派 A/B）。
-
-目标：学习计划 → 知识点推进 → subagent 生成测验/卡片。
-
----
-
-## 阶段 4 · 用户画像与轻量知识图谱（未开始）
-
-详见执行方案阶段 4，共 12 项任务（含图谱章节序检查、音视频 ASR 三项）。
-
-目标：画像构建、实体-关系抽取、前置知识可视化、音视频 ASR 摄入与播放定位。
-
----
-
-## 阶段 5 · 评测与策略对比（未开始）
-
-详见执行方案阶段 5，共 10 项任务（含模拟学生长会话批跑）。
-
-目标：RAG 评测、策略对比、量化优化效果。
-
----
-
-## 遗留清理（与执行路线图无关，可随时做）
-
-- [ ] **轮换 `application.yml` 里三个已提交的 API key**（第 31、72、78 行，以 `${ENV:默认值}` 形式提交了真实值，文件被 git 跟踪）。视为已泄露。与重构进度无关的独立风险。
-- [ ] 修 `application.yml` 的 `configuration:` / `global-config:` 缩进——现在挂在 `spring:` 下而非 `mybatis-plus:` 下，导致驼峰映射、`assign_id`、逻辑删除全部静默失效。
-- [ ] 删除 `HashEmbeddingService`（与 `SpringAiEmbeddingService` 同为无条件 `@Service`，仅靠后者 `@Primary` 才不冲突；前者永不被注入，删掉那个 `@Primary` 就会炸）。
-- [ ] 清理搬迁留下的空目录：`common/config`、`test/.../modules/{rag,review}/domain`。
-- [ ] 删除之前搬迁阶段 0 的遗留文件（`algo/` 搬迁已完成，但旧代码未清理）。
+- [x] GitHub Project 停止维护；`PROGRESS.md` 取代其细粒度状态。
+- [ ] 清理或 supersede 旧细粒度 Issues，只保留 M0/M1/M2 等少量模块级 Issues；仅在模块边界同步。
