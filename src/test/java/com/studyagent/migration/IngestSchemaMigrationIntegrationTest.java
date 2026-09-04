@@ -60,6 +60,7 @@ class IngestSchemaMigrationIntegrationTest {
                 "documents",
                 "file_records",
                 "flyway_schema_history",
+                "upload_sessions",
                 "users");
     }
 
@@ -115,6 +116,8 @@ class IngestSchemaMigrationIntegrationTest {
                 .containsExactly("document_id");
         assertThat(indexColumns(connection, "document_chunks", "idx_parent"))
                 .containsExactly("parent_chunk_id");
+        assertThat(indexColumns(connection, "upload_sessions", "idx_upload_resume"))
+                .containsExactly("user_id", "knowledge_base_id", "file_hash", "status", "expires_at");
 
         try (PreparedStatement statement = connection.prepareStatement("""
                 SELECT COUNT(*)
@@ -132,7 +135,7 @@ class IngestSchemaMigrationIntegrationTest {
     }
 
     private void assertStorageOptions(Connection connection) throws SQLException {
-        for (String table : List.of("file_records", "documents", "document_chunks")) {
+        for (String table : List.of("file_records", "documents", "document_chunks", "upload_sessions")) {
             try (PreparedStatement statement = connection.prepareStatement("""
                     SELECT tables.engine,
                            tables.table_collation,

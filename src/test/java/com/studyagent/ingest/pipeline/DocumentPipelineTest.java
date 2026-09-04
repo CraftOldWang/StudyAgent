@@ -17,14 +17,15 @@ import com.studyagent.algo.chunk.TokenCounter;
 import com.studyagent.algo.chunk.TokenWindowChunker;
 import com.studyagent.common.exception.BusinessException;
 import com.studyagent.config.AiModelProperties;
-import com.studyagent.infrastructure.embedding.EmbeddingService;
-import com.studyagent.infrastructure.objectstorage.ObjectStorageService;
-import com.studyagent.infrastructure.parser.DocumentTextParser;
+import com.studyagent.ingest.parse.DocumentTextParser;
+import com.studyagent.ingest.storage.ObjectStorageService;
 import com.studyagent.model.Document;
 import com.studyagent.model.DocumentChunk;
 import com.studyagent.model.FileRecord;
 import com.studyagent.rag.index.ElasticsearchChunkDocument;
 import com.studyagent.rag.index.ElasticsearchIndexer;
+import com.studyagent.rag.embedding.EmbeddingPurpose;
+import com.studyagent.rag.embedding.EmbeddingService;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -42,7 +43,8 @@ class DocumentPipelineTest {
         when(fixture.objectStorage().getObject("files/demo.md"))
                 .thenReturn(new ByteArrayInputStream("ignored".getBytes(StandardCharsets.UTF_8)));
         when(fixture.parser().parse(any())).thenReturn("# Heading\n\nbody");
-        when(fixture.embeddingService().embed(any())).thenReturn(new float[]{0.1f, 0.2f});
+        when(fixture.embeddingService().embed(any(), eq(EmbeddingPurpose.DOCUMENT)))
+                .thenReturn(new float[]{0.1f, 0.2f});
 
         boolean processed = fixture.pipeline().process(10L);
 
@@ -112,8 +114,7 @@ class DocumentPipelineTest {
                                 "text-embedding-v3",
                                 2,
                                 "unused",
-                                "http://localhost",
-                                "document"),
+                                "http://localhost"),
                         null),
                 new ObjectMapper());
         return new Fixture(pipeline, persistence, objectStorage, parser, embeddingService, elasticsearchIndexer);

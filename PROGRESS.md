@@ -8,30 +8,30 @@
 
 - [x] AgentScope Java 2.0.1 单 Runtime 方向、按子域分包和服务端权限注入已确定。
 - [x] Phase 0、Phase 1 与 ingest V2 的既有实现已经提交；RAG 底层已有上传、解析、分块、索引和混合检索基础。
-- [~] Phase 2 工具治理实现提交 `ade98b9` 已进入 `origin/main`；代码仍需在 M0 干净切换后做模块整体验收。
-- [~] Agent hello 与 learning 的未跟踪 WIP 位于主工作树；不得把 WIP 状态写成已完成。
-- [~] Phase 3 compaction WIP 提交 `ae5cd49` 保存在 `codex/phase3-compaction`，尚未进入 `main`，需按新学习流程选择性迁移或重写。
-- [ ] 旧 `modules/`、顶层 `infrastructure/`、兼容层、Spring AI 代码和现有 `frontend/` 尚未完成清理或重写。
+- [x] Phase 2 工具治理已纳入当前干净包结构并通过 M0 批次验证。
+- [x] Agent hello 已作为 M0 成果接入 AgentScope；learning/compaction WIP 未进入 `main`。
+- [~] Phase 3 WIP 提交 `95af8b1` 保存在 `codex/phase3-wip`，尚未进入 `main`，需按新学习流程选择性迁移或重写。
+- [x] 旧 `modules/`、顶层 `infrastructure/`、兼容层、Spring AI 代码和旧 `frontend/` 已从当前基线清理。
 
 ## M0 · 干净切换与真实 hello
 
-- [x] Phase 2 已提交成果已安全纳入远端 `main`；Phase 3 WIP 继续保留在独立分支。
-- [ ] 迁移仍有价值的旧实现后，删除旧 `modules/`、顶层 `infrastructure/` 与兼容层；不删除任何未跟踪文件。
-- [ ] 删除 Spring AI 代码与依赖，只保留 AgentScope 作为 Agent Runtime。
-- [ ] 修复 S3 endpoint 启动配置问题。
-- [ ] 创建 `username='default-user'` 的初始用户；`users` 表使用 InnoDB、utf8mb4、`utf8mb4_0900_ai_ci`。
-- [~] 用真实 DeepSeek 配置跑通 `/api/agent/hello`；当前仅有未跟踪 WIP，尚未完成模块测试和独立 review。
-- [ ] 完整批次测试通过并由独立 verifier review；模块完成后补实现文档。
+- [x] Phase 2 已提交成果已安全纳入 `main`；Phase 3 WIP 继续保留在 `codex/phase3-wip`。
+- [x] 有价值的解析、对象存储、上传、MQ/Canal 与 embedding 链路已迁入目标包，旧 `modules/`、顶层 `infrastructure/` 与兼容层已删除；未跟踪文件未删除。
+- [x] Spring AI 代码与依赖已删除；Agent Runtime 只保留 AgentScope，embedding 使用官方 `dashscope-sdk-java` 并保留 DOCUMENT/QUERY 语义。
+- [x] S3 endpoint 占位符已修复，真实容器启动已成功创建/检查 bucket。
+- [x] 初始用户为 `username='default-user'`；`users` 表显式使用 InnoDB、utf8mb4、`utf8mb4_0900_ai_ci`。
+- [x] 用真实 DeepSeek 配置跑通 `POST /api/agent/hello`，服务端注入 `X-User-Id: 1` 后返回真实模型文本。
+- [~] 实现者批次测试与实现文档已完成；等待独立 verifier review 后关闭 M0。
 
 ## M1 · 真实 PDF 到 RAG 工具
 
 - [ ] 实现最小知识库创建、列表、重命名和文档列表；本里程碑不做知识库删除。
 - [~] 串起真实 PDF 上传至对象存储、Tika 解析、结构化分块；复核并迁移既有 ingest V2 成果。
-- [ ] 用官方 `dashscope-sdk-java` 实现 DOCUMENT/QUERY 两种 embedding。
+- [x] 已用官方 `dashscope-sdk-java` 实现 DOCUMENT/QUERY 两种 embedding；M1 继续负责把它接入完整 PDF→RAG 验收链。
 - [~] 串起 Elasticsearch 写入、BM25/向量/RRF 和父块回填；复核并迁移既有 Phase 1 成果。
 - [ ] 以 `rag/retrieval` 应用服务和稳定的 AgentScope `AgentTool`/`Toolkit` 自定义 `knowledge_search`；M1 HTTP 入口验证并绑定 user/KB scope，模型只提交 query。
 - [ ] 返回 `chunkId`、`content`、`provenance`、`score`；无结果时明确无资料依据且不编造来源。
-- [ ] 删除现有前端并以 React 18 + TypeScript + Vite 重写知识库创建、上传、文档状态和检索演示页面。
+- [~] 旧前端已在 M0 删除；React 18 + TypeScript + Vite 的知识库页面重写仍待 M1 实现。
 - [ ] 完整批次测试通过并由独立 verifier review；模块完成后补实现文档。
 
 ## M2 · 单知识点学习闭环

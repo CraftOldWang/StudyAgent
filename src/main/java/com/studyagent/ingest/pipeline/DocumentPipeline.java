@@ -8,14 +8,15 @@ import com.studyagent.algo.chunk.StructuredChunker;
 import com.studyagent.algo.chunk.TokenWindowChunker;
 import com.studyagent.common.exception.BusinessException;
 import com.studyagent.config.AiModelProperties;
-import com.studyagent.infrastructure.embedding.EmbeddingService;
-import com.studyagent.infrastructure.objectstorage.ObjectStorageService;
-import com.studyagent.infrastructure.parser.DocumentTextParser;
+import com.studyagent.ingest.parse.DocumentTextParser;
+import com.studyagent.ingest.storage.ObjectStorageService;
 import com.studyagent.model.Document;
 import com.studyagent.model.DocumentChunk;
 import com.studyagent.model.FileRecord;
 import com.studyagent.rag.index.ElasticsearchChunkDocument;
 import com.studyagent.rag.index.ElasticsearchIndexer;
+import com.studyagent.rag.embedding.EmbeddingPurpose;
+import com.studyagent.rag.embedding.EmbeddingService;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -145,7 +146,9 @@ public class DocumentPipeline {
 
     private List<EmbeddedChunk> embed(List<DocumentChunk> chunks) {
         return chunks.stream()
-                .map(chunk -> new EmbeddedChunk(chunk, embeddingService.embed(chunk.getContent())))
+                .map(chunk -> new EmbeddedChunk(
+                        chunk,
+                        embeddingService.embed(chunk.getContent(), EmbeddingPurpose.DOCUMENT)))
                 .toList();
     }
 

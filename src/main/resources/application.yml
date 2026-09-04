@@ -22,13 +22,7 @@ spring:
     locations: classpath:db/migration
   jackson:
     default-property-inclusion: non_null
-  ai:
-    dashscope:
-      chat:
-        enabled: false
-      embedding:
-        enabled: false
-      api-key: ${AI_DASHSCOPE_API_KEY:sk-7ef2b4dacb134c41ac7feee0319ee673}
+mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
   global-config:
@@ -51,12 +45,12 @@ study-agent:
       max-retries: 1
       dashscope:
         api-key: ${study-agent.ai.embedding.api-key}
-        base-url: ${study-agent.ai.embedding.base-url}
+        base-url: "${study-agent.ai.embedding.base-url}"
       deepseek:
         api-key: ${study-agent.ai.chat.api-key}
-        base-url: ${study-agent.ai.chat.base-url}
+        base-url: "${study-agent.ai.chat.base-url}"
   object-storage:
-    endpoint: http://localhost:9000
+    endpoint: "${S3_ENDPOINT:http://localhost:9000}"
     access-key: study
     secret-key: study123456
     bucket: study-agent
@@ -83,13 +77,12 @@ study-agent:
       model: text-embedding-v3
       dimensions: 1024
       api-key: ${AI_DASHSCOPE_API_KEY:sk-7ef2b4dacb134c41ac7feee0319ee673}
-      base-url: ${AI_DASHSCOPE_BASE_URL:https://dashscope.aliyuncs.com}
-      text-type: document
+      base-url: "${AI_DASHSCOPE_BASE_URL:https://dashscope.aliyuncs.com}"
     chat:
       provider: deepseek
       model: deepseek-chat
       api-key: ${DEEPSEEK_API_KEY:sk-c95b6007698c46b5be295e3bbe2b7421}
-      base-url: ${DEEPSEEK_BASE_URL:https://api.deepseek.com}
+      base-url: "${DEEPSEEK_BASE_URL:https://api.deepseek.com}"
       temperature: 0.2
       max-tokens: 1800
   rocketmq:

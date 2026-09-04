@@ -27,8 +27,7 @@ class UserSchemaMigrationIntegrationTest {
             "quiz_answers",
             "quiz_questions",
             "review_records",
-            "tool_call_records",
-            "upload_sessions"
+            "tool_call_records"
     );
 
     @Test

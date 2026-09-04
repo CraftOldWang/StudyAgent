@@ -21,8 +21,7 @@
         <java.version>21</java.version>
         <agentscope.version>2.0.1</agentscope.version>
         <aws.sdk.version>2.37.3</aws.sdk.version>
-        <spring.ai.version>1.1.0</spring.ai.version>
-        <spring.ai.alibaba.version>1.1.0.0-RC2</spring.ai.alibaba.version>
+        <dashscope.sdk.version>2.22.32</dashscope.sdk.version>
         <mybatis.plus.version>3.5.16</mybatis.plus.version>
         <redisson.version>3.52.0</redisson.version>
         <rocketmq.spring.version>2.3.5</rocketmq.spring.version>
@@ -32,25 +31,6 @@
         <elasticsearch.java.version>8.15.3</elasticsearch.java.version>
         <jtokkit.version>1.1.0</jtokkit.version>
     </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.ai</groupId>
-                <artifactId>spring-ai-bom</artifactId>
-                <version>${spring.ai.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.alibaba.cloud.ai</groupId>
-                <artifactId>spring-ai-alibaba-extensions-bom</artifactId>
-                <version>${spring.ai.alibaba.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <dependencies>
         <dependency>
@@ -72,6 +52,17 @@
             <groupId>io.agentscope</groupId>
             <artifactId>agentscope-extensions-model-openai</artifactId>
             <version>${agentscope.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dashscope-sdk-java</artifactId>
+            <version>${dashscope.sdk.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.github.victools</groupId>
+                    <artifactId>jsonschema-generator</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -139,18 +130,6 @@
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-parsers-standard-package</artifactId>
             <version>${tika.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.alibaba.cloud.ai</groupId>
-            <artifactId>spring-ai-alibaba-starter-dashscope</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-deepseek</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-client-chat</artifactId>
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>

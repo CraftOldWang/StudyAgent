@@ -19,8 +19,7 @@ public record AiModelProperties(
             String model,
             Integer dimensions,
             String apiKey,
-            String baseUrl,
-            String textType
+            String baseUrl
     ) {
     }
 
