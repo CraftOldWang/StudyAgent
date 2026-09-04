@@ -1,17 +1,18 @@
 # StudyAgent 决策研究台
 
-> 更新时间：2026-09-01  
-> 用途：保存技术决策的候选方案、机制证据、代价与项目适配判断。这里不是已批准决策；最终结论仍以 `DECISIONS.md` 为准。
+> 更新时间：2026-09-04
+> 用途：保存历史技术研究、候选方案、机制证据与取舍背景。本目录和已归档的 `DECISIONS.md` 都不是当前设计权威。
 
 ## 使用规则
 
 - 本目录只提供决策辅助，不替用户拍板。
-- 仓库内设计依据只使用 `DECISIONS.md`、`PROGRESS.md`、`docs/design/001-全局设计与范围.md`。
+- 当前权威依次为：根 `AGENTS.md` 的执行纪律、`docs/design/001-全局设计与范围.md` 的产品范围、`docs/design/StudyAgent-技术设计方案.md` 的当前架构，以及 `PROGRESS.md` 的实时状态。
+- 本目录中的状态、依赖图和 `DECIDED` 标签只描述历史研究过程；与当前权威文档冲突时一律不采用。
 - Agent Runtime 的代码参照只使用本地 `deepseek-harness` 与 `pi` 实现。
 - 外部事实优先引用官方文档、官方规范、官方仓库和论文原文。
 - 每个问题区分 `RESEARCHING`、`READY_FOR_DECISION`、`BLOCKED_WITH_RESEARCH`、`DECIDED`。
   - `BLOCKED_WITH_RESEARCH` 表示选项和约束已调研，但前置决策未完成，暂时不能拍最终结论。
-  - `DECIDED` 仍需回写 `DECISIONS.md` 才生效。
+  - `DECIDED` 是历史标签；结论只有进入上述当前权威文档或仍有效 ADR 后才可执行。
 
 ## 关键阻塞依赖
 

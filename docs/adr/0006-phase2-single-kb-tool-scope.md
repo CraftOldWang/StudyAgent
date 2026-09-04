@@ -10,8 +10,9 @@ status: accepted
 
 - 新增最小 `knowledge_bases` 表，明确保存知识库归属与名称；提供创建、列表、重命名和文档列表，不做删除与级联清理。
 - `learning_sessions.knowledge_base_id` 是单值必填字段。会话创建/恢复只接受一个属于当前用户的知识库 ID。
-- 服务端先验证当前用户与该单一知识库的归属，再构建 `RuntimeContext(userId, sessionId)`，并把已验证的 `knowledgeBaseId` 作为服务端 scope 写入。运行上下文只是 scope 载体，不替代服务端权限校验。
-- `knowledge_search` 的模型可见参数只有 `{query}`；user、knowledge base 和检索策略由服务端从会话 scope 注入。
+- M1 尚无学习会话时，由检索 HTTP 入口验证 `userId + knowledgeBaseId` 的归属并绑定本次 `RuntimeContext`；M2 建立学习会话后，从 `learningSessionId` 恢复并绑定同一 user/KB scope。运行上下文只是 scope 载体，不替代服务端权限校验。
+- `knowledge_search` 的模型可见参数只有 `{query}`；user、knowledge base 和检索策略由服务端从已验证的运行 scope 注入。
+- AgentScope 2.0.1 整个 rag package（含 `Knowledge`）已标记 `@Deprecated(forRemoval=true, since="2.0.0")`，因此不建立 `Knowledge` adapter；`knowledge_search` 使用 `rag/retrieval` 应用服务和稳定的 AgentScope `AgentTool`/`Toolkit` 扩展点。
 - 卡片写入时，`userId`、当前 `knowledgePointId` 和 `knowledgeBaseId` 由服务端从会话/运行上下文绑定，并校验来源 chunk 属于同一 scope。
 
 ## Considered Options

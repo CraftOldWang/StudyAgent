@@ -69,7 +69,7 @@ identity → all request paths
 - `DEFAULT CHARSET=utf8mb4`
 - `COLLATE=utf8mb4_0900_ai_ci`
 
-学习会话只绑定一个知识库。服务端从 `learningSessionId` 得到 user、knowledge base 和当前 knowledge point，再构建运行上下文。模型可见的工具 schema 不包含 `userId`、`knowledgeBaseId` 或 `knowledgePointId`。
+M1 尚未建立学习会话时，检索 HTTP 入口验证请求用户拥有 `knowledgeBaseId`，再把 `userId + knowledgeBaseId` 绑定进本次 `RuntimeContext`。M2 建立学习会话后，服务端从 `learningSessionId` 恢复同一个 user/knowledge-base scope 和当前 knowledge point，再构建运行上下文。模型可见的工具 schema 始终不包含 `userId`、`knowledgeBaseId` 或 `knowledgePointId`。
 
 ## 5. 知识库与摄入
 
@@ -131,14 +131,14 @@ score
 
 检索为空时返回明确的“没有资料依据”结果。Agent prompt 和工具返回都不得生成不存在的文档名、页码或 chunk。
 
-### 6.2 AgentScope Knowledge 与 AgentTool
+### 6.2 Retrieval 应用服务与 AgentTool
 
-- `ScopedKnowledge` 适配 AgentScope `Knowledge`，内部调用应用的 RAG 检索服务。
-- 自定义 AgentScope `AgentTool` 暴露 `knowledge_search`。
+- `rag/retrieval` 应用服务拥有检索编排和统一结果契约。
+- 通过稳定的 AgentScope `AgentTool`/`Toolkit` 自定义 `knowledge_search`，内部调用该应用服务。
 - 模型可见参数只有 query；权限 scope 由服务端在构造工具时绑定。
 - 工具将统一 RAG 结果序列化给模型，同时保留 chunkId 供测验解释和卡片来源引用。
 
-不采用 deprecated `KnowledgeRetrievalTools`，也不采用 `GenericRAGHook`。首版需要一个权限绑定清楚、返回契约可控的显式工具；不引入第二条隐式检索路径。
+AgentScope 2.0.1 的整个 `io.agentscope.core.rag` package（包括 `Knowledge`）已标记 `@Deprecated(forRemoval=true, since="2.0.0")`。目标态不实现或依赖该 package，也不采用其中的 `KnowledgeRetrievalTools` 或 `GenericRAGHook`；稳定的 tool/toolkit 扩展点足以承载一个权限绑定清楚、返回契约可控的显式检索工具，同时避免把即将移除的 API 变成项目边界。
 
 ## 7. 学习会话与状态机
 
@@ -200,14 +200,15 @@ NEW → EXPLAINING → QUIZZING → CARD_GENERATING → COMPLETED
 
 AgentState 保存恢复对话所需的最新状态，不保存 checkpoint 历史，不实现 fork/replay。业务状态以 MySQL 为准；恢复时二者通过 learning session 与 AgentScope session 映射衔接。
 
-知识点完成后，在产生完成响应的当前 Agent turn 结束处：
+知识点完成后，在产生完成响应的当前 Agent turn 结束处，由薄适配器执行一次不依赖日常 middleware 阈值的强制压缩：
 
 1. 读取该会话当前 Memory。
-2. 调用 AgentScope public `ConversationCompactor`。
-3. 使用 StudyAgent 定制 `summaryPrompt`，保留学习目标、已掌握点、易错点、关键出处和下一知识点所需上下文。
-4. 将 compact 后的最新状态保存到 AgentStateStore。
+2. 构造 one-off `CompactionConfig`：`triggerMessages(1)`、`keepMessages(1)`，并设置 StudyAgent 定制 `summaryPrompt`。Prompt 必须保留 AgentScope 用来注入待压缩消息的 `{messages}` 占位符，同时要求摘要保留学习目标、已掌握点、易错点、关键出处和下一知识点所需上下文。
+3. 调用 public `ConversationCompactor.compactIfNeeded(...)`。
+4. 处理返回的 `Optional<List<Msg>>`：有值时用压缩后的消息替换同一个 `AgentState.contextMutable()` 中的会话上下文；预期应压缩却返回 empty 时显式失败，不能把一次表面调用记成已压缩。
+5. 将修改后的同一个 AgentState 保存到 AgentStateStore；保存成功后才能完成本次知识点收尾。
 
-Compaction 失败必须暴露，不得把未保存状态标成成功；首版不保留压缩前 checkpoint。
+`triggerMessages(1)` 让该 one-off 配置在知识点完成时立即进入压缩判断，`keepMessages(1)` 为摘要留出非空前缀；这条完成路径不依赖常规长会话阈值。调用或保存失败必须暴露，不得把未压缩/未保存状态标成成功；首版不保留压缩前 checkpoint。
 
 ## 9. Trace API
 

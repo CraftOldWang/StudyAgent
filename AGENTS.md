@@ -40,6 +40,7 @@
 ```text
 src/main/java/com/studyagent/
   config/            所有 @ConfigurationProperties 与 @Configuration
+  identity/          初始用户与服务端身份、权限 scope 解析
   common/
     exception/  response/
     json/            唯一的 JSON 工具
