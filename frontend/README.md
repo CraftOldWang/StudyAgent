@@ -27,6 +27,7 @@ npm run dev
 
 ```powershell
 npm test
+npm run typecheck
 npm run build
 ```
 
