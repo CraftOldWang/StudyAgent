@@ -102,6 +102,7 @@ public class RetrievalService {
                 source.chunkId(),
                 source.parentChunkId(),
                 source.content(),
+                source.provenance(),
                 score,
                 RetrievalStrategy.RRF
         );

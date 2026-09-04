@@ -16,6 +16,8 @@ public record ElasticsearchChunkDocument(
         @JsonProperty("chunk_index") Integer chunkIndex,
         String content,
         @JsonProperty("content_hash") String contentHash,
+        @JsonProperty("document_title") String documentTitle,
+        @JsonProperty("source_location") String sourceLocation,
         float[] embedding,
         @JsonProperty("chunker_version") String chunkerVersion,
         @JsonProperty("embedding_model") String embeddingModel,

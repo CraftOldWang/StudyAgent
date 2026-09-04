@@ -34,11 +34,14 @@ class ParentAggregatorTest {
 
     @Test
     void loadsParentsInOneScopedQueryAndKeepsEachChildProvenance() throws IOException {
-        RetrievalHit found = new RetrievalHit("child-1", "parent-1", "child one", 0.8, RetrievalStrategy.RRF);
+        RetrievalHit.Provenance provenance = new RetrievalHit.Provenance("doc-1", "demo.pdf", "location");
+        RetrievalHit found = new RetrievalHit(
+                "child-1", "parent-1", "child one", provenance, 0.8, RetrievalStrategy.RRF);
         RetrievalHit parentMissing = new RetrievalHit(
                 "child-2",
                 "parent-missing",
                 "child two",
+                provenance,
                 0.7,
                 RetrievalStrategy.VECTOR
         );
@@ -74,14 +77,16 @@ class ParentAggregatorTest {
                 .extracting(value -> value.stringValue())
                 .containsExactly("parent-1", "parent-missing");
         assertThat(result).containsExactly(
-                new RetrievalHit("child-1", "parent-1", "完整父块内容", 0.8, RetrievalStrategy.RRF),
+                new RetrievalHit(
+                        "child-1", "parent-1", "完整父块内容", provenance, 0.8, RetrievalStrategy.RRF),
                 parentMissing
         );
     }
 
     @Test
     void returnsChildUnchangedWhenItHasNoParentReference() throws IOException {
-        RetrievalHit child = new RetrievalHit("child-1", null, "standalone child", 1.2, RetrievalStrategy.BM25);
+        RetrievalHit child = new RetrievalHit(
+                "child-1", null, "standalone child", null, 1.2, RetrievalStrategy.BM25);
 
         assertThat(aggregator.aggregate("user-4", "kb-7", List.of(child))).containsExactly(child);
         verify(client, never()).search(any(SearchRequest.class), eq(ElasticsearchChunkDocument.class));

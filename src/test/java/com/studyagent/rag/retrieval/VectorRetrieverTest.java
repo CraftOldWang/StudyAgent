@@ -76,6 +76,7 @@ class VectorRetrieverTest {
                 "chunk-9",
                 "parent-2",
                 "接口引用可以指向不同实现对象",
+                new RetrievalHit.Provenance("doc-1", "demo.pdf", "{\"startOffset\":1}"),
                 0.92,
                 RetrievalStrategy.VECTOR
         ));
@@ -114,6 +115,9 @@ class VectorRetrieverTest {
         when(document.chunkId()).thenReturn(chunkId);
         when(document.parentChunkId()).thenReturn(parentChunkId);
         when(document.content()).thenReturn(content);
+        when(document.documentId()).thenReturn("doc-1");
+        when(document.documentTitle()).thenReturn("demo.pdf");
+        when(document.sourceLocation()).thenReturn("{\"startOffset\":1}");
         return document;
     }
 }

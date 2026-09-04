@@ -83,8 +83,8 @@ class RetrievalServiceTest {
         when(vectorRetriever.retrieve("user-4", "kb-7", vector, 6))
                 .thenReturn(List.of(hit("b", RetrievalStrategy.VECTOR, 0.8)));
         List<RetrievalHit> parents = List.of(
-                new RetrievalHit("a", "pa", "parent a", 0.1, RetrievalStrategy.RRF),
-                new RetrievalHit("b", "pb", "parent b", 0.09, RetrievalStrategy.RRF)
+                new RetrievalHit("a", "pa", "parent a", null, 0.1, RetrievalStrategy.RRF),
+                new RetrievalHit("b", "pb", "parent b", null, 0.09, RetrievalStrategy.RRF)
         );
         when(parentAggregator.aggregate(org.mockito.ArgumentMatchers.eq("user-4"),
                 org.mockito.ArgumentMatchers.eq("kb-7"), anyList())).thenReturn(parents);
@@ -104,6 +104,6 @@ class RetrievalServiceTest {
     }
 
     private RetrievalHit hit(String chunkId, RetrievalStrategy strategy, double score) {
-        return new RetrievalHit(chunkId, "parent-" + chunkId, "content " + chunkId, score, strategy);
+        return new RetrievalHit(chunkId, "parent-" + chunkId, "content " + chunkId, null, score, strategy);
     }
 }

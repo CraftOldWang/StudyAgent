@@ -72,6 +72,7 @@ class BM25RetrieverTest {
                 "chunk-11",
                 "parent-3",
                 "多态允许统一接口表示不同实现",
+                new RetrievalHit.Provenance("doc-1", "demo.pdf", "{\"startOffset\":1}"),
                 3.25,
                 RetrievalStrategy.BM25
         ));
@@ -113,6 +114,9 @@ class BM25RetrieverTest {
         when(document.chunkId()).thenReturn(chunkId);
         when(document.parentChunkId()).thenReturn(parentChunkId);
         when(document.content()).thenReturn(content);
+        when(document.documentId()).thenReturn("doc-1");
+        when(document.documentTitle()).thenReturn("demo.pdf");
+        when(document.sourceLocation()).thenReturn("{\"startOffset\":1}");
         return document;
     }
 }

@@ -21,6 +21,8 @@ final class RetrievalHitMapper {
                 source.chunkId(),
                 source.parentChunkId(),
                 source.content(),
+                new RetrievalHit.Provenance(
+                        source.documentId(), source.documentTitle(), source.sourceLocation()),
                 hit.score() == null ? 0.0 : hit.score(),
                 strategy
         );

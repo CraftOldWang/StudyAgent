@@ -15,6 +15,7 @@ import com.studyagent.mapper.DocumentMapper;
 import com.studyagent.mapper.FileRecordMapper;
 import com.studyagent.model.Document;
 import com.studyagent.model.FileRecord;
+import com.studyagent.rag.web.KnowledgeBaseService;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
@@ -42,8 +43,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class FileUploadService {
 
-    private static final Long DEFAULT_USER_ID = 1L;
-
     private final FileRecordMapper fileRecordMapper;
     private final UploadSessionMapper uploadSessionMapper;
     private final DocumentMapper documentMapper;
@@ -51,13 +50,15 @@ public class FileUploadService {
     private final RedissonClient redissonClient;
     private final StringRedisTemplate stringRedisTemplate;
     private final DocumentIndexProducer documentIndexProducer;
+    private final KnowledgeBaseService knowledgeBaseService;
 
     /**
      * 根据客户端计算出的哈希检查文件是否已经入库，用于前端上传前的秒传判断。
      */
-    public FileDedupCheckResponse checkDuplicate(Long knowledgeBaseId, String sha256) {
+    public FileDedupCheckResponse checkDuplicate(Long userId, Long knowledgeBaseId, String sha256) {
+        knowledgeBaseService.requireOwned(userId, knowledgeBaseId);
         String normalizedSha256 = normalizeSha256(sha256);
-        FileRecord existing = findDuplicate(DEFAULT_USER_ID, knowledgeBaseId, normalizedSha256);
+        FileRecord existing = findDuplicate(userId, knowledgeBaseId, normalizedSha256);
         if (existing == null) {
             return new FileDedupCheckResponse(false, null, "NOT_FOUND");
         }
@@ -68,21 +69,23 @@ public class FileUploadService {
      * 处理小文件直传：先计算哈希并进入去重锁，再决定秒传或写入对象存储。
      */
     @Transactional
-    public UploadResultResponse uploadSingle(Long knowledgeBaseId, MultipartFile file) {
+    public UploadResultResponse uploadSingle(Long userId, Long knowledgeBaseId, MultipartFile file) {
+        knowledgeBaseService.requireOwned(userId, knowledgeBaseId);
+        validatePdf(file.getOriginalFilename(), file.getContentType());
         String fileHash = calculateSha256(file);
         RLock lock = redissonClient.getLock("lock:file:dedup:" + fileHash);
         lock.lock();
         try {
             // 哈希相同的文件只复用文件实体，但仍然为当前知识库创建新的文档记录。
-            FileRecord existing = findDuplicate(DEFAULT_USER_ID, knowledgeBaseId, fileHash);
+            FileRecord existing = findDuplicate(userId, knowledgeBaseId, fileHash);
             if (existing != null) {
                 Document document = createDocument(
-                        DEFAULT_USER_ID,
+                        userId,
                         knowledgeBaseId,
                         existing,
                         file.getOriginalFilename(),
                         file.getContentType());
-                documentIndexProducer.send(document.getId());
+                documentIndexProducer.send(document.getId(), userId);
                 return new UploadResultResponse(existing.getId(), document.getId(), "DUPLICATED");
             }
 
@@ -90,19 +93,19 @@ public class FileUploadService {
             String objectKey = "files/" + fileHash + "/" + safeFilename(file.getOriginalFilename());
             objectStorageService.putObject(objectKey, fileInputStream(file), file.getSize(), contentType(file.getContentType()));
             FileRecord fileRecord = createFileRecord(
-                    DEFAULT_USER_ID,
+                    userId,
                     knowledgeBaseId,
                     fileHash,
                     objectKey,
                     file.getOriginalFilename(),
                     file.getSize());
             Document document = createDocument(
-                    DEFAULT_USER_ID,
+                    userId,
                     knowledgeBaseId,
                     fileRecord,
                     file.getOriginalFilename(),
                     file.getContentType());
-            documentIndexProducer.send(document.getId());
+            documentIndexProducer.send(document.getId(), userId);
             return new UploadResultResponse(fileRecord.getId(), document.getId(), "UPLOADED");
         } finally {
             lock.unlock();
@@ -113,27 +116,29 @@ public class FileUploadService {
      * 初始化分片上传会话，并返回当前文件是否可以秒传或是否存在未完成会话。
      */
     @Transactional
-    public InitMultipartUploadResponse initMultipart(InitMultipartUploadRequest request) {
+    public InitMultipartUploadResponse initMultipart(Long userId, InitMultipartUploadRequest request) {
+        knowledgeBaseService.requireOwned(userId, request.knowledgeBaseId());
+        validatePdf(request.filename(), request.contentType());
         String fileHash = normalizeSha256(request.sha256());
         validateInitRequest(request);
         RLock lock = redissonClient.getLock("lock:file:dedup:" + fileHash);
         lock.lock();
         try {
             // 初始化阶段就做去重，客户端可以跳过后续所有分片上传。
-            FileRecord existing = findDuplicate(DEFAULT_USER_ID, request.knowledgeBaseId(), fileHash);
+            FileRecord existing = findDuplicate(userId, request.knowledgeBaseId(), fileHash);
             if (existing != null) {
                 Document document = createDocument(
-                        DEFAULT_USER_ID,
+                        userId,
                         request.knowledgeBaseId(),
                         existing,
                         request.filename(),
                         request.contentType());
-                documentIndexProducer.send(document.getId());
+                documentIndexProducer.send(document.getId(), userId);
                 return new InitMultipartUploadResponse(null, true, existing.getId(), document.getId(), "DUPLICATED", 0, request.totalChunks());
             }
 
             UploadSession activeSession = uploadSessionMapper.selectActiveSession(
-                    DEFAULT_USER_ID,
+                    userId,
                     request.knowledgeBaseId(),
                     fileHash
             );
@@ -154,7 +159,7 @@ public class FileUploadService {
             // 新会话默认保留一天，过期后需要客户端重新初始化上传。
             LocalDateTime now = LocalDateTime.now();
             UploadSession session = new UploadSession();
-            session.setUserId(DEFAULT_USER_ID);
+            session.setUserId(userId);
             session.setKnowledgeBaseId(request.knowledgeBaseId());
             session.setFileHash(fileHash);
             session.setFilename(request.filename());
@@ -178,8 +183,8 @@ public class FileUploadService {
      * 上传单个分片。相同分片重复上传时直接幂等返回。
      */
     @Transactional
-    public void uploadChunk(Long uploadSessionId, int chunkIndex, MultipartFile chunk) {
-        UploadSession session = requiredUploadSession(uploadSessionId);
+    public void uploadChunk(Long userId, Long uploadSessionId, int chunkIndex, MultipartFile chunk) {
+        UploadSession session = requiredUploadSession(userId, uploadSessionId);
         validateUploadableSession(session);
         validateChunk(session, chunkIndex, chunk);
 
@@ -209,8 +214,8 @@ public class FileUploadService {
     /**
      * 查询分片上传进度，返回已上传和缺失的分片下标，便于客户端断点续传。
      */
-    public MultipartUploadStatusResponse multipartStatus(Long uploadSessionId) {
-        UploadSession session = requiredUploadSession(uploadSessionId);
+    public MultipartUploadStatusResponse multipartStatus(Long userId, Long uploadSessionId) {
+        UploadSession session = requiredUploadSession(userId, uploadSessionId);
         refreshUploadedChunks(session);
         return toMultipartStatus(session);
     }
@@ -219,8 +224,9 @@ public class FileUploadService {
      * 完成分片上传：校验分片完整性，合并对象，创建文件和文档记录，并触发索引任务。
      */
     @Transactional
-    public UploadResultResponse completeMultipart(Long uploadSessionId, Long knowledgeBaseId) {
-        UploadSession session = requiredUploadSession(uploadSessionId);
+    public UploadResultResponse completeMultipart(Long userId, Long uploadSessionId, Long knowledgeBaseId) {
+        knowledgeBaseService.requireOwned(userId, knowledgeBaseId);
+        UploadSession session = requiredUploadSession(userId, uploadSessionId);
         validateUploadableSession(session);
         validateCompleteKnowledgeBase(session, knowledgeBaseId);
         List<Integer> missingChunks = missingChunks(session);
@@ -238,20 +244,20 @@ public class FileUploadService {
             }
 
             // 完成时再次按最终字节哈希检查并发上传中其他会话已经完成的情况。
-            FileRecord duplicateAfterHash = findDuplicate(DEFAULT_USER_ID, knowledgeBaseId, actualFileHash);
+            FileRecord duplicateAfterHash = findDuplicate(userId, knowledgeBaseId, actualFileHash);
             if (duplicateAfterHash != null) {
                 session.setStatus("COMPLETED");
                 session.setCompletedFileId(duplicateAfterHash.getId());
                 session.setUpdatedAt(LocalDateTime.now());
                 Document document = createDocument(
-                        DEFAULT_USER_ID,
+                        userId,
                         knowledgeBaseId,
                         duplicateAfterHash,
                         session.getFilename(),
                         session.getContentType());
                 session.setCompletedDocumentId(document.getId());
                 uploadSessionMapper.updateById(session);
-                documentIndexProducer.send(document.getId());
+                documentIndexProducer.send(document.getId(), userId);
                 return new UploadResultResponse(duplicateAfterHash.getId(), document.getId(), "DUPLICATED");
             }
 
@@ -259,7 +265,7 @@ public class FileUploadService {
             // 这里按顺序读取临时分片形成一个连续流，避免把大文件完整加载到内存。
             putMergedObject(session, objectKey);
             FileRecord fileRecord = createFileRecord(
-                    DEFAULT_USER_ID,
+                    userId,
                     knowledgeBaseId,
                     actualFileHash,
                     objectKey,
@@ -271,14 +277,14 @@ public class FileUploadService {
             session.setUpdatedAt(LocalDateTime.now());
 
             Document document = createDocument(
-                    DEFAULT_USER_ID,
+                    userId,
                     knowledgeBaseId,
                     fileRecord,
                     session.getFilename(),
                     session.getContentType());
             session.setCompletedDocumentId(document.getId());
             uploadSessionMapper.updateById(session);
-            documentIndexProducer.send(document.getId());
+            documentIndexProducer.send(document.getId(), userId);
             return new UploadResultResponse(fileRecord.getId(), document.getId(), "UPLOADED");
         } finally {
             lock.unlock();
@@ -318,8 +324,11 @@ public class FileUploadService {
     /**
      * 读取上传会话，不存在时转换为明确的业务错误。
      */
-    private UploadSession requiredUploadSession(Long uploadSessionId) {
-        UploadSession session = uploadSessionMapper.selectById(uploadSessionId);
+    private UploadSession requiredUploadSession(Long userId, Long uploadSessionId) {
+        UploadSession session = uploadSessionMapper.selectOne(new LambdaQueryWrapper<UploadSession>()
+                .eq(UploadSession::getId, uploadSessionId)
+                .eq(UploadSession::getUserId, userId)
+                .last("LIMIT 1"));
         if (session == null) {
             throw new BusinessException("上传会话不存在");
         }
@@ -356,7 +365,7 @@ public class FileUploadService {
         fileRecord.setFileSize(size);
         fileRecord.setFileHash(fileHash);
         fileRecord.setStorageKey(objectKey);
-        fileRecord.setStatus("COMPLETED");
+        fileRecord.setStatus("STORED");
         fileRecord.setCreatedAt(now);
         fileRecordMapper.insert(fileRecord);
         return fileRecord;
@@ -379,7 +388,7 @@ public class FileUploadService {
         document.setFileRecordId(fileRecord.getId());
         document.setTitle(safeFilename(title));
         document.setContentType(contentType(contentType));
-        document.setPipelineStatus("PENDING");
+        document.setPipelineStatus("STORED");
         document.setCreatedAt(now);
         document.setUpdatedAt(now);
         documentMapper.insert(document);
@@ -567,6 +576,13 @@ public class FileUploadService {
             throw new BusinessException("文件 SHA-256 格式不正确");
         }
         return normalized;
+    }
+
+    private void validatePdf(String filename, String contentType) {
+        String safeName = safeFilename(filename).toLowerCase(Locale.ROOT);
+        if (!safeName.endsWith(".pdf") || !"application/pdf".equalsIgnoreCase(contentType)) {
+            throw new BusinessException("M1 只接受 content-type 为 application/pdf 的 PDF 文件");
+        }
     }
 
     private boolean isHex(String value) {

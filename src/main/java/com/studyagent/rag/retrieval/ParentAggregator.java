@@ -102,6 +102,7 @@ public class ParentAggregator {
                 child.chunkId(),
                 child.parentChunkId(),
                 parentContent,
+                child.provenance(),
                 child.score(),
                 child.strategy()
         );

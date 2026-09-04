@@ -51,7 +51,7 @@ class KnowledgeSearchToolTest {
         when(retrievalService.retrieve(
                         RetrievalMode.BM25, "11", "22", "多态", null, 6, 2))
                 .thenReturn(List.of(new RetrievalHit(
-                        "chunk-1", "parent-1", "多态内容", 1.5, RetrievalStrategy.BM25)));
+                        "chunk-1", "parent-1", "多态内容", null, 1.5, RetrievalStrategy.BM25)));
 
         ToolResultBlock result = tool.callAsync(call(Map.of("query", "多态"))).block();
 

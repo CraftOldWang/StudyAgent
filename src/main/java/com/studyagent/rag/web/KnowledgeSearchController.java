@@ -1,0 +1,37 @@
+package com.studyagent.rag.web;
+
+import com.studyagent.common.response.ApiResponse;
+import com.studyagent.identity.CurrentUserContext;
+import com.studyagent.rag.retrieval.KnowledgeRetrievalService;
+import com.studyagent.rag.retrieval.KnowledgeSearchResponse;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/knowledge-bases/{knowledgeBaseId}")
+@RequiredArgsConstructor
+public class KnowledgeSearchController {
+
+    private final KnowledgeBaseService knowledgeBaseService;
+    private final KnowledgeRetrievalService knowledgeRetrievalService;
+    private final CurrentUserContext currentUserContext;
+
+    @PostMapping("/search")
+    public ApiResponse<KnowledgeSearchResponse> search(
+            @PathVariable Long knowledgeBaseId,
+            @Valid @RequestBody SearchRequest request
+    ) {
+        Long userId = currentUserContext.userId();
+        knowledgeBaseService.requireOwned(userId, knowledgeBaseId);
+        return ApiResponse.ok(knowledgeRetrievalService.search(userId, knowledgeBaseId, request.query()));
+    }
+
+    public record SearchRequest(@NotBlank String query) {
+    }
+}

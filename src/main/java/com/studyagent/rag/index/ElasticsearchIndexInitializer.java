@@ -50,6 +50,8 @@ public class ElasticsearchIndexInitializer {
                                     .analyzer("standard")
                                     .fields("keyword", f -> f.keyword(k -> k))))
                             .properties("content_hash", p -> p.keyword(k -> k))
+                            .properties("document_title", p -> p.keyword(k -> k))
+                            .properties("source_location", p -> p.keyword(k -> k.ignoreAbove(4096)))
                             .properties("embedding", p -> p.denseVector(d -> d
                                     .dims(properties.vectorDimensions())
                                     .index(true)
