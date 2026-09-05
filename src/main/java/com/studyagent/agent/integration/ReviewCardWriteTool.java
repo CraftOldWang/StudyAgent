@@ -1,8 +1,11 @@
 package com.studyagent.agent.integration;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.studyagent.common.exception.BusinessException;
+import com.studyagent.mapper.KnowledgePointMapper;
+import com.studyagent.model.KnowledgePoint;
 import com.studyagent.model.ReviewCard;
 import com.studyagent.review.ReviewCardService;
 import io.agentscope.core.message.TextBlock;
@@ -38,12 +41,13 @@ public final class ReviewCardWriteTool implements AgentTool {
                                             "front", Map.of("type", "string"),
                                             "back", Map.of("type", "string"),
                                             "sourceChunkId", Map.of("type", "string")),
-                                    "required", List.of("front", "back", "sourceChunkId"),
+                                    "required", List.of("front", "back"),
                                     "additionalProperties", false))),
             "required", List.of("drafts"),
             "additionalProperties", false);
 
     private final ReviewCardService reviewCardService;
+    private final KnowledgePointMapper knowledgePointMapper;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -53,7 +57,7 @@ public final class ReviewCardWriteTool implements AgentTool {
 
     @Override
     public String getDescription() {
-        return "为当前知识点写入复习卡，只需提供 front、back 和 sourceChunkId。";
+        return "为当前知识点写入复习卡；front、back 必填，仅有可验证来源时提供 sourceChunkId。";
     }
 
     @Override
@@ -78,6 +82,7 @@ public final class ReviewCardWriteTool implements AgentTool {
         if (scope == null) {
             throw new BusinessException("Agent 调用 scope 不能为空");
         }
+        requireCardGenerating(scope);
         if (drafts == null || drafts.isEmpty()) {
             throw new BusinessException("复习卡草稿不能为空");
         }
@@ -88,7 +93,16 @@ public final class ReviewCardWriteTool implements AgentTool {
                 drafts.stream()
                         .map(draft -> new ReviewCardService.Draft(
                                 draft.front(), draft.back(), draft.sourceChunkId()))
-                        .toList());
+                .toList());
+    }
+
+    private void requireCardGenerating(AgentInvocationScope scope) {
+        KnowledgePoint point = knowledgePointMapper.selectOne(new LambdaQueryWrapper<KnowledgePoint>()
+                .eq(KnowledgePoint::getId, scope.knowledgePointId())
+                .eq(KnowledgePoint::getUserId, scope.userId()));
+        if (point == null || !"CARD_GENERATING".equals(point.getStatus())) {
+            throw new BusinessException("仅 CARD_GENERATING 状态允许写入复习卡");
+        }
     }
 
     private List<CardDraft> parseDrafts(Map<String, Object> input) {
@@ -104,7 +118,7 @@ public final class ReviewCardWriteTool implements AgentTool {
             drafts.add(new CardDraft(
                     requiredText(draft, "front", "复习卡正面不能为空"),
                     requiredText(draft, "back", "复习卡背面不能为空"),
-                    requiredText(draft, "sourceChunkId", "复习卡来源 chunk 不能为空")));
+                    optionalText(draft, "sourceChunkId")));
         }
         return drafts;
     }
@@ -115,6 +129,17 @@ public final class ReviewCardWriteTool implements AgentTool {
             throw new BusinessException(message);
         }
         return text;
+    }
+
+    private String optionalText(Map<?, ?> input, String field) {
+        Object value = input.get(field);
+        if (value == null) {
+            return null;
+        }
+        if (!(value instanceof String text)) {
+            throw new BusinessException("复习卡来源 chunk 格式错误");
+        }
+        return text.isBlank() ? null : text.trim();
     }
 
     private ToolResultBlock result(ToolCallParam param, List<ReviewCard> cards) {

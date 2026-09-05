@@ -86,6 +86,18 @@ class ReviewCardServiceTest {
         verify(reviewCardMapper, never()).insert(any(ReviewCard.class));
     }
 
+    @Test
+    void storesNullWhenCardHasNoVerifiedSource() {
+        ReviewCardService service = new ReviewCardService(reviewCardMapper, documentChunkMapper, documentMapper);
+
+        List<ReviewCard> cards = service.writeBatch(
+                11L, 33L, 22L, List.of(new ReviewCardService.Draft("问题", "答案", null)));
+
+        assertThat(cards.getFirst().getSourceChunkId()).isNull();
+        verify(reviewCardMapper).insert(cards.getFirst());
+        verify(documentChunkMapper, never()).selectOne(any());
+    }
+
     private DocumentChunk chunk(String chunkId, Long documentId) {
         DocumentChunk chunk = new DocumentChunk();
         chunk.setChunkId(chunkId);

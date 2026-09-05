@@ -7,8 +7,10 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.studyagent.mapper.KnowledgePointMapper;
+import com.studyagent.mapper.AgentTraceEventMapper;
 import com.studyagent.mapper.LearningPlanMapper;
 import com.studyagent.mapper.LearningSessionMapper;
+import com.studyagent.mapper.QuizMapper;
 import com.studyagent.mapper.ReviewCardMapper;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -25,8 +27,11 @@ class ReviewLearningModelMappingTest {
                 field("id", "id", Long.class),
                 field("userId", "user_id", Long.class),
                 field("knowledgeBaseId", "knowledge_base_id", Long.class),
+                field("learningGoal", "learning_goal", String.class),
                 field("agentscopeSessionId", "agentscope_session_id", String.class),
+                field("activeKnowledgePointId", "active_knowledge_point_id", Long.class),
                 field("status", "status", String.class),
+                field("errorMessage", "error_message", String.class),
                 field("createdAt", "created_at", LocalDateTime.class),
                 field("updatedAt", "updated_at", LocalDateTime.class)));
     }
@@ -47,8 +52,13 @@ class ReviewLearningModelMappingTest {
                 field("id", "id", Long.class),
                 field("sessionId", "session_id", Long.class),
                 field("userId", "user_id", Long.class),
+                field("sequenceNo", "sequence_no", Integer.class),
                 field("topic", "topic", String.class),
+                field("subtopicsJson", "subtopics_json", String.class),
+                field("estimatedMinutes", "estimated_minutes", Integer.class),
                 field("status", "status", String.class),
+                field("explanation", "explanation", String.class),
+                field("errorMessage", "error_message", String.class),
                 field("startedAt", "started_at", LocalDateTime.class),
                 field("completedAt", "completed_at", LocalDateTime.class),
                 field("createdAt", "created_at", LocalDateTime.class),
@@ -76,6 +86,38 @@ class ReviewLearningModelMappingTest {
         assertMapper(LearningPlanMapper.class, LearningPlan.class);
         assertMapper(KnowledgePointMapper.class, KnowledgePoint.class);
         assertMapper(ReviewCardMapper.class, ReviewCard.class);
+        assertMapper(QuizMapper.class, Quiz.class);
+        assertMapper(AgentTraceEventMapper.class, AgentTraceEvent.class);
+    }
+
+    @Test
+    void quizMatchesM2Schema() {
+        assertModel(Quiz.class, "quizzes", fields(
+                field("id", "id", Long.class),
+                field("userId", "user_id", Long.class),
+                field("sessionId", "session_id", Long.class),
+                field("knowledgePointId", "knowledge_point_id", Long.class),
+                field("questionsJson", "questions_json", String.class),
+                field("answersJson", "answers_json", String.class),
+                field("score", "score", Integer.class),
+                field("feedbackJson", "feedback_json", String.class),
+                field("createdAt", "created_at", LocalDateTime.class),
+                field("answeredAt", "answered_at", LocalDateTime.class)));
+    }
+
+    @Test
+    void traceEventMatchesM2Schema() {
+        assertModel(AgentTraceEvent.class, "agent_trace_events", fields(
+                field("id", "id", Long.class),
+                field("userId", "user_id", Long.class),
+                field("traceId", "trace_id", String.class),
+                field("sessionId", "session_id", Long.class),
+                field("sequenceNo", "sequence_no", Integer.class),
+                field("stage", "stage", String.class),
+                field("eventType", "event_type", String.class),
+                field("summary", "summary", String.class),
+                field("status", "status", String.class),
+                field("createdAt", "created_at", LocalDateTime.class)));
     }
 
     private void assertModel(Class<?> model, String table, Map<String, ExpectedField> expected) {

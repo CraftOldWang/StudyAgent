@@ -16,11 +16,13 @@ import org.junit.jupiter.api.Test;
 
 class ReviewLearningSchemaMigrationIntegrationTest {
 
-    private static final List<String> V3_TABLES = List.of(
+    private static final List<String> LEARNING_TABLES = List.of(
             "learning_sessions",
-            "learning_plan",
-            "knowledge_points",
-            "review_cards");
+                "learning_plan",
+                "knowledge_points",
+                "review_cards",
+                "quizzes",
+                "agent_trace_events");
 
     @Test
     void migratesFreshDatabaseToReviewLearningSchema() throws Exception {
@@ -65,7 +67,9 @@ class ReviewLearningSchemaMigrationIntegrationTest {
                 "knowledge_points",
                 "learning_plan",
                 "learning_sessions",
-                "review_cards");
+                "review_cards",
+                "quizzes",
+                "agent_trace_events");
     }
 
     private void assertColumns(Connection connection) throws SQLException {
@@ -73,8 +77,11 @@ class ReviewLearningSchemaMigrationIntegrationTest {
                 column("id", "bigint", "NO", null),
                 column("user_id", "bigint", "NO", null),
                 column("knowledge_base_id", "bigint", "NO", null),
+                column("learning_goal", "text", "NO", null),
                 column("agentscope_session_id", "varchar(128)", "NO", null),
+                column("active_knowledge_point_id", "bigint", "YES", null),
                 column("status", "varchar(32)", "NO", null),
+                column("error_message", "text", "YES", null),
                 column("created_at", "datetime", "NO", null),
                 column("updated_at", "datetime", "NO", null));
 
@@ -89,8 +96,13 @@ class ReviewLearningSchemaMigrationIntegrationTest {
                 column("id", "bigint", "NO", null),
                 column("session_id", "bigint", "NO", null),
                 column("user_id", "bigint", "NO", null),
+                column("sequence_no", "int", "NO", null),
                 column("topic", "varchar(512)", "NO", null),
+                column("subtopics_json", "json", "NO", null),
+                column("estimated_minutes", "int", "NO", null),
                 column("status", "varchar(32)", "NO", null),
+                column("explanation", "text", "YES", null),
+                column("error_message", "text", "YES", null),
                 column("started_at", "datetime", "YES", null),
                 column("completed_at", "datetime", "YES", null),
                 column("created_at", "datetime", "NO", null),
@@ -107,6 +119,30 @@ class ReviewLearningSchemaMigrationIntegrationTest {
                 column("exported_to_anki", "tinyint(1)", "YES", "0"),
                 column("anki_note_id", "bigint", "YES", null),
                 column("created_at", "datetime", "NO", null));
+
+        assertThat(columns(connection, "quizzes")).containsExactly(
+                column("id", "bigint", "NO", null),
+                column("user_id", "bigint", "NO", null),
+                column("session_id", "bigint", "NO", null),
+                column("knowledge_point_id", "bigint", "NO", null),
+                column("questions_json", "json", "NO", null),
+                column("answers_json", "json", "YES", null),
+                column("score", "int", "YES", null),
+                column("feedback_json", "json", "YES", null),
+                column("created_at", "datetime", "NO", null),
+                column("answered_at", "datetime", "YES", null));
+
+        assertThat(columns(connection, "agent_trace_events")).containsExactly(
+                column("id", "bigint", "NO", null),
+                column("user_id", "bigint", "NO", null),
+                column("trace_id", "varchar(36)", "NO", null),
+                column("session_id", "bigint", "YES", null),
+                column("sequence_no", "int", "NO", null),
+                column("stage", "varchar(32)", "NO", null),
+                column("event_type", "varchar(32)", "NO", null),
+                column("summary", "varchar(512)", "NO", null),
+                column("status", "varchar(16)", "NO", null),
+                column("created_at", "datetime", "NO", null));
     }
 
     private void assertIndexes(Connection connection) throws SQLException {
@@ -122,10 +158,16 @@ class ReviewLearningSchemaMigrationIntegrationTest {
                 .containsExactly("user_id");
         assertThat(indexColumns(connection, "review_cards", "idx_kp"))
                 .containsExactly("knowledge_point_id");
+        assertThat(indexColumns(connection, "knowledge_points", "uk_knowledge_points_session_sequence"))
+                .containsExactly("session_id", "sequence_no");
+        assertThat(indexColumns(connection, "quizzes", "uk_quizzes_knowledge_point"))
+                .containsExactly("knowledge_point_id");
+        assertThat(indexColumns(connection, "agent_trace_events", "uk_trace_sequence"))
+                .containsExactly("trace_id", "sequence_no");
     }
 
     private void assertStorageOptions(Connection connection) throws SQLException {
-        for (String table : V3_TABLES) {
+        for (String table : LEARNING_TABLES) {
             try (PreparedStatement statement = connection.prepareStatement("""
                     SELECT tables.engine,
                            tables.table_collation,
@@ -144,6 +186,16 @@ class ReviewLearningSchemaMigrationIntegrationTest {
                     assertThat(resultSet.next()).isFalse();
                 }
             }
+        }
+
+        try (Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery("""
+                     SELECT success
+                     FROM flyway_schema_history
+                     WHERE version = '6'
+                     """)) {
+            assertThat(resultSet.next()).isTrue();
+            assertThat(resultSet.getBoolean("success")).isTrue();
         }
     }
 

@@ -1,12 +1,17 @@
 package com.studyagent.agent.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.studyagent.common.exception.BusinessException;
+import com.studyagent.mapper.KnowledgePointMapper;
+import com.studyagent.model.KnowledgePoint;
 import com.studyagent.model.ReviewCard;
 import com.studyagent.review.ReviewCardService;
 import io.agentscope.core.agent.RuntimeContext;
@@ -29,15 +34,20 @@ class ReviewCardWriteToolTest {
     @Mock
     private ReviewCardService reviewCardService;
 
+    @Mock
+    private KnowledgePointMapper knowledgePointMapper;
+
     private ReviewCardWriteTool tool;
 
     @BeforeEach
     void setUp() {
-        tool = new ReviewCardWriteTool(reviewCardService, new ObjectMapper());
+        tool = new ReviewCardWriteTool(reviewCardService, knowledgePointMapper, new ObjectMapper());
     }
 
     @Test
     void exposesOnlyDraftContentAndBindsAllIdsFromTypedScope() {
+        when(knowledgePointMapper.selectOne(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(point("CARD_GENERATING"));
         ReviewCard card = new ReviewCard();
         card.setId(101L);
         card.setFront("什么是多态？");
@@ -66,6 +76,32 @@ class ReviewCardWriteToolTest {
         Map<?, ?> items = (Map<?, ?>) drafts.get("items");
         assertThat(((Map<?, ?>) items.get("properties")).keySet())
                 .isEqualTo(Set.of("front", "back", "sourceChunkId"));
+    }
+
+    @Test
+    void rejectsWriteOutsideCardGeneratingState() {
+        when(knowledgePointMapper.selectOne(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(point("QUIZZING"));
+
+        assertThatThrownBy(() -> tool.callAsync(call(Map.of(
+                        "drafts", List.of(Map.of("front", "front", "back", "back")))))
+                .block())
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("CARD_GENERATING");
+
+        verify(reviewCardService, never()).writeBatch(
+                org.mockito.ArgumentMatchers.any(),
+                org.mockito.ArgumentMatchers.any(),
+                org.mockito.ArgumentMatchers.any(),
+                anyList());
+    }
+
+    private KnowledgePoint point(String status) {
+        KnowledgePoint point = new KnowledgePoint();
+        point.setId(33L);
+        point.setUserId(11L);
+        point.setStatus(status);
+        return point;
     }
 
     private ToolCallParam call(Map<String, Object> input) {

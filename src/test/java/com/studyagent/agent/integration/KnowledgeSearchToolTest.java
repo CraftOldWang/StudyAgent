@@ -81,12 +81,41 @@ class KnowledgeSearchToolTest {
                 .hasMessageContaining("scope");
     }
 
+    @Test
+    void retainsChunkIdsAcrossMultipleSearchCallsInOneAgentTurn() {
+        when(knowledgeRetrievalService.search(11L, 22L, "first"))
+                .thenReturn(response("first", "chunk-1"));
+        when(knowledgeRetrievalService.search(11L, 22L, "second"))
+                .thenReturn(response("second", "chunk-2"));
+        RuntimeContext context = scopedContext();
+
+        tool.callAsync(call(Map.of("query", "first"), context)).block();
+        tool.callAsync(call(Map.of("query", "second"), context)).block();
+
+        assertThat(context.get(KnowledgeSearchExecution.class).retrievedChunkIds())
+                .containsExactlyInAnyOrder("chunk-1", "chunk-2");
+    }
+
+    private KnowledgeSearchResponse response(String query, String chunkId) {
+        return new KnowledgeSearchResponse(
+                query,
+                null,
+                List.of(new KnowledgeSearchResponse.Result(chunkId, "content", null, 1.0)));
+    }
+
     private ToolCallParam call(Map<String, Object> input) {
-        RuntimeContext context = RuntimeContext.builder()
+        return call(input, scopedContext());
+    }
+
+    private RuntimeContext scopedContext() {
+        return RuntimeContext.builder()
                 .userId("11")
                 .sessionId("session-1")
                 .put(KnowledgeSearchScope.class, new KnowledgeSearchScope(11L, 22L))
                 .build();
+    }
+
+    private ToolCallParam call(Map<String, Object> input, RuntimeContext context) {
         ToolUseBlock toolUseBlock = ToolUseBlock.builder()
                 .id("call-1")
                 .name(KnowledgeSearchTool.TOOL_NAME)

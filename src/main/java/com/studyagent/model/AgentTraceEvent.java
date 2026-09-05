@@ -9,8 +9,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@TableName("learning_sessions")
-public class LearningSession {
+@TableName("agent_trace_events")
+public class AgentTraceEvent {
 
     @TableId("id")
     private Long id;
@@ -18,27 +18,27 @@ public class LearningSession {
     @TableField("user_id")
     private Long userId;
 
-    @TableField("knowledge_base_id")
-    private Long knowledgeBaseId;
+    @TableField("trace_id")
+    private String traceId;
 
-    @TableField("learning_goal")
-    private String learningGoal;
+    @TableField("session_id")
+    private Long sessionId;
 
-    @TableField("agentscope_session_id")
-    private String agentscopeSessionId;
+    @TableField("sequence_no")
+    private Integer sequenceNo;
 
-    @TableField("active_knowledge_point_id")
-    private Long activeKnowledgePointId;
+    @TableField("stage")
+    private String stage;
+
+    @TableField("event_type")
+    private String eventType;
+
+    @TableField("summary")
+    private String summary;
 
     @TableField("status")
     private String status;
 
-    @TableField("error_message")
-    private String errorMessage;
-
     @TableField("created_at")
     private LocalDateTime createdAt;
-
-    @TableField("updated_at")
-    private LocalDateTime updatedAt;
 }

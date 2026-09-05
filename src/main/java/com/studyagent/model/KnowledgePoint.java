@@ -21,11 +21,26 @@ public class KnowledgePoint {
     @TableField("user_id")
     private Long userId;
 
+    @TableField("sequence_no")
+    private Integer sequenceNo;
+
     @TableField("topic")
     private String topic;
 
+    @TableField("subtopics_json")
+    private String subtopicsJson;
+
+    @TableField("estimated_minutes")
+    private Integer estimatedMinutes;
+
     @TableField("status")
     private String status;
+
+    @TableField("explanation")
+    private String explanation;
+
+    @TableField("error_message")
+    private String errorMessage;
 
     @TableField("started_at")
     private LocalDateTime startedAt;
