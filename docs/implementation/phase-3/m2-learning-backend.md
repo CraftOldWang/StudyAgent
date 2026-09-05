@@ -69,9 +69,11 @@ Docker VM 曾发生全局 OOM。恢复后，应用以 `-Xmx384m` 在 8082 稳定
 对应最小修复为：统一 `common/json` 读取器提取单个数组后继续做严格 JSON/题数/字段/来源校验；生产 Harness
 关闭默认 filesystem、memory 和 shell 工具，实际仅保留业务 `knowledge_search`/`learning_state_transition` 与 Harness
 必需的 `wait_async_results`/`load_skill_through_path`；quiz prompt 注入服务端权威当前状态，并明确失败历史不代表业务提交。
-这些修复已通过定向离线测试，但尚未再次付费验证。当前真实状态仍为 session `ACTIVE`、首点 `EXPLAINING`、
-quiz 为 null、cards 为空；本轮已发送 4 次学习 POST，完整闭环还需要 quiz、QUIZZING 答疑、submit 与 cards，
-因此 M2 仍不标记完成。
+这些修复已通过定向离线测试。修复后的第 5 次学习 POST 也已真实执行：trace
+`b52293ec-d7c5-4bd6-8e63-f31b2fc38fbd` 中模型只使用 skill loader 和两次 `knowledge_search`，说明工具禁用与
+权威状态 prompt 已加载；但模型输出内容前仍未调用 transition，服务端返回 HTTP 400 且没有落库测验。
+当前真实状态仍为 session `ACTIVE`、首点 `EXPLAINING`、quiz 为 null、cards 为空；原授权还剩第 6 次操作未使用，
+但知识点未进入 `QUIZZING`，因此没有发送答疑。完整闭环仍需要 quiz、QUIZZING 答疑、submit 与 cards，M2 不标记完成。
 
 当前本机保留已配置的 `study-agent-es` 与 `study-agent-m2-app`（应用映射 `8082:8082`、数据库
 `study_agent_m1_e2e`）。依赖停止时，一条命令恢复：
