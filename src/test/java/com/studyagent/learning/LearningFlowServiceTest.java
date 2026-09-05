@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -60,6 +61,19 @@ class LearningFlowServiceTest {
                 reviewCardMapper,
                 new ObjectMapper());
         when(traceService.start()).thenReturn("trace-1");
+    }
+
+    @Test
+    void rejectsUnownedKnowledgeBaseBeforeCallingPlanModel() {
+        doThrow(new BusinessException("知识库不存在"))
+                .when(scopeFactory).validateKnowledgeBaseScope(1L, 2L);
+
+        assertThatThrownBy(() -> service.createSession(1L, 2L, "Java"))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("知识库不存在");
+
+        verify(planService, never()).generatePlan(anyString());
+        verify(traceService, never()).start();
     }
 
     @Test

@@ -7,6 +7,7 @@ import io.agentscope.core.tool.Toolkit;
 import io.agentscope.harness.agent.HarnessAgent;
 import io.agentscope.harness.agent.memory.compaction.CompactionConfig;
 import java.nio.file.Path;
+import java.util.Set;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -19,6 +20,9 @@ public class AgentScopeAgentConfiguration {
 
     public static final String HARNESS_AGENT_BEAN_NAME = "harnessAgent";
     public static final String TOOLKIT_BEAN_NAME = "agentScopeToolkit";
+    private static final Set<String> MAIN_AGENT_TOOL_NAMES = Set.of(
+            "knowledge_search",
+            "learning_state_transition");
     static final int COMPACTION_TRIGGER_MESSAGES = 6;
     static final int COMPACTION_KEEP_MESSAGES = 2;
     static final String COMPACTION_SUMMARY_PROMPT = """
@@ -40,7 +44,9 @@ public class AgentScopeAgentConfiguration {
     @Bean(TOOLKIT_BEAN_NAME)
     public Toolkit agentScopeToolkit(ObjectProvider<AgentTool> agentTools) {
         Toolkit toolkit = new Toolkit();
-        agentTools.orderedStream().forEach(toolkit::registerAgentTool);
+        agentTools.orderedStream()
+                .filter(tool -> MAIN_AGENT_TOOL_NAMES.contains(tool.getName()))
+                .forEach(toolkit::registerAgentTool);
         return toolkit;
     }
 

@@ -35,6 +35,7 @@ public class LearningFlowService {
 
     public CreatedSession createSession(Long userId, Long knowledgeBaseId, String learningGoal) {
         requireId(knowledgeBaseId, "knowledgeBaseId 不能为空");
+        scopeFactory.validateKnowledgeBaseScope(userId, knowledgeBaseId);
         String traceId = traceService.start();
         traceService.record(userId, traceId, null, "PLAN", "MODEL_CALL", "请求 DeepSeek 生成学习计划", "STARTED");
         try {

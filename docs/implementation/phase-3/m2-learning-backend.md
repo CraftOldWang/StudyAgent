@@ -15,6 +15,7 @@
 MySQL 保存目标、计划、活跃知识点、解释、测验、反馈、卡片、业务状态和错误。
 AgentScope `AgentState` 只保存同一个 `agentscope_session_id` 下的模型短期上下文。
 每一步先校验当前 enum 状态；模型或工具失败写入当前 session/point 错误且不推进状态。
+错误记录使用条件 `UPDATE` 只写 `error_message` 和 `updated_at`，不把事务失败后内存中已变异的状态实体整体写回。
 
 V6 migration 先以 nullable 列加入并回填 V3 历史行，再收紧非空和 `(session_id, sequence_no)` 唯一约束，
 避免直接添加非空/唯一列导致旧会话升级失败。既有单数表名 `learning_plan` 保持不变，不做无关兼容性重命名。
@@ -22,8 +23,12 @@ V6 migration 先以 nullable 列加入并回填 V3 历史行，再收紧非空�
 ## Agent 工具与来源边界
 
 讲解、测验和卡片的 RuntimeContext 由服务端注入 user、knowledge base 和 knowledge point scope；模型不能选择权限 ID。
-`knowledge_search` 返回的真实 chunk 才能成为来源。`learning_state_transition` 只记录本 turn 允许的相邻目标；
+`KnowledgeSearchTool` 在当前 turn 的 RuntimeContext 中累计实际返回的 chunkId；讲解、测验和卡片必须发生检索，
+测验/卡片的非空来源必须属于这组真实结果。`learning_state_transition` 只记录本 turn 允许的相邻目标；
 Agent turn、输出解析与业务写入全部成功后，服务层才在事务内提交持久状态。
+
+主学习 Agent 的业务工具集只暴露 `knowledge_search` 和 `learning_state_transition`，不暴露会提前落卡的
+`review_card_write`。后者仍在服务端校验知识点必须处于 `CARD_GENERATING`，作为纵深门禁。
 
 ## Trace
 

@@ -30,6 +30,7 @@ class AgentScopeToolConfigurationTest {
                 Path.of("target", "agentscope-tool-configuration-test"));
         AgentTool search = tool("knowledge_search");
         AgentTool write = tool("review_card_write");
+        AgentTool transition = tool("learning_state_transition");
 
         new ApplicationContextRunner()
                 .withUserConfiguration(AgentScopeAgentConfiguration.class)
@@ -44,6 +45,7 @@ class AgentScopeToolConfigurationTest {
                         () -> workspace)
                 .withBean("knowledgeSearchTool", AgentTool.class, () -> search)
                 .withBean("reviewCardWriteTool", AgentTool.class, () -> write)
+                .withBean("learningStateTransitionTool", AgentTool.class, () -> transition)
                 .run(context -> {
                     assertThat(context).hasNotFailed();
                     HarnessAgent agent = context.getBean(
@@ -51,7 +53,8 @@ class AgentScopeToolConfigurationTest {
                             HarnessAgent.class);
                     try {
                         assertThat(agent.getToolkit().getToolNames())
-                                .contains("knowledge_search", "review_card_write");
+                                .contains("knowledge_search", "learning_state_transition")
+                                .doesNotContain("review_card_write");
                     } finally {
                         agent.close();
                     }

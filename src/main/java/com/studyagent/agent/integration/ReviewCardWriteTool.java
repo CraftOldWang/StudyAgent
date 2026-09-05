@@ -1,8 +1,11 @@
 package com.studyagent.agent.integration;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.studyagent.common.exception.BusinessException;
+import com.studyagent.mapper.KnowledgePointMapper;
+import com.studyagent.model.KnowledgePoint;
 import com.studyagent.model.ReviewCard;
 import com.studyagent.review.ReviewCardService;
 import io.agentscope.core.message.TextBlock;
@@ -44,6 +47,7 @@ public final class ReviewCardWriteTool implements AgentTool {
             "additionalProperties", false);
 
     private final ReviewCardService reviewCardService;
+    private final KnowledgePointMapper knowledgePointMapper;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -78,6 +82,7 @@ public final class ReviewCardWriteTool implements AgentTool {
         if (scope == null) {
             throw new BusinessException("Agent 调用 scope 不能为空");
         }
+        requireCardGenerating(scope);
         if (drafts == null || drafts.isEmpty()) {
             throw new BusinessException("复习卡草稿不能为空");
         }
@@ -88,7 +93,16 @@ public final class ReviewCardWriteTool implements AgentTool {
                 drafts.stream()
                         .map(draft -> new ReviewCardService.Draft(
                                 draft.front(), draft.back(), draft.sourceChunkId()))
-                        .toList());
+                .toList());
+    }
+
+    private void requireCardGenerating(AgentInvocationScope scope) {
+        KnowledgePoint point = knowledgePointMapper.selectOne(new LambdaQueryWrapper<KnowledgePoint>()
+                .eq(KnowledgePoint::getId, scope.knowledgePointId())
+                .eq(KnowledgePoint::getUserId, scope.userId()));
+        if (point == null || !"CARD_GENERATING".equals(point.getStatus())) {
+            throw new BusinessException("仅 CARD_GENERATING 状态允许写入复习卡");
+        }
     }
 
     private List<CardDraft> parseDrafts(Map<String, Object> input) {

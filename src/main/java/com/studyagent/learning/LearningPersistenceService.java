@@ -1,6 +1,7 @@
 package com.studyagent.learning;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.studyagent.common.exception.BusinessException;
@@ -176,13 +177,18 @@ public class LearningPersistenceService {
     @Transactional
     public void recordFailure(LearningSession session, KnowledgePoint point, String message) {
         String safeMessage = message == null || message.isBlank() ? "未知失败" : message;
-        session.setErrorMessage(safeMessage);
-        session.setUpdatedAt(LocalDateTime.now());
-        sessionMapper.updateById(session);
+        LocalDateTime now = LocalDateTime.now();
+        sessionMapper.update(null, new UpdateWrapper<LearningSession>()
+                .eq("id", session.getId())
+                .eq("user_id", session.getUserId())
+                .set("error_message", safeMessage)
+                .set("updated_at", now));
         if (point != null) {
-            point.setErrorMessage(safeMessage);
-            point.setUpdatedAt(LocalDateTime.now());
-            knowledgePointMapper.updateById(point);
+            knowledgePointMapper.update(null, new UpdateWrapper<KnowledgePoint>()
+                    .eq("id", point.getId())
+                    .eq("session_id", session.getId())
+                    .set("error_message", safeMessage)
+                    .set("updated_at", now));
         }
     }
 

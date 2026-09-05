@@ -9,13 +9,16 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.studyagent.agent.integration.AgentInvocationScopeFactory;
+import com.studyagent.agent.integration.KnowledgeSearchExecution;
 import com.studyagent.common.exception.BusinessException;
 import com.studyagent.model.KnowledgePoint;
 import com.studyagent.model.LearningSession;
+import com.studyagent.rag.retrieval.KnowledgeSearchResponse;
 import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.message.MsgRole;
 import io.agentscope.harness.agent.HarnessAgent;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
@@ -50,6 +53,7 @@ class LearningModelGatewayTest {
         point.setStatus("EXPLAINING");
         when(harnessAgent.call(anyString(), any(RuntimeContext.class))).thenAnswer(invocation -> {
             RuntimeContext runtimeContext = invocation.getArgument(1);
+            recordSearch(runtimeContext, "c1");
             runtimeContext.get(LearningTransitionIntent.class).request(KnowledgePointStatus.QUIZZING);
             return Mono.just(message(quizJson()));
         });
@@ -62,12 +66,30 @@ class LearningModelGatewayTest {
     void rejectsSuccessfulTextWhenAgentSkippedTransitionTool() {
         point.setStatus("NEW");
         when(harnessAgent.call(anyString(), any(RuntimeContext.class)))
-                .thenReturn(Mono.just(message("explanation")));
+                .thenAnswer(invocation -> {
+                    recordSearch(invocation.getArgument(1), "c1");
+                    return Mono.just(message("explanation"));
+                });
         LearningModelGateway gateway = new LearningModelGateway(harnessAgent, scopeFactory, new ObjectMapper());
 
         assertThatThrownBy(() -> gateway.explain(session, point))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("未通过服务端工具");
+    }
+
+    @Test
+    void rejectsExplanationWhenAgentSkippedKnowledgeSearch() {
+        point.setStatus("NEW");
+        when(harnessAgent.call(anyString(), any(RuntimeContext.class))).thenAnswer(invocation -> {
+            RuntimeContext runtimeContext = invocation.getArgument(1);
+            runtimeContext.get(LearningTransitionIntent.class).request(KnowledgePointStatus.EXPLAINING);
+            return Mono.just(message("explanation"));
+        });
+        LearningModelGateway gateway = new LearningModelGateway(harnessAgent, scopeFactory, new ObjectMapper());
+
+        assertThatThrownBy(() -> gateway.explain(session, point))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("未调用 knowledge_search");
     }
 
     @Test
@@ -85,6 +107,7 @@ class LearningModelGatewayTest {
         point.setStatus("CARD_GENERATING");
         when(harnessAgent.call(anyString(), any(RuntimeContext.class))).thenAnswer(invocation -> {
             RuntimeContext runtimeContext = invocation.getArgument(1);
+            recordSearch(runtimeContext);
             runtimeContext.get(LearningTransitionIntent.class).request(KnowledgePointStatus.COMPLETED);
             return Mono.just(message("""
                     [{"front":"f1","back":"b1","sourceChunkId":null},
@@ -97,6 +120,31 @@ class LearningModelGatewayTest {
         assertThat(gateway.generateCards(session, point))
                 .hasSize(3)
                 .allSatisfy(card -> assertThat(card.sourceChunkId()).isNull());
+    }
+
+    @Test
+    void rejectsQuizSourceThatWasNotReturnedByKnowledgeSearch() {
+        point.setStatus("EXPLAINING");
+        when(harnessAgent.call(anyString(), any(RuntimeContext.class))).thenAnswer(invocation -> {
+            RuntimeContext runtimeContext = invocation.getArgument(1);
+            recordSearch(runtimeContext, "different-chunk");
+            runtimeContext.get(LearningTransitionIntent.class).request(KnowledgePointStatus.QUIZZING);
+            return Mono.just(message(quizJson()));
+        });
+        LearningModelGateway gateway = new LearningModelGateway(harnessAgent, scopeFactory, new ObjectMapper());
+
+        assertThatThrownBy(() -> gateway.generateQuiz(session, point))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("不在本次 knowledge_search 结果中");
+    }
+
+    private void recordSearch(RuntimeContext runtimeContext, String... chunkIds) {
+        List<KnowledgeSearchResponse.Result> hits = java.util.Arrays.stream(chunkIds)
+                .map(id -> new KnowledgeSearchResponse.Result(id, "content", null, 1.0))
+                .toList();
+        runtimeContext.put(
+                KnowledgeSearchExecution.class,
+                new KnowledgeSearchExecution(new KnowledgeSearchResponse("query", null, hits)));
     }
 
     private Msg message(String text) {
