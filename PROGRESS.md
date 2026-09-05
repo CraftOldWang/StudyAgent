@@ -46,7 +46,7 @@
 - [~] 后端已生成 traceId，并提供按 traceId 查询标准化时间线的 JSON API；不做 trace UI，待真实链路查询证据。
 - [~] 同步 REST 学习目标、计划、讲解/答疑、五题测验、反馈、卡片、状态与会话恢复页面已实现，前端自测和独立 review 已通过；仍待后端端到端联调，不做 SSE 或 trace UI。
 - [~] 后端实现来自 `codex/m2-learning`（`85d62e7`，实现/验证文档检查点 `839fb51`）：36 项学习相关测试、`mvn compile`、独立 verifier review 及 Linux JDK21 全量 135 tests（0 failure、0 error、3 skipped）已通过；用户授权后真实 explain 已到达 DeepSeek，但 provider 返回 HTTP 402 `Insufficient Balance`，首点仍为 `NEW`，trace API 与浏览器失败恢复路径已通过；指定文件与运行配置使用同一 key，当前唯一运行阻塞是该账户余额，成功单点闭环仍未完成。
-- [~] DeepSeek 已改为从 Git 忽略的 `config/local-secrets.properties` 或 `DEEPSEEK_API_KEY` 读取，tracked 配置不再保存真实默认值；本地文件尚未填写新 key、运行应用尚未重启，因此换钥尚未生效。
+- [~] DeepSeek 已改为从 Git 忽略的根目录 `some_apiKey` 中 `new_deepseek_apiKey` 字段或 `DEEPSEEK_API_KEY` 读取，tracked 配置不再保存真实默认值；新 key 已就位但运行应用尚未重启，因此换钥尚未生效。
 - [~] 用户已授权将 13 个未跟踪 Phase 3 旧副本可恢复搬移到 `.codex/backups/m2-pre-merge/`；13/13 源文件均已逐项校验并保留相对结构，未覆盖备份、未触及其它未跟踪内容。
 
 ## 后续 Goal
