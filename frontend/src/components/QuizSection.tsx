@@ -27,7 +27,7 @@ export function QuizSection({ busy, quiz, onSubmit }: Props) {
       <div className="learning-section-heading">
         <div>
           <span className="eyebrow">五题测验</span>
-          <h2>{submitted ? `得分 ${quiz.score} / 5` : '检验刚刚学到的内容'}</h2>
+          <h2>{submitted ? `得分 ${quiz.score} / 100` : '检验刚刚学到的内容'}</h2>
         </div>
       </div>
       <form onSubmit={submit}>

@@ -35,4 +35,22 @@ describe('QuizSection', () => {
       '选项 1B', '选项 2B', '选项 3B', '选项 4B', '选项 5B',
     ]))
   })
+
+  it('displays the backend percentage score on a 100-point scale', () => {
+    render(
+      <QuizSection
+        busy={false}
+        onSubmit={vi.fn()}
+        quiz={{
+          quizId: 'quiz-2',
+          knowledgePointId: 'point-2',
+          score: 80,
+          feedback: [],
+          questions: [],
+        }}
+      />,
+    )
+
+    expect(screen.getByRole('heading', { name: '得分 80 / 100' })).toBeInTheDocument()
+  })
 })

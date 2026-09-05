@@ -50,6 +50,7 @@ export default function App() {
   const refreshDocuments = useCallback(async (silent = false) => {
     if (!selectedId) return
     const knowledgeBaseId = selectedId
+    if (selectedIdRef.current !== knowledgeBaseId) return
     const requestId = ++documentRequestIdRef.current
     if (!silent) setDocumentsLoading(true)
     try {
@@ -86,6 +87,7 @@ export default function App() {
   }
 
   async function createKnowledgeBase(name: string) {
+    if (initialLoading) return
     setMutationBusy(true)
     setError('')
     try {
@@ -157,7 +159,7 @@ export default function App() {
   return (
     <div className="app-shell">
       <KnowledgeBaseSidebar
-        busy={mutationBusy}
+        busy={mutationBusy || initialLoading}
         items={knowledgeBases}
         loading={initialLoading}
         onCreate={createKnowledgeBase}
