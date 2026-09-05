@@ -31,9 +31,9 @@ public class DocumentPipelinePersistence {
                 .set("error_message", null)
                 .set("updated_at", LocalDateTime.now());
         if (allowFailedRetry) {
-            update.in("pipeline_status", PipelineStatus.PENDING.name(), PipelineStatus.FAILED.name());
+            update.in("pipeline_status", PipelineStatus.STORED.name(), PipelineStatus.FAILED.name());
         } else {
-            update.eq("pipeline_status", PipelineStatus.PENDING.name());
+            update.eq("pipeline_status", PipelineStatus.STORED.name());
         }
         if (documentMapper.update(null, update) != 1) {
             return null;
@@ -47,7 +47,7 @@ public class DocumentPipelinePersistence {
 
     @Transactional
     public void markParsed(Long documentId) {
-        advance(documentId, PipelineStatus.PARSING, PipelineStatus.CHUNKING, update ->
+        advance(documentId, PipelineStatus.PARSING, PipelineStatus.PARSED, update ->
                 update.set("parser_version", DocumentPipeline.PARSER_VERSION));
     }
 
@@ -58,7 +58,7 @@ public class DocumentPipelinePersistence {
         for (DocumentChunk chunk : chunks) {
             documentChunkMapper.insert(chunk);
         }
-        advance(documentId, PipelineStatus.CHUNKING, PipelineStatus.EMBEDDING, update ->
+        advance(documentId, PipelineStatus.PARSED, PipelineStatus.CHUNKED, update ->
                 update.set("chunker_version", DocumentPipeline.CHUNKER_VERSION));
     }
 
@@ -68,7 +68,7 @@ public class DocumentPipelinePersistence {
             chunk.setEmbeddingStatus("COMPLETED");
             documentChunkMapper.updateById(chunk);
         }
-        advance(documentId, PipelineStatus.EMBEDDING, PipelineStatus.INDEXING);
+        advance(documentId, PipelineStatus.CHUNKED, PipelineStatus.EMBEDDED);
     }
 
     @Transactional
@@ -78,7 +78,7 @@ public class DocumentPipelinePersistence {
             chunk.setIndexedAt(indexedAt);
             documentChunkMapper.updateById(chunk);
         }
-        advance(documentId, PipelineStatus.INDEXING, PipelineStatus.COMPLETED, update ->
+        advance(documentId, PipelineStatus.EMBEDDED, PipelineStatus.INDEXED, update ->
                 update.set("error_message", null));
     }
 

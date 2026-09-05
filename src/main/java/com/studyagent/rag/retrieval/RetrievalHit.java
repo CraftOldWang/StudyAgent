@@ -7,7 +7,15 @@ public record RetrievalHit(
         String chunkId,
         String parentChunkId,
         String content,
+        Provenance provenance,
         double score,
         RetrievalStrategy strategy
 ) {
+
+    public record Provenance(
+            String documentId,
+            String documentTitle,
+            String sourceLocation
+    ) {
+    }
 }

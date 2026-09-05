@@ -1,11 +1,14 @@
 package com.studyagent.ingest.pipeline;
 
 public enum PipelineStatus {
-    PENDING,
+    STORED,
     PARSING,
+    PARSED,
     CHUNKING,
+    CHUNKED,
     EMBEDDING,
+    EMBEDDED,
     INDEXING,
-    COMPLETED,
+    INDEXED,
     FAILED
 }

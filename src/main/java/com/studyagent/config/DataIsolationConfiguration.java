@@ -3,7 +3,7 @@ package com.studyagent.config;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.handler.TenantLineHandler;
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
-import com.studyagent.identity.CurrentUserContext;
+import com.studyagent.identity.IdentityScope;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
 import org.springframework.context.annotation.Bean;
@@ -13,14 +13,14 @@ import org.springframework.context.annotation.Configuration;
 public class DataIsolationConfiguration {
 
     private static final String USER_ID_COLUMN = "user_id";
-    private static final String USERS_TABLE = "users";
+    private static final java.util.Set<String> TABLES_WITHOUT_USER_ID = java.util.Set.of("users", "document_chunks");
 
     @Bean
-    public MybatisPlusInterceptor mybatisPlusInterceptor(CurrentUserContext currentUserContext) {
+    public MybatisPlusInterceptor mybatisPlusInterceptor(IdentityScope identityScope) {
         TenantLineHandler dataIsolationHandler = new TenantLineHandler() {
             @Override
             public Expression getTenantId() {
-                return new LongValue(currentUserContext.userId());
+                return new LongValue(identityScope.requireUserId());
             }
 
             @Override
@@ -30,7 +30,7 @@ public class DataIsolationConfiguration {
 
             @Override
             public boolean ignoreTable(String tableName) {
-                return USERS_TABLE.equalsIgnoreCase(tableName);
+                return TABLES_WITHOUT_USER_ID.stream().anyMatch(table -> table.equalsIgnoreCase(tableName));
             }
         };
 

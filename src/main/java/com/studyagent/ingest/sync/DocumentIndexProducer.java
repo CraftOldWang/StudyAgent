@@ -23,7 +23,7 @@ public class DocumentIndexProducer {
     /**
      * 发送文档处理消息；若当前存在事务，则等事务提交后再发送。
      */
-    public void send(Long documentId) {
+    public void send(Long documentId, Long userId) {
         if (TransactionSynchronizationManager.isSynchronizationActive()) {
             log.info(
                     "检测到当前事务未提交，RocketMQ 文档索引消息将在 afterCommit 发送: topic={}, documentId={}",
@@ -33,21 +33,21 @@ public class DocumentIndexProducer {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
-                    sendNow(documentId);
+                    sendNow(documentId, userId);
                 }
             });
             return;
         }
-        sendNow(documentId);
+        sendNow(documentId, userId);
     }
 
     /**
      * 立即发送 RocketMQ 消息。
      */
-    private void sendNow(Long documentId) {
+    private void sendNow(Long documentId, Long userId) {
         long startedAt = System.nanoTime();
         log.info("发送 RocketMQ 文档索引消息: topic={}, documentId={}", properties.documentTopic(), documentId);
-        rocketMQTemplate.convertAndSend(properties.documentTopic(), new DocumentIndexMessage(documentId));
+        rocketMQTemplate.convertAndSend(properties.documentTopic(), new DocumentIndexMessage(documentId, userId));
         log.info(
                 "RocketMQ 文档索引消息发送完成: topic={}, documentId={}, messageMillis={}",
                 properties.documentTopic(),

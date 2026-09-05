@@ -2,6 +2,7 @@ package com.studyagent.ingest.web;
 
 import com.studyagent.common.response.ApiResponse;
 import com.studyagent.ingest.upload.FileUploadService;
+import com.studyagent.identity.CurrentUserContext;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -26,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class FileUploadController {
 
     private final FileUploadService fileUploadService;
+    private final CurrentUserContext currentUserContext;
 
     /**
      * 上传前去重检查，客户端可据此决定是否走秒传。
@@ -34,7 +36,7 @@ public class FileUploadController {
     public ApiResponse<FileDedupCheckResponse> checkDuplicate(
             @RequestParam Long knowledgeBaseId,
             @RequestParam String sha256) {
-        return ApiResponse.ok(fileUploadService.checkDuplicate(knowledgeBaseId, sha256));
+        return ApiResponse.ok(fileUploadService.checkDuplicate(currentUserContext.userId(), knowledgeBaseId, sha256));
     }
 
     /**
@@ -44,7 +46,7 @@ public class FileUploadController {
     public ApiResponse<UploadResultResponse> uploadSingle(
             @RequestParam @NotNull Long knowledgeBaseId,
             @RequestParam("file") MultipartFile file) {
-        return ApiResponse.ok(fileUploadService.uploadSingle(knowledgeBaseId, file));
+        return ApiResponse.ok(fileUploadService.uploadSingle(currentUserContext.userId(), knowledgeBaseId, file));
     }
 
     /**
@@ -53,7 +55,7 @@ public class FileUploadController {
     @PostMapping("/multipart/init")
     public ApiResponse<InitMultipartUploadResponse> initMultipart(
             @Valid @ModelAttribute InitMultipartUploadRequest request) {
-        return ApiResponse.ok(fileUploadService.initMultipart(request));
+        return ApiResponse.ok(fileUploadService.initMultipart(currentUserContext.userId(), request));
     }
 
     /**
@@ -64,7 +66,7 @@ public class FileUploadController {
             @PathVariable Long uploadSessionId,
             @PathVariable @Min(0) int chunkIndex,
             @RequestParam("chunk") MultipartFile chunk) {
-        fileUploadService.uploadChunk(uploadSessionId, chunkIndex, chunk);
+        fileUploadService.uploadChunk(currentUserContext.userId(), uploadSessionId, chunkIndex, chunk);
         return ApiResponse.ok(null);
     }
 
@@ -73,7 +75,7 @@ public class FileUploadController {
      */
     @GetMapping("/multipart/{uploadSessionId}")
     public ApiResponse<MultipartUploadStatusResponse> multipartStatus(@PathVariable Long uploadSessionId) {
-        return ApiResponse.ok(fileUploadService.multipartStatus(uploadSessionId));
+        return ApiResponse.ok(fileUploadService.multipartStatus(currentUserContext.userId(), uploadSessionId));
     }
 
     /**
@@ -82,6 +84,7 @@ public class FileUploadController {
     @PostMapping("/multipart/complete")
     public ApiResponse<UploadResultResponse> completeMultipart(
             @Valid @ModelAttribute CompleteMultipartUploadRequest request) {
-        return ApiResponse.ok(fileUploadService.completeMultipart(request.uploadSessionId(), request.knowledgeBaseId()));
+        return ApiResponse.ok(fileUploadService.completeMultipart(
+                currentUserContext.userId(), request.uploadSessionId(), request.knowledgeBaseId()));
     }
 }
