@@ -35,11 +35,11 @@ class LearningSkillTemplateTest {
         Map<String, AgentSkill> skills = loadSkills();
 
         assertThat(skills.get("explain").getSkillContent())
-                .contains("knowledgePointId", "explanation", "keyPoints", "examples", "sourceChunkIds");
+                .contains("knowledgePointId", "readable explanation", "concrete example", "source chunk ids");
         assertThat(skills.get("quiz").getSkillContent())
-                .contains("exactly 5", "question", "options", "answer", "explanation", "sourceChunkId");
+                .contains("exactly 5", "question", "options", "correctAnswer", "explanation", "sourceChunkId");
         assertThat(skills.get("card").getSkillContent())
-                .contains("between 3 and 5", "front", "back", "sourceChunkId");
+                .contains("exactly 3", "front", "back", "sourceChunkId", "null");
     }
 
     private Map<String, AgentSkill> loadSkills() {

@@ -3,6 +3,7 @@ package com.studyagent.learning;
 public enum KnowledgePointStatus {
     NEW,
     EXPLAINING,
-    QUIZ,
+    QUIZZING,
+    CARD_GENERATING,
     COMPLETED
 }

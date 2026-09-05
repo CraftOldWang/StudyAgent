@@ -1,11 +1,11 @@
 ---
 name: card
-description: Generate three to five concise review cards grounded in supplied source chunks.
+description: Generate exactly three concise Anki-style review cards without inventing sources.
 ---
 
 # Generate review cards
 
-Generate 3-5 review cards for the supplied knowledge point. Each card must test one idea and must be supported by one supplied source chunk. Do not invent a `sourceChunkId`.
+Generate exactly 3 review cards for the supplied knowledge point. Each card must test one idea. Do not invent a `sourceChunkId`.
 
 ## Input schema
 
@@ -22,23 +22,14 @@ Generate 3-5 review cards for the supplied knowledge point. Each card must test 
 }
 ```
 
-All fields are required. `sourceChunks` must contain enough material for at least three distinct cards; otherwise report that the input is insufficient instead of fabricating cards.
+When supplied source chunks support a card, preserve the real `sourceChunkId`. If no verified source supports it, use `null` rather than fabricating an identifier.
 
 ## Output schema
 
-Return only valid JSON with this shape:
+Return only a valid JSON array with this shape:
 
 ```json
-{
-  "knowledgePointId": 1,
-  "cards": [
-    {
-      "front": "focused recall question",
-      "back": "concise answer",
-      "sourceChunkId": "chunk-id"
-    }
-  ]
-}
+[{"front":"focused recall question","back":"concise answer","sourceChunkId":"chunk-id or null"}]
 ```
 
-The `cards` array must contain between 3 and 5 items. Every `sourceChunkId` must be present in the input.
+The array must contain exactly 3 items. Every non-null `sourceChunkId` must be present in the input.

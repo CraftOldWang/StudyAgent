@@ -1,6 +1,6 @@
 ---
 name: explain
-description: Explain one knowledge point from supplied source chunks and return the required JSON contract.
+description: Explain one knowledge point clearly and cite only verified source chunk ids.
 ---
 
 # Explain a knowledge point
@@ -27,16 +27,6 @@ All fields are required. `sourceChunks` must contain at least one item.
 
 ## Output schema
 
-Return only valid JSON with this shape:
-
-```json
-{
-  "knowledgePointId": 1,
-  "explanation": "clear explanation for the learner goal",
-  "keyPoints": ["important point"],
-  "examples": ["example grounded in the explanation"],
-  "sourceChunkIds": ["chunk-id"]
-}
-```
-
-`sourceChunkIds` must contain only identifiers present in the input. Keep the explanation focused on the requested topic and learner goal.
+Return a concise, readable explanation in Markdown. Include the core idea, one concrete example,
+and a short recap. Cite source chunk ids inline only when they were present in the tool input.
+If the knowledge base is insufficient, say so explicitly instead of filling the gap with outside facts.

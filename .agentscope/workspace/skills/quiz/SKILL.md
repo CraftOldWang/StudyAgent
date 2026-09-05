@@ -26,26 +26,11 @@ All fields are required. `sourceChunks` must contain enough material to support 
 
 ## Output schema
 
-Return only valid JSON with this shape:
+Return only a valid JSON array with this shape:
 
 ```json
-{
-  "knowledgePointId": 1,
-  "questions": [
-    {
-      "question": "question text",
-      "options": [
-        {"key": "A", "text": "option text"},
-        {"key": "B", "text": "option text"},
-        {"key": "C", "text": "option text"},
-        {"key": "D", "text": "option text"}
-      ],
-      "answer": "A",
-      "explanation": "why the answer is correct",
-      "sourceChunkId": "chunk-id"
-    }
-  ]
-}
+[{"question":"question text","options":["option A","option B","option C","option D"],
+  "correctAnswer":"option A","explanation":"why the answer is correct","sourceChunkId":"chunk-id"}]
 ```
 
-The `questions` array must contain exactly 5 items. Each item must have four distinct options, one answer matching an option key, an explanation, and one `sourceChunkId` present in the input.
+The array must contain exactly 5 items. Each item must have four distinct options, a `correctAnswer` exactly equal to one option, an explanation, and one `sourceChunkId` present in the input.

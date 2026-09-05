@@ -10,6 +10,7 @@ import io.agentscope.core.model.ChatResponse;
 import io.agentscope.core.model.GenerateOptions;
 import io.agentscope.core.model.Model;
 import io.agentscope.core.model.ToolSchema;
+import io.agentscope.core.tool.Toolkit;
 import io.agentscope.harness.agent.HarnessAgent;
 import io.agentscope.harness.agent.memory.compaction.CompactionConfig;
 import java.io.IOException;
@@ -69,7 +70,8 @@ class AgentScopeCompactionTest {
         try (HarnessAgent agent = configuration.harnessAgent(
                 model,
                 workspace,
-                modelProperties)) {
+                modelProperties,
+                new Toolkit())) {
             call(agent, runtimeContext, TARGET);
             call(agent, runtimeContext, STATUS);
             call(agent, runtimeContext, DISCOVERY);

@@ -56,18 +56,18 @@ public class ReviewCardService {
         }
         validateText(draft.front(), "复习卡正面不能为空");
         validateText(draft.back(), "复习卡背面不能为空");
-        validateText(draft.sourceChunkId(), "复习卡来源 chunk 不能为空");
-
-        DocumentChunk chunk = documentChunkMapper.selectOne(new LambdaQueryWrapper<DocumentChunk>()
-                .eq(DocumentChunk::getChunkId, draft.sourceChunkId()));
-        if (chunk == null || chunk.getDocumentId() == null) {
-            throw new BusinessException("复习卡来源 chunk 不存在: " + draft.sourceChunkId());
-        }
-        Document document = documentMapper.selectById(chunk.getDocumentId());
-        if (document == null
-                || !Objects.equals(userId, document.getUserId())
-                || !Objects.equals(knowledgeBaseId, document.getKnowledgeBaseId())) {
-            throw new BusinessException("复习卡来源 chunk 不属于当前用户和知识库: " + draft.sourceChunkId());
+        if (draft.sourceChunkId() != null && !draft.sourceChunkId().isBlank()) {
+            DocumentChunk chunk = documentChunkMapper.selectOne(new LambdaQueryWrapper<DocumentChunk>()
+                    .eq(DocumentChunk::getChunkId, draft.sourceChunkId()));
+            if (chunk == null || chunk.getDocumentId() == null) {
+                throw new BusinessException("复习卡来源 chunk 不存在: " + draft.sourceChunkId());
+            }
+            Document document = documentMapper.selectById(chunk.getDocumentId());
+            if (document == null
+                    || !Objects.equals(userId, document.getUserId())
+                    || !Objects.equals(knowledgeBaseId, document.getKnowledgeBaseId())) {
+                throw new BusinessException("复习卡来源 chunk 不属于当前用户和知识库: " + draft.sourceChunkId());
+            }
         }
 
         ReviewCard card = new ReviewCard();
@@ -76,7 +76,9 @@ public class ReviewCardService {
         card.setKnowledgeBaseId(knowledgeBaseId);
         card.setFront(draft.front());
         card.setBack(draft.back());
-        card.setSourceChunkId(draft.sourceChunkId());
+        card.setSourceChunkId(draft.sourceChunkId() == null || draft.sourceChunkId().isBlank()
+                ? null
+                : draft.sourceChunkId().trim());
         card.setExportedToAnki(false);
         card.setCreatedAt(LocalDateTime.now());
         return card;

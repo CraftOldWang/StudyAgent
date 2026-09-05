@@ -14,16 +14,18 @@ class KnowledgePointLifecycleTest {
     void advancesOneStepThroughTheLifecycle() {
         assertThat(lifecycle.advance(KnowledgePointStatus.NEW, KnowledgePointStatus.EXPLAINING))
                 .isEqualTo(KnowledgePointStatus.EXPLAINING);
-        assertThat(lifecycle.advance(KnowledgePointStatus.EXPLAINING, KnowledgePointStatus.QUIZ))
-                .isEqualTo(KnowledgePointStatus.QUIZ);
-        assertThat(lifecycle.advance(KnowledgePointStatus.QUIZ, KnowledgePointStatus.COMPLETED))
+        assertThat(lifecycle.advance(KnowledgePointStatus.EXPLAINING, KnowledgePointStatus.QUIZZING))
+                .isEqualTo(KnowledgePointStatus.QUIZZING);
+        assertThat(lifecycle.advance(KnowledgePointStatus.QUIZZING, KnowledgePointStatus.CARD_GENERATING))
+                .isEqualTo(KnowledgePointStatus.CARD_GENERATING);
+        assertThat(lifecycle.advance(KnowledgePointStatus.CARD_GENERATING, KnowledgePointStatus.COMPLETED))
                 .isEqualTo(KnowledgePointStatus.COMPLETED);
     }
 
     @Test
     void rejectsSkippedState() {
         assertThatIllegalStateException()
-                .isThrownBy(() -> lifecycle.advance(KnowledgePointStatus.NEW, KnowledgePointStatus.QUIZ))
+                .isThrownBy(() -> lifecycle.advance(KnowledgePointStatus.NEW, KnowledgePointStatus.QUIZZING))
                 .withMessageContaining("only advance from NEW to EXPLAINING");
     }
 
@@ -32,7 +34,7 @@ class KnowledgePointLifecycleTest {
         assertThatIllegalStateException()
                 .isThrownBy(() -> lifecycle.advance(KnowledgePointStatus.EXPLAINING, KnowledgePointStatus.EXPLAINING));
         assertThatIllegalStateException()
-                .isThrownBy(() -> lifecycle.advance(KnowledgePointStatus.QUIZ, KnowledgePointStatus.EXPLAINING));
+                .isThrownBy(() -> lifecycle.advance(KnowledgePointStatus.QUIZZING, KnowledgePointStatus.EXPLAINING));
     }
 
     @Test

@@ -38,7 +38,7 @@ public final class ReviewCardWriteTool implements AgentTool {
                                             "front", Map.of("type", "string"),
                                             "back", Map.of("type", "string"),
                                             "sourceChunkId", Map.of("type", "string")),
-                                    "required", List.of("front", "back", "sourceChunkId"),
+                                    "required", List.of("front", "back"),
                                     "additionalProperties", false))),
             "required", List.of("drafts"),
             "additionalProperties", false);
@@ -53,7 +53,7 @@ public final class ReviewCardWriteTool implements AgentTool {
 
     @Override
     public String getDescription() {
-        return "为当前知识点写入复习卡，只需提供 front、back 和 sourceChunkId。";
+        return "为当前知识点写入复习卡；front、back 必填，仅有可验证来源时提供 sourceChunkId。";
     }
 
     @Override
@@ -104,7 +104,7 @@ public final class ReviewCardWriteTool implements AgentTool {
             drafts.add(new CardDraft(
                     requiredText(draft, "front", "复习卡正面不能为空"),
                     requiredText(draft, "back", "复习卡背面不能为空"),
-                    requiredText(draft, "sourceChunkId", "复习卡来源 chunk 不能为空")));
+                    optionalText(draft, "sourceChunkId")));
         }
         return drafts;
     }
@@ -115,6 +115,17 @@ public final class ReviewCardWriteTool implements AgentTool {
             throw new BusinessException(message);
         }
         return text;
+    }
+
+    private String optionalText(Map<?, ?> input, String field) {
+        Object value = input.get(field);
+        if (value == null) {
+            return null;
+        }
+        if (!(value instanceof String text)) {
+            throw new BusinessException("复习卡来源 chunk 格式错误");
+        }
+        return text.isBlank() ? null : text.trim();
     }
 
     private ToolResultBlock result(ToolCallParam param, List<ReviewCard> cards) {

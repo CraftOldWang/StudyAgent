@@ -36,16 +36,16 @@
 
 ## M2 · 单知识点学习闭环
 
-- [ ] 实现学习计划和 `NEW → EXPLAINING → QUIZZING → CARD_GENERATING → COMPLETED` 状态机；失败留在当前状态，QUIZZING 中追问不回退。
+- [~] 已实现学习计划和 `NEW → EXPLAINING → QUIZZING → CARD_GENERATING → COMPLETED` 状态机；失败留在当前状态，QUIZZING 中追问不回退，待真实链路验收。
 - [~] 迁移或重写当前 learning WIP：一个会话绑定一个用户、目标、知识库和 AgentScope session，同时只有一个活跃知识点。
-- [ ] 通过 `learningSessionId` 恢复；MySQL 保存业务事实，AgentState 只保存最新短期上下文。
-- [ ] 实现五题 JSON 聚合测验、提交评分与错题解释；不设首版及格门槛。
-- [ ] 生成并持久化三张复习卡片；本里程碑不接 AnkiConnect。
+- [~] 已实现通过 `learningSessionId` 恢复；MySQL 保存业务事实及测验/反馈/卡片恢复数据，AgentState 只保存最新短期上下文，待真实链路验收。
+- [~] 已实现五题 JSON 聚合测验、提交评分与错题解释；不设首版及格门槛，待真实模型验收。
+- [~] 已实现生成并持久化三张复习卡片，来源缺失时明确为 `null`；本里程碑不接 AnkiConnect。
 - [~] 在知识点完成 turn 结束处按技术设计的 one-off 强制契约调用 `compactIfNeeded`，处理 `Optional`、写回同一 AgentState 并保存；现有独立分支 WIP 待迁移或重写。
-- [ ] 首版由主 Agent 完成讲解、测验和卡片生成，不启用学习 subagent。
-- [ ] 后端生成 traceId，并提供按 traceId 查询标准化时间线的 JSON API；不做 trace UI。
-- [ ] 以同步 REST 重写学习目标、计划、讲解/答疑、测验、卡片和状态页面；不做 SSE。
-- [ ] 完整批次测试通过并由独立 verifier review；模块完成后补实现文档。
+- [~] 首版已由主 Agent 完成讲解、测验和卡片生成，不启用学习 subagent，待真实模型验收。
+- [~] 后端已生成 traceId，并提供按 traceId 查询标准化时间线的 JSON API；不做 trace UI。
+- [~] 后端同步 REST 已覆盖学习目标、计划、讲解/答疑、测验、卡片和状态恢复；前端并行接入中，不做 SSE。
+- [~] 定向 34 项测试已通过，完整 Maven、真实 MySQL/DeepSeek/RAG smoke 与独立 verifier review 待完成；实现与 REST 契约文档已补。
 
 ## 后续 Goal
 
