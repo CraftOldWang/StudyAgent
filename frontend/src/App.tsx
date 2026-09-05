@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { api } from './api'
 import { DocumentPanel } from './components/DocumentPanel'
 import { KnowledgeBaseSidebar } from './components/KnowledgeBaseSidebar'
+import { LearningPanel } from './components/LearningPanel'
 import { SearchPanel } from './components/SearchPanel'
 import { isDocumentTerminal } from './status'
 import type { AgentSearchResult, DocumentItem, KnowledgeBase, SearchResult } from './types'
@@ -9,7 +10,7 @@ import { useDocumentPolling } from './useDocumentPolling'
 
 export default function App() {
   const [knowledgeBases, setKnowledgeBases] = useState<KnowledgeBase[]>([])
-  const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const [documents, setDocuments] = useState<DocumentItem[]>([])
   const [initialLoading, setInitialLoading] = useState(true)
   const [documentsLoading, setDocumentsLoading] = useState(false)
@@ -18,7 +19,8 @@ export default function App() {
   const [searchBusy, setSearchBusy] = useState(false)
   const [searchResult, setSearchResult] = useState<SearchResult | AgentSearchResult | null>(null)
   const [error, setError] = useState('')
-  const selectedIdRef = useRef<number | null>(selectedId)
+  const [view, setView] = useState<'knowledge' | 'learning'>('knowledge')
+  const selectedIdRef = useRef<string | null>(selectedId)
   const documentRequestIdRef = useRef(0)
   const searchRequestIdRef = useRef(0)
   selectedIdRef.current = selectedId
@@ -74,7 +76,7 @@ export default function App() {
 
   useDocumentPolling(selectedId, documents, refreshDocuments)
 
-  function selectKnowledgeBase(id: number | null) {
+  function selectKnowledgeBase(id: string | null) {
     selectedIdRef.current = id
     documentRequestIdRef.current += 1
     searchRequestIdRef.current += 1
@@ -97,7 +99,7 @@ export default function App() {
     }
   }
 
-  async function renameKnowledgeBase(id: number, name: string) {
+  async function renameKnowledgeBase(id: string, name: string) {
     setMutationBusy(true)
     setError('')
     try {
@@ -172,21 +174,51 @@ export default function App() {
         )}
 
         {selectedKnowledgeBase ? (
-          <div className="content-grid">
-            <DocumentPanel
-              documents={documents}
-              knowledgeBase={selectedKnowledgeBase}
-              loading={documentsLoading}
-              onUpload={uploadPdf}
-              uploadBusy={uploadBusy}
-            />
-            <SearchPanel
-              disabled={!hasIndexedDocument}
-              loading={searchBusy}
-              onSearch={search}
-              result={searchResult}
-            />
-          </div>
+          <>
+            <nav aria-label="工作区" className="view-tabs">
+              <button
+                aria-current={view === 'knowledge' ? 'page' : undefined}
+                className={view === 'knowledge' ? 'active' : ''}
+                onClick={() => setView('knowledge')}
+                type="button"
+              >
+                知识库
+              </button>
+              <button
+                aria-current={view === 'learning' ? 'page' : undefined}
+                className={view === 'learning' ? 'active' : ''}
+                onClick={() => setView('learning')}
+                type="button"
+              >
+                学习闭环
+              </button>
+            </nav>
+            <div className="content-grid" hidden={view !== 'knowledge'}>
+              <DocumentPanel
+                documents={documents}
+                knowledgeBase={selectedKnowledgeBase}
+                loading={documentsLoading}
+                onUpload={uploadPdf}
+                uploadBusy={uploadBusy}
+              />
+              <SearchPanel
+                disabled={!hasIndexedDocument}
+                loading={searchBusy}
+                onSearch={search}
+                result={searchResult}
+              />
+            </div>
+            <div hidden={view !== 'learning'}>
+              <LearningPanel
+                knowledgeBase={selectedKnowledgeBase}
+                onSessionKnowledgeBase={(knowledgeBaseId) => {
+                  if (knowledgeBases.some((item) => item.id === knowledgeBaseId)) {
+                    selectKnowledgeBase(knowledgeBaseId)
+                  }
+                }}
+              />
+            </div>
+          </>
         ) : (
           <section className="welcome-state">
             <span className="welcome-mark">S</span>

@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { DocumentPanel } from './DocumentPanel'
 
-const knowledgeBase = { id: 1, name: 'Java', createdAt: '', updatedAt: '' }
+const knowledgeBase = { id: '1', name: 'Java', createdAt: '', updatedAt: '' }
 
 describe('DocumentPanel', () => {
   it('rejects non-PDF input before upload', () => {

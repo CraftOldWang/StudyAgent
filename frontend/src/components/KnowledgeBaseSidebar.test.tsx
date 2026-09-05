@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { KnowledgeBaseSidebar } from './KnowledgeBaseSidebar'
 
 const knowledgeBase = {
-  id: 12,
+  id: '12',
   name: 'Java 并发',
   createdAt: '2026-09-04T12:00:00',
   updatedAt: '2026-09-04T12:00:00',
@@ -52,7 +52,7 @@ describe('KnowledgeBaseSidebar', () => {
     })
     fireEvent.click(screen.getByRole('button', { name: '保存' }))
 
-    await waitFor(() => expect(onRename).toHaveBeenCalledWith(12, 'Java 虚拟机'))
+    await waitFor(() => expect(onRename).toHaveBeenCalledWith('12', 'Java 虚拟机'))
     expect(onSelect).not.toHaveBeenCalled()
   })
 })

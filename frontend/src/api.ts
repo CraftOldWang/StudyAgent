@@ -19,7 +19,7 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+export async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers)
   headers.set('X-User-Id', '1')
   if (init.body && !(init.body instanceof FormData)) {
@@ -47,34 +47,34 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 }
 
 export const api = {
-  listKnowledgeBases: () => request<KnowledgeBase[]>('/api/knowledge-bases'),
+  listKnowledgeBases: () => apiRequest<KnowledgeBase[]>('/api/knowledge-bases'),
   createKnowledgeBase: (name: string) =>
-    request<KnowledgeBase>('/api/knowledge-bases', {
+    apiRequest<KnowledgeBase>('/api/knowledge-bases', {
       method: 'POST',
       body: JSON.stringify({ name }),
     }),
-  renameKnowledgeBase: (id: number, name: string) =>
-    request<KnowledgeBase>(`/api/knowledge-bases/${id}`, {
+  renameKnowledgeBase: (id: string, name: string) =>
+    apiRequest<KnowledgeBase>(`/api/knowledge-bases/${id}`, {
       method: 'PATCH',
       body: JSON.stringify({ name }),
     }),
-  listDocuments: (knowledgeBaseId: number) =>
-    request<DocumentItem[]>(`/api/knowledge-bases/${knowledgeBaseId}/documents`),
-  uploadPdf: (knowledgeBaseId: number, file: File) => {
+  listDocuments: (knowledgeBaseId: string) =>
+    apiRequest<DocumentItem[]>(`/api/knowledge-bases/${knowledgeBaseId}/documents`),
+  uploadPdf: (knowledgeBaseId: string, file: File) => {
     const body = new FormData()
     body.append('file', file)
-    return request<UploadResult>(`/api/files/upload?knowledgeBaseId=${knowledgeBaseId}`, {
+    return apiRequest<UploadResult>(`/api/files/upload?knowledgeBaseId=${knowledgeBaseId}`, {
       method: 'POST',
       body,
     })
   },
-  search: (knowledgeBaseId: number, query: string) =>
-    request<SearchResult>(`/api/knowledge-bases/${knowledgeBaseId}/search`, {
+  search: (knowledgeBaseId: string, query: string) =>
+    apiRequest<SearchResult>(`/api/knowledge-bases/${knowledgeBaseId}/search`, {
       method: 'POST',
       body: JSON.stringify({ query }),
     }),
-  agentSearch: (knowledgeBaseId: number, query: string) =>
-    request<AgentSearchResult>(`/api/knowledge-bases/${knowledgeBaseId}/agent-search`, {
+  agentSearch: (knowledgeBaseId: string, query: string) =>
+    apiRequest<AgentSearchResult>(`/api/knowledge-bases/${knowledgeBaseId}/agent-search`, {
       method: 'POST',
       body: JSON.stringify({ query }),
     }),

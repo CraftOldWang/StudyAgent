@@ -3,12 +3,12 @@ import type { KnowledgeBase } from '../types'
 
 interface Props {
   items: KnowledgeBase[]
-  selectedId: number | null
+  selectedId: string | null
   loading: boolean
   busy: boolean
-  onSelect: (id: number) => void
+  onSelect: (id: string) => void
   onCreate: (name: string) => Promise<void>
-  onRename: (id: number, name: string) => Promise<void>
+  onRename: (id: string, name: string) => Promise<void>
 }
 
 export function KnowledgeBaseSidebar({
@@ -21,7 +21,7 @@ export function KnowledgeBaseSidebar({
   onRename,
 }: Props) {
   const [name, setName] = useState('')
-  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
 
   async function submitCreate(event: FormEvent) {
@@ -37,7 +37,7 @@ export function KnowledgeBaseSidebar({
     setRenameValue(item.name)
   }
 
-  async function submitRename(event: FormEvent, id: number) {
+  async function submitRename(event: FormEvent, id: string) {
     event.preventDefault()
     const normalized = renameValue.trim()
     if (!normalized) return

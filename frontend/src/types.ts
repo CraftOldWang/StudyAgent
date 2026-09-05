@@ -1,14 +1,14 @@
 export interface KnowledgeBase {
-  id: number
+  id: string
   name: string
   createdAt: string
   updatedAt: string
 }
 
 export interface DocumentItem {
-  id: number
-  knowledgeBaseId: number
-  fileRecordId: number
+  id: string
+  knowledgeBaseId: string
+  fileRecordId: string
   title: string
   contentType: string
   pipelineStatus: string
@@ -18,8 +18,8 @@ export interface DocumentItem {
 }
 
 export interface UploadResult {
-  fileId: number
-  documentId: number
+  fileId: string
+  documentId: string
   status: string
 }
 

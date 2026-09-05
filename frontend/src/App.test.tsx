@@ -22,7 +22,7 @@ function deferred<T>() {
   return { promise, resolve }
 }
 
-function document(id: number, knowledgeBaseId: number, title: string): DocumentItem {
+function document(id: string, knowledgeBaseId: string, title: string): DocumentItem {
   return {
     id,
     knowledgeBaseId,
@@ -43,21 +43,22 @@ describe('App knowledge-base request association', () => {
     const first = deferred<DocumentItem[]>()
     const second = deferred<DocumentItem[]>()
     apiMock.listKnowledgeBases.mockResolvedValue([
-      { id: 1, name: '知识库一', createdAt: '', updatedAt: '' },
-      { id: 2, name: '知识库二', createdAt: '', updatedAt: '' },
+      { id: '9007199254740993', name: '知识库一', createdAt: '', updatedAt: '' },
+      { id: '9007199254740995', name: '知识库二', createdAt: '', updatedAt: '' },
     ])
-    apiMock.listDocuments.mockImplementation((id: number) => id === 1 ? first.promise : second.promise)
+    apiMock.listDocuments.mockImplementation((id: string) =>
+      id === '9007199254740993' ? first.promise : second.promise)
 
     render(<App />)
-    await waitFor(() => expect(apiMock.listDocuments).toHaveBeenCalledWith(1))
+    await waitFor(() => expect(apiMock.listDocuments).toHaveBeenCalledWith('9007199254740993'))
     fireEvent.click(screen.getByRole('button', { name: '▤ 知识库二' }))
-    await waitFor(() => expect(apiMock.listDocuments).toHaveBeenCalledWith(2))
+    await waitFor(() => expect(apiMock.listDocuments).toHaveBeenCalledWith('9007199254740995'))
 
-    first.resolve([document(11, 1, '旧知识库.pdf')])
+    first.resolve([document('11', '9007199254740993', '旧知识库.pdf')])
     await waitFor(() => expect(screen.getByText('正在读取文档状态…')).toBeInTheDocument())
     expect(screen.queryByText('旧知识库.pdf')).not.toBeInTheDocument()
 
-    second.resolve([document(22, 2, '当前知识库.pdf')])
+    second.resolve([document('22', '9007199254740995', '当前知识库.pdf')])
     expect(await screen.findByText('当前知识库.pdf')).toBeInTheDocument()
     expect(screen.queryByText('旧知识库.pdf')).not.toBeInTheDocument()
   })

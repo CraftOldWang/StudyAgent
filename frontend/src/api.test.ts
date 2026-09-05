@@ -24,7 +24,7 @@ describe('api client', () => {
       data: null,
     }), { status: 404, headers: { 'Content-Type': 'application/json' } })))
 
-    await expect(api.listDocuments(99)).rejects.toMatchObject({
+    await expect(api.listDocuments('99')).rejects.toMatchObject({
       name: 'ApiError',
       message: '知识库不存在',
       status: 404,
@@ -39,7 +39,7 @@ describe('api client', () => {
     }), { status: 200, headers: { 'Content-Type': 'application/json' } }))
     vi.stubGlobal('fetch', fetchMock)
 
-    await api.agentSearch(7, '  JVM 是什么  ')
+    await api.agentSearch('7', '  JVM 是什么  ')
 
     expect(fetchMock).toHaveBeenCalledWith('/api/knowledge-bases/7/agent-search', expect.objectContaining({
       method: 'POST',

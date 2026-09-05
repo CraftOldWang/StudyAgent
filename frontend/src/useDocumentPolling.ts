@@ -5,7 +5,7 @@ import type { DocumentItem } from './types'
 const POLL_INTERVAL_MS = 1500
 
 export function useDocumentPolling(
-  knowledgeBaseId: number | null,
+  knowledgeBaseId: string | null,
   documents: DocumentItem[],
   refresh: (silent?: boolean) => Promise<void>,
 ): void {
