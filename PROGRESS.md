@@ -36,16 +36,17 @@
 
 ## M2 · 单知识点学习闭环
 
-- [ ] 实现学习计划和 `NEW → EXPLAINING → QUIZZING → CARD_GENERATING → COMPLETED` 状态机；失败留在当前状态，QUIZZING 中追问不回退。
-- [~] 迁移或重写当前 learning WIP：一个会话绑定一个用户、目标、知识库和 AgentScope session，同时只有一个活跃知识点。
-- [ ] 通过 `learningSessionId` 恢复；MySQL 保存业务事实，AgentState 只保存最新短期上下文。
-- [ ] 实现五题 JSON 聚合测验、提交评分与错题解释；不设首版及格门槛。
-- [ ] 生成并持久化三张复习卡片；本里程碑不接 AnkiConnect。
-- [~] 在知识点完成 turn 结束处按技术设计的 one-off 强制契约调用 `compactIfNeeded`，处理 `Optional`、写回同一 AgentState 并保存；现有独立分支 WIP 待迁移或重写。
-- [ ] 首版由主 Agent 完成讲解、测验和卡片生成，不启用学习 subagent。
-- [ ] 后端生成 traceId，并提供按 traceId 查询标准化时间线的 JSON API；不做 trace UI。
+- [~] 已在 `codex/m2-learning` 实现学习计划和 `NEW → EXPLAINING → QUIZZING → CARD_GENERATING → COMPLETED` 状态转换；失败留在当前状态，QUIZZING 中追问不回退，尚未合入 main。
+- [~] 一个会话绑定一个用户、目标、知识库和 AgentScope session，同时只有一个活跃知识点；真实 DeepSeek 已创建 session `2096054161353723906` 及五项计划。
+- [~] 已实现通过 `learningSessionId` 恢复；MySQL 保存业务事实及测验/反馈/卡片恢复数据，AgentState 只保存最新短期上下文，真实首次讲解失败后首点保持 `NEW` 且 GET 恢复通过。
+- [~] 已实现五题 JSON 聚合测验、提交评分与错题解释；不设首版及格门槛，待真实单知识点 E2E。
+- [~] 已实现生成并持久化三张复习卡片；本里程碑不接 AnkiConnect，待真实单知识点 E2E。
+- [~] 已在知识点完成 turn 结束处按技术设计的 one-off 强制契约调用 `compactIfNeeded`，处理 `Optional`、写回同一 AgentState 并保存；待真实 compaction 证据。
+- [~] 首版已由主 Agent 完成讲解、测验和卡片生成，不启用学习 subagent，待真实模型验收。
+- [~] 后端已生成 traceId，并提供按 traceId 查询标准化时间线的 JSON API；不做 trace UI，待真实链路查询证据。
 - [~] 同步 REST 学习目标、计划、讲解/答疑、五题测验、反馈、卡片、状态与会话恢复页面已实现，前端自测和独立 review 已通过；仍待后端端到端联调，不做 SSE 或 trace UI。
-- [ ] 完整批次测试通过并由独立 verifier review；模块完成后补实现文档。
+- [~] 后端实现位于 `codex/m2-learning`（`85d62e7`，实现/验证文档检查点 `839fb51`）：36 项学习相关测试、`mvn compile`、独立 verifier review 及 Linux JDK21 全量 135 tests（0 failure、0 error、3 skipped）已通过；仍待用户明确授权将合成 fixture 检索片段发送给 DeepSeek 后完成真实首点闭环，以及浏览器恢复验收。
+- [~] 当前另待用户授权可恢复搬移主树 13 个未跟踪 Phase 3 旧副本；授权前保持原位，不覆盖、不删除，M2 暂不合入 main。
 
 ## 后续 Goal
 
