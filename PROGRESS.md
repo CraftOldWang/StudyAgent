@@ -9,7 +9,7 @@
 - [x] AgentScope Java 2.0.1 单 Runtime 方向、按子域分包和服务端权限注入已确定。
 - [x] Phase 0、Phase 1 与 ingest V2 的既有实现已经提交；RAG 底层已有上传、解析、分块、索引和混合检索基础。
 - [x] Phase 2 工具治理已纳入当前干净包结构并通过 M0 批次验证。
-- [x] Agent hello 已作为 M0 成果接入 AgentScope；learning/compaction WIP 未进入 `main`。
+- [x] Agent hello 已作为 M0 成果接入 AgentScope；learning/compaction 已作为 M2 实现进入 `main`，真实成功闭环状态见 M2。
 - [~] Phase 3 WIP 提交 `95af8b1` 保存在 `codex/phase3-wip`，仅作保留副本，不是当前编译或验收基线。
 - [x] 旧 `modules/`、顶层 `infrastructure/`、兼容层、Spring AI 代码和旧 `frontend/` 已从当前基线清理。
 
@@ -43,10 +43,10 @@
 - [~] 已实现生成并持久化三张复习卡片；本里程碑不接 AnkiConnect，待真实单知识点 E2E。
 - [~] 已在知识点完成 turn 结束处按技术设计的 one-off 强制契约调用 `compactIfNeeded`，处理 `Optional`、写回同一 AgentState 并保存；待真实 compaction 证据。
 - [~] 首版已由主 Agent 完成讲解、测验和卡片生成，不启用学习 subagent，待真实模型验收。
-- [~] 后端已生成 traceId，并提供按 traceId 查询标准化时间线的 JSON API；不做 trace UI，待真实链路查询证据。
-- [~] 同步 REST 学习目标、计划、讲解/答疑、五题测验、反馈、卡片、状态与会话恢复页面已实现，前端自测和独立 review 已通过；仍待后端端到端联调，不做 SSE 或 trace UI。
-- [~] 后端实现来自 `codex/m2-learning`（`85d62e7`，实现/验证文档检查点 `839fb51`）：36 项学习相关测试、`mvn compile`、独立 verifier review 及 Linux JDK21 全量 135 tests（0 failure、0 error、3 skipped）已通过；用户授权后真实 explain 已到达 DeepSeek，但 provider 返回 HTTP 402 `Insufficient Balance`，首点仍为 `NEW`，trace API 与浏览器失败恢复路径已通过；指定文件与运行配置使用同一 key，当前唯一运行阻塞是该账户余额，成功单点闭环仍未完成。
-- [~] DeepSeek 已改为从 Git 忽略的根目录 `some_apiKey` 中 `new_deepseek_apiKey` 字段或 `DEEPSEEK_API_KEY` 读取，tracked 配置不再保存真实默认值；新 key 已就位但运行应用尚未重启，因此换钥尚未生效。
+- [~] 后端已生成 traceId，并提供按 traceId 查询标准化时间线的 JSON API；不做 trace UI，真实失败 trace 的有序查询已通过，仍待成功单点链路 trace。
+- [~] 同步 REST 学习目标、计划、讲解/答疑、五题测验、反馈、卡片、状态与会话恢复页面已实现，前端自测和独立 review 已通过；5173 代理到 main 8082 的真实 GET 恢复已通过，仍待付费成功链路，不做 SSE 或 trace UI。
+- [~] 后端实现来自 `codex/m2-learning`（`85d62e7`，实现/验证文档检查点 `839fb51`）并已进入 main：36 项学习相关测试、`mvn compile`、独立 verifier review 及 Linux JDK21 全量 135 tests（0 failure、0 error、3 skipped）已通过；旧 key 的真实 explain 曾返回 HTTP 402，失败恢复/trace/UI 路径已通过。新 key 的实际检索片段外发与付费持久化副作用仍待用户再次明确批准，成功单点闭环尚未完成。
+- [~] DeepSeek 已从 Git 忽略的根目录 `some_apiKey` 中 `new_deepseek_apiKey` 字段读取，tracked 配置不再保存真实默认值；main 应用已用原 MySQL/ES 与旧 worktree AgentState 在 8082 READY，`max-tokens=1800` 已接入 AgentScope并通过 2 项离线定向测试。新 key 已被本地 Spring 配置加载，但尚无成功 provider 请求证据。
 - [~] 用户已授权将 13 个未跟踪 Phase 3 旧副本可恢复搬移到 `.codex/backups/m2-pre-merge/`；13/13 源文件均已逐项校验并保留相对结构，未覆盖备份、未触及其它未跟踪内容。
 
 ## 后续 Goal

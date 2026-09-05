@@ -3,6 +3,7 @@ package com.studyagent.config;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.agentscope.core.model.Model;
+import io.agentscope.core.model.GenerateOptions;
 import io.agentscope.core.model.ModelRegistry;
 import io.agentscope.core.model.transport.HttpRequest;
 import io.agentscope.core.model.transport.HttpResponse;
@@ -44,7 +45,8 @@ class AgentScopeModelConfigurationTest {
                     "study-agent.agentscope.model.dashscope.api-key=test-dashscope-key",
                     "study-agent.agentscope.model.dashscope.base-url=https://dashscope.example.test",
                     "study-agent.agentscope.model.deepseek.api-key=test-deepseek-key",
-                    "study-agent.agentscope.model.deepseek.base-url=https://deepseek.example.test");
+                    "study-agent.agentscope.model.deepseek.base-url=https://deepseek.example.test",
+                    "study-agent.agentscope.model.deepseek.max-tokens=1800");
 
     @BeforeEach
     void resetModelRegistryBeforeTest() {
@@ -83,6 +85,14 @@ class AgentScopeModelConfigurationTest {
             assertThat(properties.primaryModelId()).isEqualTo(DEEPSEEK_MODEL_ID);
             assertThat(properties.fallbackModelId()).isNull();
             assertThat(properties.maxRetries()).isEqualTo(1);
+            GenerateOptions options = AgentScopeModelConfiguration
+                    .creationContext(DEEPSEEK_MODEL_ID, properties)
+                    .component(GenerateOptions.class);
+            assertThat(options.getMaxTokens()).isEqualTo(1800);
+            assertThat(AgentScopeModelConfiguration
+                    .creationContext(DASHSCOPE_MODEL_ID, properties)
+                    .component(GenerateOptions.class))
+                    .isNull();
         });
     }
 }

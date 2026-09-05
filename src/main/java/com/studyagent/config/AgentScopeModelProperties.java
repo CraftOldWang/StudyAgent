@@ -11,6 +11,6 @@ public record AgentScopeModelProperties(
         Provider deepseek
 ) {
 
-    public record Provider(String apiKey, String baseUrl) {
+    public record Provider(String apiKey, String baseUrl, Integer maxTokens) {
     }
 }

@@ -3,6 +3,7 @@ package com.studyagent.config;
 import io.agentscope.core.model.Model;
 import io.agentscope.core.model.ModelCreationContext;
 import io.agentscope.core.model.ModelRegistry;
+import io.agentscope.core.model.GenerateOptions;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,14 +23,19 @@ public class AgentScopeModelConfiguration {
         return ModelRegistry.resolve(modelId, creationContext(modelId, properties));
     }
 
-    private static ModelCreationContext creationContext(
+    static ModelCreationContext creationContext(
             String modelId,
             AgentScopeModelProperties properties) {
         AgentScopeModelProperties.Provider provider = providerFor(modelId, properties);
-        return ModelCreationContext.builder()
+        ModelCreationContext.Builder builder = ModelCreationContext.builder()
                 .apiKey(provider.apiKey())
-                .baseUrl(provider.baseUrl())
-                .build();
+                .baseUrl(provider.baseUrl());
+        if (provider.maxTokens() != null) {
+            builder.component(
+                    GenerateOptions.class,
+                    GenerateOptions.builder().maxTokens(provider.maxTokens()).build());
+        }
+        return builder.build();
     }
 
     private static AgentScopeModelProperties.Provider providerFor(

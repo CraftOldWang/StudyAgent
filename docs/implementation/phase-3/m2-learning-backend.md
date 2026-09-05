@@ -54,13 +54,13 @@ Docker VM 曾发生全局 OOM。恢复后，应用以 `-Xmx384m` 在 8082 稳定
 以唯一 `-Xmx512m` Maven JVM 串行执行，135 tests、0 failure、0 error、3 skipped，耗时 56.9 秒。
 不得同时运行应用和 Maven 全量测试；这两个数值只记录本次验证有效的配置，不代表通用最小上限。
 
-用户明确授权合成 fixture 片段发送 DeepSeek 后，同一 session 的 explain 请求到达 provider，但返回 HTTP 402
+用户明确授权合成 fixture 片段发送 DeepSeek 后，旧 key 下同一 session 的 explain 请求到达 provider，但返回 HTTP 402
 `Insufficient Balance`。trace `37f0020a-c24f-448e-9e37-e6ec3c9397c7` 真实记录 `MODEL_CALL/STARTED`
 和 `FAILURE/FAILED`，GET 恢复确认 session 仍为 `ACTIVE`、首点仍为 `NEW`、quiz 为 null、cards 为空；
 浏览器也复现该恢复路径。讲解→QUIZZING 答疑→五题→评分→三卡→单点完成与 compaction 因余额不足尚未执行，
-因此 M2 暂不标记完成。运行容器没有 `DEEPSEEK_API_KEY` 环境覆盖，项目配置默认 key 与用户指定的
-`some_apiKey` 中 DeepSeek key 已由主线程只做布尔一致性比较并确认相同、未输出值；需要为该账户充值或更新
-项目内可用 key 后复用原 session 重试，不创建新计划。
+因此 M2 暂不标记完成。新 key 已放入同一 Git 忽略文件并由 main 应用的 Spring 配置加载，但首次付费 explain
+在离开本机前被安全审批拒绝，尚无新 key 的 provider 成功证据；实际检索片段外发与付费/持久化副作用待用户
+再次明确批准后，仍复用原 session 重试，不创建新计划。
 
 当前本机保留已配置的 `study-agent-es` 与 `study-agent-m2-app`（应用映射 `8082:8082`、数据库
 `study_agent_m1_e2e`）。依赖停止时，一条命令恢复：
@@ -74,7 +74,15 @@ DeepSeek 密钥只填写在仓库根目录、已被 Git 忽略的 `some_apiKey` 
 不再包含 DeepSeek 密钥默认值；`DEEPSEEK_API_KEY` 环境变量仍可显式覆盖。宿主从仓库根启动时直接读取此文件。
 应用容器也必须把主树 `D:\1Learningoutput\javabackend\StudyAgent` 挂载为 `/workspace` 并以 `/workspace`
 为 working directory，才能读取同一份文件，无需维护容器内副本。当前 `study-agent-m2-app` 仍挂载旧的
-`.codex/worktrees/m2-learning`，所以只修改文件或重启原容器都不会换钥；需要从 main 重新构建并按上述主树挂载重建容器。
+`.codex/worktrees/m2-learning/.agentscope/workspace` 作为有效 AgentState 数据源；这个旧 worktree 子目录不能作为
+废弃副本删除。当前应用源码已改挂主树并在 8082 READY。需要重建容器时，先停止并移除同名旧容器，然后执行：
+
+```powershell
+docker run -d --name study-agent-m2-app --network study-agent_study-agent-net -p 8082:8082 --mount "type=bind,source=D:\1Learningoutput\javabackend\StudyAgent,target=/workspace" --mount "type=bind,source=D:\1Learningoutput\javabackend\StudyAgent\.codex\worktrees\m2-learning\.agentscope\workspace,target=/workspace/.agentscope/workspace" --mount "type=volume,source=study-agent-maven-cache,target=/root/.m2" -w /workspace -e JAVA_TOOL_OPTIONS=-Xmx384m -e SERVER_PORT=8082 -e SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/study_agent_m1_e2e -e SPRING_DATA_REDIS_HOST=redis -e SPRING_DATA_REDIS_PORT=6379 -e STUDY_AGENT_ELASTICSEARCH_ENDPOINT=http://elasticsearch:9200 -e S3_ENDPOINT=http://rustfs:9000 -e ROCKETMQ_NAME_SERVER=rocketmq-namesrv:9876 -e STUDY_AGENT_CANAL_ENABLED=false maven:3.9.11-eclipse-temurin-21 mvn spring-boot:run
+```
+
+`study-agent.ai.chat.max-tokens=1800` 已通过 AgentScope `ModelCreationContext` 的 `GenerateOptions` 接入
+DeepSeek 模型，不再只是未消费的旧配置。AgentScope Harness 仍按既有配置控制业务级重试，本批没有改变 transport 重试。
 
 Linux 全量入口如下；必须先停止 `study-agent-m2-app`，并保持没有其它本项目 Maven JVM：
 

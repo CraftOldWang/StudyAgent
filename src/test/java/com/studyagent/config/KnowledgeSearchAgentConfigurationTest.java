@@ -41,7 +41,7 @@ class KnowledgeSearchAgentConfigurationTest {
 
     private AgentScopeModelProperties properties() {
         AgentScopeModelProperties.Provider provider =
-                new AgentScopeModelProperties.Provider("test-key", "https://example.com");
+                new AgentScopeModelProperties.Provider("test-key", "https://example.com", 1800);
         return new AgentScopeModelProperties(
                 "deepseek:deepseek-chat", null, 1, provider, provider);
     }

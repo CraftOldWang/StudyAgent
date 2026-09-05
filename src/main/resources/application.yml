@@ -51,6 +51,7 @@ study-agent:
       deepseek:
         api-key: ${study-agent.ai.chat.api-key}
         base-url: "${study-agent.ai.chat.base-url}"
+        max-tokens: ${study-agent.ai.chat.max-tokens}
   object-storage:
     endpoint: "${S3_ENDPOINT:http://localhost:9000}"
     access-key: study
