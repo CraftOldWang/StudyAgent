@@ -2,19 +2,15 @@ package com.studyagent.agent.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.studyagent.agent.governance.KnowledgeSearchRetryExecutor;
 import com.studyagent.common.exception.BusinessException;
-import com.studyagent.config.RagProperties;
+import com.studyagent.rag.retrieval.KnowledgeRetrievalService;
+import com.studyagent.rag.retrieval.KnowledgeSearchResponse;
 import com.studyagent.rag.retrieval.RetrievalHit;
-import com.studyagent.rag.retrieval.RetrievalMode;
-import com.studyagent.rag.retrieval.RetrievalService;
-import com.studyagent.rag.retrieval.RetrievalStrategy;
 import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.message.TextBlock;
 import io.agentscope.core.message.ToolResultBlock;
@@ -33,34 +29,38 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class KnowledgeSearchToolTest {
 
     @Mock
-    private RetrievalService retrievalService;
+    private KnowledgeRetrievalService knowledgeRetrievalService;
 
     private KnowledgeSearchTool tool;
 
     @BeforeEach
     void setUp() {
         tool = new KnowledgeSearchTool(
-                retrievalService,
+                knowledgeRetrievalService,
                 new KnowledgeSearchRetryExecutor(),
-                new RagProperties(2, 900, 120, 2400, 240, 6, 6, 60),
                 new ObjectMapper());
     }
 
     @Test
     void exposesOnlyQueryAndUsesServerScopeForSingleKnowledgeBaseRetrieval() {
-        when(retrievalService.retrieve(
-                        RetrievalMode.BM25, "11", "22", "多态", null, 6, 2))
-                .thenReturn(List.of(new RetrievalHit(
-                        "chunk-1", "parent-1", "多态内容", null, 1.5, RetrievalStrategy.BM25)));
+        KnowledgeSearchResponse response = new KnowledgeSearchResponse(
+                "多态",
+                null,
+                List.of(new KnowledgeSearchResponse.Result(
+                        "chunk-1",
+                        "多态内容",
+                        new RetrievalHit.Provenance("document-1", "Java 基础", "{\"page\":1}"),
+                        1.5)));
+        when(knowledgeRetrievalService.search(11L, 22L, "多态")).thenReturn(response);
 
         ToolResultBlock result = tool.callAsync(call(Map.of("query", "多态"))).block();
 
-        verify(retrievalService).retrieve(
-                eq(RetrievalMode.BM25), eq("11"), eq("22"), eq("多态"), isNull(), eq(6), eq(2));
+        verify(knowledgeRetrievalService).search(11L, 22L, "多态");
         assertThat(((TextBlock) result.getOutput().getFirst()).getText())
                 .contains("\"query\":\"多态\"")
                 .contains("chunk-1")
-                .contains("多态内容");
+                .contains("多态内容")
+                .contains("Java 基础");
 
         assertThat(tool.getParameters()).containsEntry("type", "object");
         assertThat(tool.getParameters()).containsEntry("required", List.of("query"));
@@ -85,7 +85,7 @@ class KnowledgeSearchToolTest {
         RuntimeContext context = RuntimeContext.builder()
                 .userId("11")
                 .sessionId("session-1")
-                .put(AgentInvocationScope.class, new AgentInvocationScope(11L, 22L, 33L))
+                .put(KnowledgeSearchScope.class, new KnowledgeSearchScope(11L, 22L))
                 .build();
         ToolUseBlock toolUseBlock = ToolUseBlock.builder()
                 .id("call-1")

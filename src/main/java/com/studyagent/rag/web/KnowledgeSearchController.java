@@ -1,6 +1,7 @@
 package com.studyagent.rag.web;
 
 import com.studyagent.common.response.ApiResponse;
+import com.studyagent.agent.integration.KnowledgeSearchAgentService;
 import com.studyagent.identity.CurrentUserContext;
 import com.studyagent.rag.retrieval.KnowledgeRetrievalService;
 import com.studyagent.rag.retrieval.KnowledgeSearchResponse;
@@ -20,6 +21,7 @@ public class KnowledgeSearchController {
 
     private final KnowledgeBaseService knowledgeBaseService;
     private final KnowledgeRetrievalService knowledgeRetrievalService;
+    private final KnowledgeSearchAgentService knowledgeSearchAgentService;
     private final CurrentUserContext currentUserContext;
 
     @PostMapping("/search")
@@ -30,6 +32,16 @@ public class KnowledgeSearchController {
         Long userId = currentUserContext.userId();
         knowledgeBaseService.requireOwned(userId, knowledgeBaseId);
         return ApiResponse.ok(knowledgeRetrievalService.search(userId, knowledgeBaseId, request.query()));
+    }
+
+    @PostMapping("/agent-search")
+    public ApiResponse<KnowledgeSearchAgentService.AgentSearchResponse> agentSearch(
+            @PathVariable Long knowledgeBaseId,
+            @Valid @RequestBody SearchRequest request
+    ) {
+        Long userId = currentUserContext.userId();
+        knowledgeBaseService.requireOwned(userId, knowledgeBaseId);
+        return ApiResponse.ok(knowledgeSearchAgentService.answer(userId, knowledgeBaseId, request.query()));
     }
 
     public record SearchRequest(@NotBlank String query) {

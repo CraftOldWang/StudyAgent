@@ -4,10 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.studyagent.agent.governance.KnowledgeSearchRetryExecutor;
 import com.studyagent.common.exception.BusinessException;
-import com.studyagent.config.RagProperties;
-import com.studyagent.rag.retrieval.RetrievalHit;
-import com.studyagent.rag.retrieval.RetrievalMode;
-import com.studyagent.rag.retrieval.RetrievalService;
+import com.studyagent.rag.retrieval.KnowledgeRetrievalService;
+import com.studyagent.rag.retrieval.KnowledgeSearchResponse;
 import io.agentscope.core.message.TextBlock;
 import io.agentscope.core.message.ToolResultBlock;
 import io.agentscope.core.message.ToolUseBlock;
@@ -37,9 +35,8 @@ public final class KnowledgeSearchTool implements AgentTool {
             "required", List.of("query"),
             "additionalProperties", false);
 
-    private final RetrievalService retrievalService;
+    private final KnowledgeRetrievalService knowledgeRetrievalService;
     private final KnowledgeSearchRetryExecutor retryExecutor;
-    private final RagProperties ragProperties;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -68,43 +65,37 @@ public final class KnowledgeSearchTool implements AgentTool {
             if (param == null) {
                 throw new BusinessException("工具调用参数不能为空");
             }
-            AgentInvocationScope scope = AgentInvocationScope.require(param.getRuntimeContext());
+            var runtimeContext = param.getRuntimeContext();
+            KnowledgeSearchScope scope = KnowledgeSearchScope.require(runtimeContext);
             String query = requiredText(param.getInput(), "query", "检索问题不能为空");
-            return result(param, query, search(scope, query));
+            KnowledgeSearchResponse response = search(scope, query);
+            runtimeContext.put(KnowledgeSearchExecution.class, new KnowledgeSearchExecution(response));
+            return result(param, query, response);
         });
     }
 
-    public List<RetrievalHit> search(AgentInvocationScope scope, String query) {
+    public KnowledgeSearchResponse search(KnowledgeSearchScope scope, String query) {
         if (scope == null) {
             throw new BusinessException("Agent 调用 scope 不能为空");
         }
         if (query == null || query.isBlank()) {
             throw new BusinessException("检索问题不能为空");
         }
-        return retryExecutor.execute(TOOL_NAME, () -> retrievalService.retrieve(
-                RetrievalMode.BM25,
-                scope.userId().toString(),
-                scope.knowledgeBaseId().toString(),
-                query,
-                null,
-                ragProperties.bm25CandidateSize(),
-                ragProperties.topK()));
+        return retryExecutor.execute(
+                TOOL_NAME,
+                () -> knowledgeRetrievalService.search(scope.userId(), scope.knowledgeBaseId(), query));
     }
 
-    private ToolResultBlock result(ToolCallParam param, String query, List<RetrievalHit> hits) {
-        List<KnowledgeSearchHit> outputHits = hits.stream()
-                .map(hit -> new KnowledgeSearchHit(
-                        hit.chunkId(),
-                        hit.parentChunkId(),
-                        hit.content(),
-                        hit.score()))
-                .toList();
-        String json = toJson(new KnowledgeSearchResult(query, outputHits));
-        ToolResultBlock result = ToolResultBlock.of(
+    private ToolResultBlock result(
+            ToolCallParam param,
+            String query,
+            KnowledgeSearchResponse response
+    ) {
+        String json = toJson(response);
+        return ToolResultBlock.of(
                 toolCallId(param),
                 TOOL_NAME,
                 TextBlock.builder().text(json).build());
-        return result;
     }
 
     private String requiredText(Map<String, Object> input, String field, String message) {
@@ -126,19 +117,5 @@ public final class KnowledgeSearchTool implements AgentTool {
     private String toolCallId(ToolCallParam param) {
         ToolUseBlock toolUseBlock = param.getToolUseBlock();
         return toolUseBlock == null ? null : toolUseBlock.getId();
-    }
-
-    public record KnowledgeSearchResult(
-            String query,
-            List<KnowledgeSearchHit> hits
-    ) {
-    }
-
-    public record KnowledgeSearchHit(
-            String chunkId,
-            String parentChunkId,
-            String content,
-            double score
-    ) {
     }
 }

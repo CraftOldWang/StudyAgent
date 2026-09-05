@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.studyagent.common.exception.BusinessException;
 import com.studyagent.mapper.DocumentMapper;
 import com.studyagent.model.Document;
+import com.studyagent.rag.web.KnowledgeBaseService;
 import io.agentscope.core.agent.RuntimeContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -16,9 +17,13 @@ import org.springframework.stereotype.Component;
 public final class AgentInvocationScopeFactory {
 
     private final DocumentMapper documentMapper;
+    private final KnowledgeBaseService knowledgeBaseService;
 
     public AgentInvocationScope create(Long userId, Long knowledgeBaseId, Long knowledgePointId) {
-        validateRequiredIds(userId, knowledgeBaseId, knowledgePointId);
+        validateKnowledgeBaseScope(userId, knowledgeBaseId);
+        if (knowledgePointId == null) {
+            throw new BusinessException("knowledgePointId 不能为空");
+        }
         Long matchingDocuments = documentMapper.selectCount(new LambdaQueryWrapper<Document>()
                 .eq(Document::getUserId, userId)
                 .eq(Document::getKnowledgeBaseId, knowledgeBaseId));
@@ -26,6 +31,16 @@ public final class AgentInvocationScopeFactory {
             throw new BusinessException("当前用户无可用的知识库文档: knowledgeBaseId=" + knowledgeBaseId);
         }
         return new AgentInvocationScope(userId, knowledgeBaseId, knowledgePointId);
+    }
+
+    public void validateKnowledgeBaseScope(Long userId, Long knowledgeBaseId) {
+        if (userId == null) {
+            throw new BusinessException("userId 不能为空");
+        }
+        if (knowledgeBaseId == null) {
+            throw new BusinessException("knowledgeBaseId 不能为空");
+        }
+        knowledgeBaseService.requireOwned(userId, knowledgeBaseId);
     }
 
     public RuntimeContext createRuntimeContext(
@@ -42,18 +57,9 @@ public final class AgentInvocationScopeFactory {
                 .userId(scope.userId().toString())
                 .sessionId(sessionId)
                 .put(AgentInvocationScope.class, scope)
+                .put(KnowledgeSearchScope.class, new KnowledgeSearchScope(
+                        scope.userId(), scope.knowledgeBaseId()))
                 .build();
     }
 
-    private void validateRequiredIds(Long userId, Long knowledgeBaseId, Long knowledgePointId) {
-        if (userId == null) {
-            throw new BusinessException("userId 不能为空");
-        }
-        if (knowledgeBaseId == null) {
-            throw new BusinessException("knowledgeBaseId 不能为空");
-        }
-        if (knowledgePointId == null) {
-            throw new BusinessException("knowledgePointId 不能为空");
-        }
-    }
 }
