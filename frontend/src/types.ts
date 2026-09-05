@@ -43,6 +43,7 @@ export interface SearchResult {
 }
 
 export interface AgentSearchResult {
+  query: string
   answer: string
   toolInvoked: boolean
   hits: SearchHit[]

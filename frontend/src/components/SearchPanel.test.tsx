@@ -21,6 +21,7 @@ describe('SearchPanel', () => {
         loading={false}
         onSearch={vi.fn()}
         result={{
+          query: '什么是 happens-before？',
           answer: '可见性由同步关系保证。',
           toolInvoked: true,
           hits: [{

@@ -35,7 +35,7 @@ describe('api client', () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
       code: 0,
       message: 'ok',
-      data: { answer: '回答', toolInvoked: true, hits: [] },
+      data: { query: 'JVM 是什么', answer: '回答', toolInvoked: true, hits: [] },
     }), { status: 200, headers: { 'Content-Type': 'application/json' } }))
     vi.stubGlobal('fetch', fetchMock)
 

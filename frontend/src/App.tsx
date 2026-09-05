@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { api } from './api'
 import { DocumentPanel } from './components/DocumentPanel'
 import { KnowledgeBaseSidebar } from './components/KnowledgeBaseSidebar'
@@ -18,6 +18,10 @@ export default function App() {
   const [searchBusy, setSearchBusy] = useState(false)
   const [searchResult, setSearchResult] = useState<SearchResult | AgentSearchResult | null>(null)
   const [error, setError] = useState('')
+  const selectedIdRef = useRef<number | null>(selectedId)
+  const documentRequestIdRef = useRef(0)
+  const searchRequestIdRef = useRef(0)
+  selectedIdRef.current = selectedId
 
   const selectedKnowledgeBase = useMemo(
     () => knowledgeBases.find((item) => item.id === selectedId) ?? null,
@@ -34,7 +38,7 @@ export default function App() {
       .then((items) => {
         if (!active) return
         setKnowledgeBases(items)
-        setSelectedId((current) => current ?? items[0]?.id ?? null)
+        if (selectedIdRef.current === null) selectKnowledgeBase(items[0]?.id ?? null)
       })
       .catch((caught) => active && reportError(caught))
       .finally(() => active && setInitialLoading(false))
@@ -43,14 +47,22 @@ export default function App() {
 
   const refreshDocuments = useCallback(async (silent = false) => {
     if (!selectedId) return
+    const knowledgeBaseId = selectedId
+    const requestId = ++documentRequestIdRef.current
     if (!silent) setDocumentsLoading(true)
     try {
-      const items = await api.listDocuments(selectedId)
-      setDocuments(items)
+      const items = await api.listDocuments(knowledgeBaseId)
+      if (selectedIdRef.current === knowledgeBaseId && documentRequestIdRef.current === requestId) {
+        setDocuments(items)
+      }
     } catch (caught) {
-      reportError(caught)
+      if (selectedIdRef.current === knowledgeBaseId && documentRequestIdRef.current === requestId) {
+        reportError(caught)
+      }
     } finally {
-      if (!silent) setDocumentsLoading(false)
+      if (!silent && selectedIdRef.current === knowledgeBaseId && documentRequestIdRef.current === requestId) {
+        setDocumentsLoading(false)
+      }
     }
   }, [reportError, selectedId])
 
@@ -62,13 +74,22 @@ export default function App() {
 
   useDocumentPolling(selectedId, documents, refreshDocuments)
 
+  function selectKnowledgeBase(id: number | null) {
+    selectedIdRef.current = id
+    documentRequestIdRef.current += 1
+    searchRequestIdRef.current += 1
+    setDocumentsLoading(false)
+    setSearchBusy(false)
+    setSelectedId(id)
+  }
+
   async function createKnowledgeBase(name: string) {
     setMutationBusy(true)
     setError('')
     try {
       const created = await api.createKnowledgeBase(name)
       setKnowledgeBases((items) => [created, ...items])
-      setSelectedId(created.id)
+      selectKnowledgeBase(created.id)
     } catch (caught) {
       reportError(caught)
     } finally {
@@ -105,18 +126,26 @@ export default function App() {
 
   async function search(mode: 'retrieval' | 'agent', query: string) {
     if (!selectedId) return
+    const knowledgeBaseId = selectedId
+    const requestId = ++searchRequestIdRef.current
     setSearchBusy(true)
     setSearchResult(null)
     setError('')
     try {
       const result = mode === 'agent'
-        ? await api.agentSearch(selectedId, query)
-        : await api.search(selectedId, query)
-      setSearchResult(result)
+        ? await api.agentSearch(knowledgeBaseId, query)
+        : await api.search(knowledgeBaseId, query)
+      if (selectedIdRef.current === knowledgeBaseId && searchRequestIdRef.current === requestId) {
+        setSearchResult(result)
+      }
     } catch (caught) {
-      reportError(caught)
+      if (selectedIdRef.current === knowledgeBaseId && searchRequestIdRef.current === requestId) {
+        reportError(caught)
+      }
     } finally {
-      setSearchBusy(false)
+      if (selectedIdRef.current === knowledgeBaseId && searchRequestIdRef.current === requestId) {
+        setSearchBusy(false)
+      }
     }
   }
 
@@ -131,7 +160,7 @@ export default function App() {
         loading={initialLoading}
         onCreate={createKnowledgeBase}
         onRename={renameKnowledgeBase}
-        onSelect={setSelectedId}
+        onSelect={selectKnowledgeBase}
         selectedId={selectedId}
       />
       <main>
