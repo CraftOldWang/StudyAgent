@@ -21,7 +21,7 @@
 - [x] S3 endpoint 占位符已修复，真实容器启动已成功创建/检查 bucket。
 - [x] 初始用户为 `username='default-user'`；`users` 表显式使用 InnoDB、utf8mb4、`utf8mb4_0900_ai_ci`。
 - [x] 用真实 DeepSeek 配置跑通 `POST /api/agent/hello`，服务端注入 `X-User-Id: 1` 后返回真实模型文本。
-- [~] 实现者批次测试与实现文档已完成；等待独立 verifier review 后关闭 M0。
+- [x] 实现者批次测试与实现文档已完成，独立 verifier review 已通过，M0 已关闭。
 
 ## M1 · 真实 PDF 到 RAG 工具
 
@@ -31,7 +31,7 @@
 - [~] 串起 Elasticsearch 写入、BM25/向量/RRF 和父块回填；复核并迁移既有 Phase 1 成果。
 - [ ] 以 `rag/retrieval` 应用服务和稳定的 AgentScope `AgentTool`/`Toolkit` 自定义 `knowledge_search`；M1 HTTP 入口验证并绑定 user/KB scope，模型只提交 query。
 - [ ] 返回 `chunkId`、`content`、`provenance`、`score`；无结果时明确无资料依据且不编造来源。
-- [~] 旧前端已在 M0 删除；React 18 + TypeScript + Vite 的知识库页面重写仍待 M1 实现。
+- [~] React 18 + TypeScript + Vite 的知识库管理、PDF 状态轮询、普通/Agent 检索与出处展示页面已实现，前端自测和独立 review 已通过；仍待后端端到端联调。
 - [ ] 完整批次测试通过并由独立 verifier review；模块完成后补实现文档。
 
 ## M2 · 单知识点学习闭环
@@ -44,7 +44,7 @@
 - [~] 在知识点完成 turn 结束处按技术设计的 one-off 强制契约调用 `compactIfNeeded`，处理 `Optional`、写回同一 AgentState 并保存；现有独立分支 WIP 待迁移或重写。
 - [ ] 首版由主 Agent 完成讲解、测验和卡片生成，不启用学习 subagent。
 - [ ] 后端生成 traceId，并提供按 traceId 查询标准化时间线的 JSON API；不做 trace UI。
-- [ ] 以同步 REST 重写学习目标、计划、讲解/答疑、测验、卡片和状态页面；不做 SSE。
+- [~] 同步 REST 学习目标、计划、讲解/答疑、五题测验、反馈、卡片、状态与会话恢复页面已实现，前端自测和独立 review 已通过；仍待后端端到端联调，不做 SSE 或 trace UI。
 - [ ] 完整批次测试通过并由独立 verifier review；模块完成后补实现文档。
 
 ## 后续 Goal
