@@ -21,6 +21,8 @@ class ElasticsearchIndexInitializerTest {
                 "user_id",
                 "knowledge_base_id",
                 "document_id",
+                "document_title",
+                "source_location",
                 "chunk_id",
                 "parent_chunk_id",
                 "chunk_type",

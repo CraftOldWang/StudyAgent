@@ -1,31 +1,50 @@
 package com.studyagent.agent.integration;
 
 import com.studyagent.rag.retrieval.KnowledgeSearchResponse;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-public record KnowledgeSearchExecution(
-        KnowledgeSearchResponse response,
-        Set<String> retrievedChunkIds
-) {
+public final class KnowledgeSearchExecution {
+
+    private final List<KnowledgeSearchResponse> responses = new ArrayList<>();
+
+    public KnowledgeSearchExecution() {
+    }
 
     public KnowledgeSearchExecution(KnowledgeSearchResponse response) {
-        this(response, chunkIds(response));
+        append(response);
     }
 
-    public KnowledgeSearchExecution append(KnowledgeSearchResponse latest) {
-        LinkedHashSet<String> combined = new LinkedHashSet<>(retrievedChunkIds);
-        combined.addAll(chunkIds(latest));
-        return new KnowledgeSearchExecution(latest, Set.copyOf(combined));
+    public KnowledgeSearchExecution append(KnowledgeSearchResponse response) {
+        responses.add(response);
+        return this;
     }
 
-    private static Set<String> chunkIds(KnowledgeSearchResponse response) {
-        if (response == null || response.hits() == null) {
-            return Set.of();
-        }
-        return response.hits().stream()
+    public KnowledgeSearchResponse response() {
+        return responses.isEmpty() ? null : responses.getLast();
+    }
+
+    public boolean invoked() {
+        return !responses.isEmpty();
+    }
+
+    public List<KnowledgeSearchResponse.Result> hits() {
+        Map<String, KnowledgeSearchResponse.Result> distinctHits = new LinkedHashMap<>();
+        responses.stream()
+                .flatMap(response -> response.hits().stream())
+                .forEach(hit -> distinctHits.putIfAbsent(hit.chunkId(), hit));
+        return List.copyOf(distinctHits.values());
+    }
+
+    public Set<String> retrievedChunkIds() {
+        LinkedHashSet<String> chunkIds = new LinkedHashSet<>();
+        hits().stream()
                 .map(KnowledgeSearchResponse.Result::chunkId)
-                .filter(id -> id != null && !id.isBlank())
-                .collect(java.util.stream.Collectors.toUnmodifiableSet());
+                .forEach(chunkIds::add);
+        return Set.copyOf(chunkIds);
     }
 }

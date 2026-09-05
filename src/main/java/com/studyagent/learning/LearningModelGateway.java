@@ -101,6 +101,8 @@ public class LearningModelGateway {
                 session.getUserId(),
                 session.getKnowledgeBaseId(),
                 point.getId());
+        KnowledgeSearchExecution searchExecution = new KnowledgeSearchExecution();
+        context.put(KnowledgeSearchExecution.class, searchExecution);
         LearningTransitionIntent intent = new LearningTransitionIntent(
                 parseStatus(point.getStatus()), expectedTarget);
         context.put(LearningTransitionIntent.class, intent);
@@ -110,13 +112,10 @@ public class LearningModelGateway {
                 throw new BusinessException("DeepSeek 未返回有效内容");
             }
             intent.requireRequested();
-            KnowledgeSearchExecution execution = context.get(KnowledgeSearchExecution.class);
-            if (requireKnowledgeSearch && execution == null) {
+            if (requireKnowledgeSearch && !searchExecution.invoked()) {
                 throw new BusinessException("Agent 未调用 knowledge_search 检索当前知识库");
             }
-            Set<String> retrievedChunkIds = execution == null
-                    ? Set.of()
-                    : execution.retrievedChunkIds();
+            Set<String> retrievedChunkIds = searchExecution.retrievedChunkIds();
             return new AgentCall(response.getTextContent().trim(), retrievedChunkIds);
         } catch (BusinessException ex) {
             throw ex;

@@ -142,9 +142,9 @@ class LearningModelGatewayTest {
         List<KnowledgeSearchResponse.Result> hits = java.util.Arrays.stream(chunkIds)
                 .map(id -> new KnowledgeSearchResponse.Result(id, "content", null, 1.0))
                 .toList();
-        runtimeContext.put(
-                KnowledgeSearchExecution.class,
-                new KnowledgeSearchExecution(new KnowledgeSearchResponse("query", null, hits)));
+        KnowledgeSearchExecution execution = runtimeContext.get(KnowledgeSearchExecution.class);
+        assertThat(execution).isNotNull();
+        execution.append(new KnowledgeSearchResponse("query", null, hits));
     }
 
     private Msg message(String text) {

@@ -29,23 +29,26 @@ public final class KnowledgeSearchAgentService {
         }
         String normalizedQuery = query.trim();
         KnowledgeSearchScope scope = new KnowledgeSearchScope(userId, knowledgeBaseId);
+        KnowledgeSearchExecution execution = new KnowledgeSearchExecution();
         RuntimeContext context = RuntimeContext.builder()
                 .userId(userId.toString())
                 .sessionId(UUID.randomUUID().toString())
                 .put(KnowledgeSearchScope.class, scope)
+                .put(KnowledgeSearchExecution.class, execution)
                 .build();
         Msg response = agent.call(normalizedQuery, context).block();
         if (response == null || response.getTextContent() == null || response.getTextContent().isBlank()) {
             throw new BusinessException("DeepSeek 未返回知识库回答");
         }
-        KnowledgeSearchExecution execution = context.get(KnowledgeSearchExecution.class);
-        List<KnowledgeSearchResponse.Result> hits = execution == null
-                ? List.of()
-                : execution.response().hits();
+        List<KnowledgeSearchResponse.Result> hits = execution.hits();
+        boolean toolInvoked = execution.invoked();
+        String answer = !toolInvoked || hits.isEmpty()
+                ? KnowledgeSearchResponse.NO_EVIDENCE_MESSAGE
+                : response.getTextContent();
         return new AgentSearchResponse(
                 normalizedQuery,
-                response.getTextContent(),
-                execution != null,
+                answer,
+                toolInvoked,
                 hits);
     }
 
