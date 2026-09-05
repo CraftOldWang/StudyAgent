@@ -39,4 +39,30 @@ Agent turn、输出解析与业务写入全部成功后，服务层才在事务�
 
 单元测试覆盖状态推进、Agent transition tool、严格模型 JSON、五题无门槛评分、三卡持久化与失败重试、
 one-off compaction、trace 排序/隔离、恢复 DTO 以及 Long ID 的 JSON string 契约。
-真实 MySQL migration、DeepSeek + scoped RAG 学习 smoke 和全量 Maven 结果在 M1 依赖合并后的批次结论中记录。
+
+M1 最终依赖合并后，宿主 JDK 21 的 36 项学习相关回归和 `mvn compile` 均通过，独立 reviewer 也确认
+状态门禁、失败字段级回写、来源校验和共享检索证据引用。隔离库 `study_agent_m1_e2e` 已由 Flyway
+校验 V1-V6；合成 KB `2096045355769974786` 只包含 M1 生成的测试 PDF，marker 为
+`ORCHID-COMET-7319`，不包含私人文档。
+
+真实 DeepSeek 已创建 session `2096054161353723906` 和五项计划。首次讲解中模型实际调用
+`knowledge_search` 三次，但 AgentScope 派生 RuntimeContext 只复制 typed-value 映射，原实现替换映射值后
+调用方无法观察，因而按失败语义停留首知识点 `NEW` 并可由 GET 恢复。当前实现改为 Harness 调用前预置同一个
+mutable `KnowledgeSearchExecution`，工具只向该共享实例追加结果；定向测试与独立源码复核均通过。
+
+Docker VM 随后发生全局 OOM，StudyAgent Elasticsearch 被杀。为避免影响其它项目，本批次不再重启 Docker/JVM；
+同一 session 的讲解→五题→评分→三卡→单点完成真实 E2E，以及 Linux 容器全量 `mvn test`，仍需在环境恢复后执行，
+因此 M2 暂不标记完成。恢复时使用 `X-User-Id: 1` 和上述 session，不创建重复会话。
+
+当前本机保留已配置但停止的 `study-agent-es` 与 `study-agent-m2-app`（应用映射 `8082:8082`、
+JVM `-Xmx384m`、数据库 `study_agent_m1_e2e`）。获得 Docker 恢复授权并确认内存后，一条命令恢复：
+
+```powershell
+docker start study-agent-es study-agent-m2-app
+```
+
+闭环完成并停掉应用后，Linux 全量入口为：
+
+```powershell
+docker run --rm --network study-agent_study-agent-net --mount "type=bind,source=D:\1Learningoutput\javabackend\StudyAgent\.codex\worktrees\m2-learning,target=/workspace" --mount "type=volume,source=study-agent-maven-cache,target=/root/.m2" -w /workspace maven:3.9.11-eclipse-temurin-21 mvn test
+```

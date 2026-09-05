@@ -45,7 +45,7 @@
 - [~] 首版已由主 Agent 完成讲解、测验和卡片生成，不启用学习 subagent，待真实模型验收。
 - [~] 后端已生成 traceId，并提供按 traceId 查询标准化时间线的 JSON API；不做 trace UI。
 - [~] 后端同步 REST 已覆盖学习目标、计划、讲解/答疑、测验、卡片和状态恢复；前端并行接入中，不做 SSE。
-- [~] 定向 34 项测试已通过，完整 Maven、真实 MySQL/DeepSeek/RAG smoke 与独立 verifier review 待完成；实现与 REST 契约文档已补。
+- [~] 合并 M1 后 36 项学习相关测试、`mvn compile` 与独立 verifier review 已通过；真实 DeepSeek 已创建五项计划并验证失败停留/GET 恢复，完整单点闭环和 Linux 全量测试待 Docker OOM 环境恢复；实现与 REST 契约文档已补。
 
 ## 后续 Goal
 
