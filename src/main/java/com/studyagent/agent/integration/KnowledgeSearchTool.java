@@ -69,7 +69,12 @@ public final class KnowledgeSearchTool implements AgentTool {
             KnowledgeSearchScope scope = KnowledgeSearchScope.require(runtimeContext);
             String query = requiredText(param.getInput(), "query", "检索问题不能为空");
             KnowledgeSearchResponse response = search(scope, query);
-            runtimeContext.put(KnowledgeSearchExecution.class, new KnowledgeSearchExecution(response));
+            KnowledgeSearchExecution execution = runtimeContext.get(KnowledgeSearchExecution.class);
+            if (execution == null) {
+                execution = new KnowledgeSearchExecution();
+                runtimeContext.put(KnowledgeSearchExecution.class, execution);
+            }
+            execution.append(response);
             return result(param, query, response);
         });
     }
