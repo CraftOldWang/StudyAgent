@@ -58,7 +58,9 @@ Docker VM 曾发生全局 OOM。恢复后，应用以 `-Xmx384m` 在 8082 稳定
 `Insufficient Balance`。trace `37f0020a-c24f-448e-9e37-e6ec3c9397c7` 真实记录 `MODEL_CALL/STARTED`
 和 `FAILURE/FAILED`，GET 恢复确认 session 仍为 `ACTIVE`、首点仍为 `NEW`、quiz 为 null、cards 为空；
 浏览器也复现该恢复路径。讲解→QUIZZING 答疑→五题→评分→三卡→单点完成与 compaction 因余额不足尚未执行，
-因此 M2 暂不标记完成；充值当前账户或明确提供项目内可用 DeepSeek key 后，复用原 session 重试，不创建新计划。
+因此 M2 暂不标记完成。运行容器没有 `DEEPSEEK_API_KEY` 环境覆盖，项目配置默认 key 与用户指定的
+`some_apiKey` 中 DeepSeek key 已由主线程只做布尔一致性比较并确认相同、未输出值；需要为该账户充值或更新
+项目内可用 key 后复用原 session 重试，不创建新计划。
 
 当前本机保留已配置的 `study-agent-es` 与 `study-agent-m2-app`（应用映射 `8082:8082`、数据库
 `study_agent_m1_e2e`）。依赖停止时，一条命令恢复：
