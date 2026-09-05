@@ -19,3 +19,4 @@ scripts/
 
 .archive/
 .archify/
+.codex/worktrees/**/.agentscope/workspace/state/

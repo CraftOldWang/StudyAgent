@@ -34,4 +34,8 @@ public final class LearningTransitionIntent {
             throw new BusinessException("答疑 turn 不允许改变知识点状态");
         }
     }
+
+    public synchronized boolean requiresTransitionRequest() {
+        return expected != null && requested == null;
+    }
 }

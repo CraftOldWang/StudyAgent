@@ -169,9 +169,13 @@ public class LearningPersistenceService {
                 .orElse(null);
         session.setActiveKnowledgePointId(next == null ? null : next.getId());
         session.setStatus(next == null ? "COMPLETED" : "ACTIVE");
+        boolean hadFailure = session.getErrorMessage() != null;
         session.setErrorMessage(null);
         session.setUpdatedAt(LocalDateTime.now());
         sessionMapper.updateById(session);
+        if (hadFailure) {
+            persistSessionFailureClear(session);
+        }
     }
 
     @Transactional
@@ -198,7 +202,7 @@ public class LearningPersistenceService {
         if (point.getErrorMessage() != null) {
             point.setErrorMessage(null);
             point.setUpdatedAt(LocalDateTime.now());
-            knowledgePointMapper.updateById(point);
+            clearPointFailure(point);
         }
     }
 
@@ -210,6 +214,7 @@ public class LearningPersistenceService {
             throw new BusinessException("未知知识点状态: " + point.getStatus());
         }
         lifecycle.advance(current, target);
+        boolean hadFailure = point.getErrorMessage() != null;
         point.setStatus(target.name());
         point.setErrorMessage(null);
         point.setUpdatedAt(LocalDateTime.now());
@@ -220,6 +225,9 @@ public class LearningPersistenceService {
             point.setCompletedAt(LocalDateTime.now());
         }
         knowledgePointMapper.updateById(point);
+        if (hadFailure) {
+            clearPointFailure(point);
+        }
         return point;
     }
 
@@ -241,7 +249,23 @@ public class LearningPersistenceService {
         if (session.getErrorMessage() != null) {
             session.setErrorMessage(null);
             session.setUpdatedAt(LocalDateTime.now());
-            sessionMapper.updateById(session);
+            persistSessionFailureClear(session);
         }
+    }
+
+    private void persistSessionFailureClear(LearningSession session) {
+        sessionMapper.update(null, new UpdateWrapper<LearningSession>()
+                .eq("id", session.getId())
+                .eq("user_id", session.getUserId())
+                .set("error_message", null)
+                .set("updated_at", session.getUpdatedAt()));
+    }
+
+    private void clearPointFailure(KnowledgePoint point) {
+        knowledgePointMapper.update(null, new UpdateWrapper<KnowledgePoint>()
+                .eq("id", point.getId())
+                .eq("session_id", point.getSessionId())
+                .set("error_message", null)
+                .set("updated_at", point.getUpdatedAt()));
     }
 }

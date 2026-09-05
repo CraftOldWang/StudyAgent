@@ -1,7 +1,9 @@
 package com.studyagent.config;
 
 import com.studyagent.agent.governance.ToolGovernanceInterceptor;
+import com.studyagent.learning.LearningTransitionToolChoiceHook;
 import io.agentscope.core.model.Model;
+import io.agentscope.core.state.JsonFileAgentStateStore;
 import io.agentscope.core.tool.AgentTool;
 import io.agentscope.core.tool.Toolkit;
 import io.agentscope.harness.agent.HarnessAgent;
@@ -60,7 +62,10 @@ public class AgentScopeAgentConfiguration {
                 .model(model)
                 .toolkit(toolkit)
                 .workspace(workspace)
+                .stateStore(new JsonFileAgentStateStore(
+                        workspace.resolve("state").resolve("ReActAgent")))
                 .maxRetries(modelProperties.maxRetries())
+                .hook(new LearningTransitionToolChoiceHook())
                 .middleware(new ToolGovernanceInterceptor())
                 .compaction(learningCompactionConfig())
                 .disableFilesystemTools()

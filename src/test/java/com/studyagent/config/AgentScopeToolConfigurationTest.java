@@ -9,6 +9,7 @@ import io.agentscope.core.model.ChatResponse;
 import io.agentscope.core.model.GenerateOptions;
 import io.agentscope.core.model.Model;
 import io.agentscope.core.model.ToolSchema;
+import io.agentscope.core.state.JsonFileAgentStateStore;
 import io.agentscope.core.tool.AgentTool;
 import io.agentscope.core.tool.ToolCallParam;
 import io.agentscope.harness.agent.HarnessAgent;
@@ -59,6 +60,9 @@ class AgentScopeToolConfigurationTest {
                                         "grep_files",
                                         "memory_search",
                                         "execute");
+                        assertThat(agent.getStateStore()).isInstanceOf(JsonFileAgentStateStore.class);
+                        assertThat(((JsonFileAgentStateStore) agent.getStateStore()).getRootDirectory())
+                                .isEqualTo(workspace.resolve("state").resolve("ReActAgent"));
                     } finally {
                         agent.close();
                     }

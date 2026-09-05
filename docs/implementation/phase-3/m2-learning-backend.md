@@ -30,6 +30,11 @@ Agent turn、输出解析与业务写入全部成功后，服务层才在事务�
 主学习 Agent 的业务工具集只暴露 `knowledge_search` 和 `learning_state_transition`，不暴露会提前落卡的
 `review_card_write`。后者仍在服务端校验知识点必须处于 `CARD_GENERATING`，作为纵深门禁。
 
+需要状态推进的 turn 在真实检索命中后，由 per-subscription Hook 从 AgentScope 写入 Reactor Context 的同一个
+`RuntimeContext` 读取检索证据与 transition intent，仅为当前 reasoning 设置指定
+`learning_state_transition` 的 tool choice；合法调用写入 intent 后，下一轮恢复默认选择。无检索命中、答疑 turn
+或已请求 transition 时均不强制。模型仍须真实发出工具调用，工具与服务层校验、最终 JSON 解析和事务提交边界不变。
+
 ## Trace
 
 每次 mutation 生成 UUID `traceId`，记录有序的 `MODEL_CALL`、`TOOL_CALL`、`STATE_TRANSITION` 或 `FAILURE` 事件。
@@ -72,8 +77,40 @@ Docker VM 曾发生全局 OOM。恢复后，应用以 `-Xmx384m` 在 8082 稳定
 这些修复已通过定向离线测试。修复后的第 5 次学习 POST 也已真实执行：trace
 `b52293ec-d7c5-4bd6-8e63-f31b2fc38fbd` 中模型只使用 skill loader 和两次 `knowledge_search`，说明工具禁用与
 权威状态 prompt 已加载；但模型输出内容前仍未调用 transition，服务端返回 HTTP 400 且没有落库测验。
-当前真实状态仍为 session `ACTIVE`、首点 `EXPLAINING`、quiz 为 null、cards 为空；原授权还剩第 6 次操作未使用，
-但知识点未进入 `QUIZZING`，因此没有发送答疑。完整闭环仍需要 quiz、QUIZZING 答疑、submit 与 cards，M2 不标记完成。
+随后加入上述单轮 tool choice Hook；它通过 AgentScope 官方的 Reactor Context key 取得每次 subscription 自己的
+RuntimeContext，不读取 singleton Agent 上共享的 active context。Hook、Gateway 和工具配置共 11 项定向测试通过，
+独立 reviewer 确认 no-hit、答疑、已请求和并发上下文边界。
+
+第 6/6 次、也是本轮最后一次获授权学习 POST 已成功：trace
+`60d63930-10e0-4037-af5a-4674efc17692` 中模型先加载 quiz skill、执行一次真实 `knowledge_search`，随后真实调用
+`learning_state_transition`，最后输出五题；quiz `2096132226076696578` 已持久化，session 仍为 `ACTIVE`、首点为
+`QUIZZING`。`GET /api/learning/traces/{traceId}` 返回 HTTP 200，两个事件依序为 `MODEL_CALL/STARTED` 与
+`TOOL_CALL/SUCCEEDED`。当前 GET 可恢复五题，但仍显示第 5 次失败留下的旧 `errorMessage`：原因是 MyBatis-Plus
+默认忽略实体 null 更新。代码已改为在成功事务中显式将 session/point `error_message` 写为 NULL，不改变全局
+FieldStrategy；答疑成功后旧错误已自然清除。随后用户追加最多四次操作并要求成功即停，真实结果为：
+
+- 第 7 次由真实 UI 提交 QUIZZING 追问，HTTP 200，trace `9785d6b4-60a0-4e6a-9ea5-d6f50cd803b7`；状态仍为
+  `QUIZZING`，五题保留且错误为空；
+- 第 8 次提交五个公开选项完成评分，trace `ae9da385-f844-4382-9d11-be004e3d788c`，得分 100，保存 5 条反馈，
+  首点推进到 `CARD_GENERATING`；
+- 第 9 次由真实 UI 生成卡片，trace `da9061bd-69f0-48ec-a637-29ec7eca11fb`，三张卡均有 front/back 和真实
+  sourceChunkId；首点成为 `COMPLETED`，第二点成为 `NEW` 活跃点，session 保持 `ACTIVE`，成功后停止且未使用第 10 次。
+
+三个 trace 的 GET 均返回 HTTP 200 且 sequence 有序；cards trace 依次为 `CARD/MODEL_CALL/STARTED`、
+`CARD/TOOL_CALL/SUCCEEDED`、`COMPACTION/MODEL_CALL/SUCCEEDED`、`COMPLETE/STATE_TRANSITION/SUCCEEDED`。
+MySQL 只读核对首点三张卡且三条都有来源，五个知识点状态为 `COMPLETED, NEW, NEW, NEW, NEW`。当前 session GET
+按契约聚焦第二点，所以 `cards` 为空；第 9 次 mutation 响应和 UI 已展示首点三张卡，不扩展历史知识点产物页面。
+真实 UI 截图为 `output/playwright/quiz-answer-success.png`、`output/playwright/quiz-score-100-feedback.png` 和
+`output/playwright/cards-three-first-completed.png`。
+
+cards 完成时日志证明 one-off compaction 从 4 条消息压缩为 1 条 summary + 1 条 tail。原 SDK state 起初位于容器
+可写层；为避免容器重建丢失，先在目标不存在时把 `ReActAgent` state 精确复制到已挂载运行目录并校验源/目标 SHA-256
+一致，源未删除。生产 Harness 现显式使用 `workspace/state/ReActAgent` 下的唯一 `JsonFileAgentStateStore`，对应本机
+目录 `.codex/worktrees/m2-learning/.agentscope/workspace/state/ReActAgent` 已精确加入 Git ignore。删除并重建容器、且
+不再设置 launch-only `agentscope.state.home` 后，SDK 从该目录加载 user `1`、原 AgentScope session
+`0e63f95a-a97c-48d4-b4d9-8465c45c36c2`，context 为 2（两个已加载消息的角色/文本长度分别为 USER/1168、
+ASSISTANT/1289；compactor 日志另行证明其结果为 summary + tail）；REST 同时恢复 session `ACTIVE`、首点
+`COMPLETED`、第二点 `NEW` 且无错误。
 
 当前本机保留已配置的 `study-agent-es` 与 `study-agent-m2-app`（应用映射 `8082:8082`、数据库
 `study_agent_m1_e2e`）。依赖停止时，一条命令恢复：
@@ -87,8 +124,10 @@ DeepSeek 密钥只填写在仓库根目录、已被 Git 忽略的 `some_apiKey` 
 不再包含 DeepSeek 密钥默认值；`DEEPSEEK_API_KEY` 环境变量仍可显式覆盖。宿主从仓库根启动时直接读取此文件。
 应用容器也必须把主树 `D:\1Learningoutput\javabackend\StudyAgent` 挂载为 `/workspace` 并以 `/workspace`
 为 working directory，才能读取同一份文件，无需维护容器内副本。当前 `study-agent-m2-app` 仍挂载旧的
-`.codex/worktrees/m2-learning/.agentscope/workspace` 作为有效 AgentState 数据源；这个旧 worktree 子目录不能作为
-废弃副本删除。当前应用源码已改挂主树并在 8082 READY。需要重建容器时，先停止并移除同名旧容器，然后执行：
+`.codex/worktrees/m2-learning/.agentscope/workspace` 作为有效 workspace、transcript 与持久 AgentState 数据源；这个
+旧 worktree 子目录不能作为废弃副本删除。生产配置已把 stateStore 固定到该 workspace 下的 `state/ReActAgent`，
+因此不再依赖容器可写层或额外 JVM system property。当前应用源码挂主树并在 8082 READY。需要重建容器时，先停止并
+移除同名旧容器，然后执行：
 
 ```powershell
 docker run -d --name study-agent-m2-app --network study-agent_study-agent-net -p 8082:8082 --mount "type=bind,source=D:\1Learningoutput\javabackend\StudyAgent,target=/workspace" --mount "type=bind,source=D:\1Learningoutput\javabackend\StudyAgent\.codex\worktrees\m2-learning\.agentscope\workspace,target=/workspace/.agentscope/workspace" --mount "type=volume,source=study-agent-maven-cache,target=/root/.m2" -w /workspace -e JAVA_TOOL_OPTIONS=-Xmx384m -e SERVER_PORT=8082 -e SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/study_agent_m1_e2e -e SPRING_DATA_REDIS_HOST=redis -e SPRING_DATA_REDIS_PORT=6379 -e STUDY_AGENT_ELASTICSEARCH_ENDPOINT=http://elasticsearch:9200 -e S3_ENDPOINT=http://rustfs:9000 -e ROCKETMQ_NAME_SERVER=rocketmq-namesrv:9876 -e STUDY_AGENT_CANAL_ENABLED=false maven:3.9.11-eclipse-temurin-21 mvn spring-boot:run

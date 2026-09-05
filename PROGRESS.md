@@ -36,17 +36,17 @@
 
 ## M2 · 单知识点学习闭环
 
-- [~] 已实现学习计划和 `NEW → EXPLAINING → QUIZZING → CARD_GENERATING → COMPLETED` 状态转换；失败留在当前状态，QUIZZING 中追问不回退，本次已集成 main。
-- [~] 一个会话绑定一个用户、目标、知识库和 AgentScope session，同时只有一个活跃知识点；真实 DeepSeek 已创建 session `2096054161353723906` 及五项计划。
-- [~] 已实现通过 `learningSessionId` 恢复；MySQL 保存业务事实及测验/反馈/卡片恢复数据，AgentState 只保存最新短期上下文，真实首次讲解失败后首点保持 `NEW` 且 GET 恢复通过。
-- [~] 已实现五题 JSON 聚合测验、提交评分与错题解释；不设首版及格门槛，待真实单知识点 E2E。
-- [~] 已实现生成并持久化三张复习卡片；本里程碑不接 AnkiConnect，待真实单知识点 E2E。
-- [~] 已在知识点完成 turn 结束处按技术设计的 one-off 强制契约调用 `compactIfNeeded`，处理 `Optional`、写回同一 AgentState 并保存；待真实 compaction 证据。
-- [~] 首版已由主 Agent 完成讲解、测验和卡片生成，不启用学习 subagent，待真实模型验收。
-- [~] 后端已生成 traceId，并提供按 traceId 查询标准化时间线的 JSON API；不做 trace UI，真实失败 trace 的有序查询已通过，仍待成功单点链路 trace。
-- [~] 同步 REST 学习目标、计划、讲解/答疑、五题测验、反馈、卡片、状态与会话恢复页面已实现，前端自测和独立 review 已通过；5173 代理到 main 8082 的真实 GET 恢复已通过，仍待付费成功链路，不做 SSE 或 trace UI。
-- [~] 后端实现来自 `codex/m2-learning`（`85d62e7`，实现/验证文档检查点 `839fb51`）并已进入 main：36 项学习相关测试、`mvn compile`、独立 verifier review 及 Linux JDK21 全量 135 tests（0 failure、0 error、3 skipped）已通过；旧 key 的 HTTP 402 失败恢复/trace/UI 路径已通过，新 key 的真实 explain 已成功并将首点推进到 `EXPLAINING`，成功单点闭环尚未完成。
-- [~] DeepSeek 已从 Git 忽略的根目录 `some_apiKey` 中 `new_deepseek_apiKey` 字段读取，tracked 配置不再保存真实默认值；main 应用已用原 MySQL/ES 与旧 worktree AgentState 在 8082 READY，`max-tokens=1800` 已接入 AgentScope。真实 quiz 暴露的说明前缀、默认 memory/filesystem/shell 工具偏航和失败历史误判均已最小修复并通过定向离线测试；第 5 次真实学习 POST 中修复已加载，但模型检索后仍未调用 transition，session 保持 `ACTIVE`、首点 `EXPLAINING`、无 quiz/cards，原授权第 6 次未使用。
+- [x] 已实现并真实验证学习计划和 `NEW → EXPLAINING → QUIZZING → CARD_GENERATING → COMPLETED` 状态转换；失败留在当前状态，QUIZZING 中真实追问不回退。
+- [x] 一个会话绑定一个用户、目标、知识库和 AgentScope session，同时只有一个活跃知识点；真实 session `2096054161353723906` 含五项计划，首点完成后第二点成为唯一 `NEW` 活跃点。
+- [x] 已实现通过 `learningSessionId` 恢复；MySQL 保存业务事实及测验/反馈/卡片，AgentState 保存压缩后的模型上下文；失败恢复和完成后恢复均已真实通过。
+- [x] 已实现并真实验证五题 JSON 聚合测验、一次提交评分与逐题反馈；不设首版及格门槛，本次测试作答为 100 分、5 条反馈。
+- [x] 已真实生成并持久化三张带检索来源的复习卡片；本里程碑不接 AnkiConnect。
+- [x] 知识点完成 turn 已按 one-off 契约真实调用 `compactIfNeeded`，4 条上下文压缩为 summary + 1 条保留消息并保存；容器重建后 SDK 从持久目录加载同一 AgentState，context 为 2。
+- [x] 首版讲解、测验和卡片均由主 Agent 生成，不启用学习 subagent，真实 DeepSeek 验收通过。
+- [x] 后端为 mutation 生成 traceId，并提供按 traceId 查询标准化时间线的 JSON API；不做 trace UI，失败、答疑、测验、评分、卡片、compaction 与完成事件均有真实证据。
+- [x] 同步 REST 学习目标、计划、讲解/答疑、五题测验、反馈、卡片、状态与会话恢复页面已实现；前端自测、独立 review 与真实 UI 单知识点闭环通过，不做 SSE 或 trace UI。
+- [x] 后端实现来自 `codex/m2-learning` 并已进入 main；36 项学习相关测试、`mvn compile`、独立 verifier review 及 Linux JDK21 全量 135 tests（0 failure、0 error、3 skipped）已通过，后续 Hook/清错/持久 stateStore 改动又通过 8 项定向回归。
+- [x] DeepSeek 从 Git 忽略的根目录 `some_apiKey` 读取，tracked 配置不保存真实值；`max-tokens=1800` 已接入 AgentScope。真实检索命中后，per-subscription Hook 只在需要推进的当前 reasoning 指定 transition 工具；quiz `2096132226076696578`、答疑、评分、三卡与 compaction 均已成功。总计使用 9/10 次获授权学习操作，成功后停止，未使用第 10 次。
 - [x] 用户已授权将 13 个未跟踪 Phase 3 旧副本可恢复搬移到 `.codex/backups/m2-pre-merge/`；13/13 源文件均已逐项校验并保留相对结构，未覆盖备份、未触及其它未跟踪内容。
 
 ## 后续 Goal
