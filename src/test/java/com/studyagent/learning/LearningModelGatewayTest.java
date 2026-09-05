@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.studyagent.agent.integration.AgentInvocationScopeFactory;
 import com.studyagent.agent.integration.KnowledgeSearchExecution;
 import com.studyagent.common.exception.BusinessException;
+import com.studyagent.common.json.JsonPayloadReader;
 import com.studyagent.model.KnowledgePoint;
 import com.studyagent.model.LearningSession;
 import com.studyagent.rag.retrieval.KnowledgeSearchResponse;
@@ -49,15 +50,19 @@ class LearningModelGatewayTest {
     }
 
     @Test
-    void requiresAgentToolIntentBeforeAcceptingQuizJson() {
+    void acceptsQuizJsonWrappedInAgentNarrationAfterRequiredTools() {
         point.setStatus("EXPLAINING");
         when(harnessAgent.call(anyString(), any(RuntimeContext.class))).thenAnswer(invocation -> {
+            assertThat(invocation.<String>getArgument(0))
+                    .contains(
+                            "服务端权威当前状态：EXPLAINING",
+                            "即使历史上下文声称测验已完成");
             RuntimeContext runtimeContext = invocation.getArgument(1);
             recordSearch(runtimeContext, "c1");
             runtimeContext.get(LearningTransitionIntent.class).request(KnowledgePointStatus.QUIZZING);
-            return Mono.just(message(quizJson()));
+            return Mono.just(message("已生成 5 道题：\n" + quizJson() + "\n请查收。"));
         });
-        LearningModelGateway gateway = new LearningModelGateway(harnessAgent, scopeFactory, new ObjectMapper());
+        LearningModelGateway gateway = gateway();
 
         assertThat(gateway.generateQuiz(session, point)).hasSize(5);
     }
@@ -70,7 +75,7 @@ class LearningModelGatewayTest {
                     recordSearch(invocation.getArgument(1), "c1");
                     return Mono.just(message("explanation"));
                 });
-        LearningModelGateway gateway = new LearningModelGateway(harnessAgent, scopeFactory, new ObjectMapper());
+        LearningModelGateway gateway = gateway();
 
         assertThatThrownBy(() -> gateway.explain(session, point))
                 .isInstanceOf(BusinessException.class)
@@ -85,7 +90,7 @@ class LearningModelGatewayTest {
             runtimeContext.get(LearningTransitionIntent.class).request(KnowledgePointStatus.EXPLAINING);
             return Mono.just(message("explanation"));
         });
-        LearningModelGateway gateway = new LearningModelGateway(harnessAgent, scopeFactory, new ObjectMapper());
+        LearningModelGateway gateway = gateway();
 
         assertThatThrownBy(() -> gateway.explain(session, point))
                 .isInstanceOf(BusinessException.class)
@@ -97,7 +102,7 @@ class LearningModelGatewayTest {
         point.setStatus("QUIZZING");
         when(harnessAgent.call(anyString(), any(RuntimeContext.class)))
                 .thenReturn(Mono.just(message("answer")));
-        LearningModelGateway gateway = new LearningModelGateway(harnessAgent, scopeFactory, new ObjectMapper());
+        LearningModelGateway gateway = gateway();
 
         assertThat(gateway.answerQuestion(session, point, "why")).isEqualTo("answer");
     }
@@ -115,7 +120,7 @@ class LearningModelGatewayTest {
                      {"front":"f3","back":"b3","sourceChunkId":null}]
                     """));
         });
-        LearningModelGateway gateway = new LearningModelGateway(harnessAgent, scopeFactory, new ObjectMapper());
+        LearningModelGateway gateway = gateway();
 
         assertThat(gateway.generateCards(session, point))
                 .hasSize(3)
@@ -131,7 +136,7 @@ class LearningModelGatewayTest {
             runtimeContext.get(LearningTransitionIntent.class).request(KnowledgePointStatus.QUIZZING);
             return Mono.just(message(quizJson()));
         });
-        LearningModelGateway gateway = new LearningModelGateway(harnessAgent, scopeFactory, new ObjectMapper());
+        LearningModelGateway gateway = gateway();
 
         assertThatThrownBy(() -> gateway.generateQuiz(session, point))
                 .isInstanceOf(BusinessException.class)
@@ -145,6 +150,13 @@ class LearningModelGatewayTest {
         KnowledgeSearchExecution execution = runtimeContext.get(KnowledgeSearchExecution.class);
         assertThat(execution).isNotNull();
         execution.append(new KnowledgeSearchResponse("query", null, hits));
+    }
+
+    private LearningModelGateway gateway() {
+        return new LearningModelGateway(
+                harnessAgent,
+                scopeFactory,
+                new JsonPayloadReader(new ObjectMapper()));
     }
 
     private Msg message(String text) {

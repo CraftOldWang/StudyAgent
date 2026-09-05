@@ -57,10 +57,21 @@ Docker VM 曾发生全局 OOM。恢复后，应用以 `-Xmx384m` 在 8082 稳定
 用户明确授权合成 fixture 片段发送 DeepSeek 后，旧 key 下同一 session 的 explain 请求到达 provider，但返回 HTTP 402
 `Insufficient Balance`。trace `37f0020a-c24f-448e-9e37-e6ec3c9397c7` 真实记录 `MODEL_CALL/STARTED`
 和 `FAILURE/FAILED`，GET 恢复确认 session 仍为 `ACTIVE`、首点仍为 `NEW`、quiz 为 null、cards 为空；
-浏览器也复现该恢复路径。讲解→QUIZZING 答疑→五题→评分→三卡→单点完成与 compaction 因余额不足尚未执行，
-因此 M2 暂不标记完成。新 key 已放入同一 Git 忽略文件并由 main 应用的 Spring 配置加载，但首次付费 explain
-在离开本机前被安全审批拒绝，尚无新 key 的 provider 成功证据；实际检索片段外发与付费/持久化副作用待用户
-再次明确批准后，仍复用原 session 重试，不创建新计划。
+浏览器也复现该恢复路径。
+
+换用本地新 key 后，原 session 的 explain 已真实成功：trace `d3cefacf-e10e-41cd-badd-102689815bd2`，
+首点推进到 `EXPLAINING`。随后三次 quiz 均按失败语义留在该状态且没有落库测验：
+
+- `dcf28fd5-f761-4361-8ae8-684bb1d098fd`：模型在合法数组前输出说明文字，严格首字符解析失败；
+- `48d2953c-5cf5-4235-aefa-4dfce7357112`：模型调用默认 `memory_search`/`grep_files` 后未调用 transition；
+- `1bce3044-b7c5-44d7-8365-097d477a3e47`：多余工具已关闭，但模型受失败历史影响误称 quiz 已完成，仍未调用 transition。
+
+对应最小修复为：统一 `common/json` 读取器提取单个数组后继续做严格 JSON/题数/字段/来源校验；生产 Harness
+关闭默认 filesystem、memory 和 shell 工具，实际仅保留业务 `knowledge_search`/`learning_state_transition` 与 Harness
+必需的 `wait_async_results`/`load_skill_through_path`；quiz prompt 注入服务端权威当前状态，并明确失败历史不代表业务提交。
+这些修复已通过定向离线测试，但尚未再次付费验证。当前真实状态仍为 session `ACTIVE`、首点 `EXPLAINING`、
+quiz 为 null、cards 为空；本轮已发送 4 次学习 POST，完整闭环还需要 quiz、QUIZZING 答疑、submit 与 cards，
+因此 M2 仍不标记完成。
 
 当前本机保留已配置的 `study-agent-es` 与 `study-agent-m2-app`（应用映射 `8082:8082`、数据库
 `study_agent_m1_e2e`）。依赖停止时，一条命令恢复：

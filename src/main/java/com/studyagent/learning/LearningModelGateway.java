@@ -1,11 +1,10 @@
 package com.studyagent.learning;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.studyagent.agent.integration.AgentInvocationScopeFactory;
 import com.studyagent.agent.integration.KnowledgeSearchExecution;
 import com.studyagent.common.exception.BusinessException;
+import com.studyagent.common.json.JsonPayloadReader;
 import com.studyagent.model.KnowledgePoint;
 import com.studyagent.model.LearningSession;
 import io.agentscope.core.agent.RuntimeContext;
@@ -23,7 +22,7 @@ public class LearningModelGateway {
 
     private final HarnessAgent harnessAgent;
     private final AgentInvocationScopeFactory scopeFactory;
-    private final ObjectMapper objectMapper;
+    private final JsonPayloadReader jsonPayloadReader;
 
     public String explain(LearningSession session, KnowledgePoint point) {
         return call(session, point, KnowledgePointStatus.EXPLAINING, true, """
@@ -54,8 +53,10 @@ public class LearningModelGateway {
                 最终只能输出 JSON 数组，不要 Markdown。每项字段必须为 question、options、correctAnswer、
                 explanation、sourceChunkId；options 恰好 4 个非空字符串，correctAnswer 必须等于其中一个选项，
                 sourceChunkId 必须来自实际检索结果。输出前调用 learning_state_transition，target=QUIZZING；
-                服务端只在整个 turn 成功后提交状态。当前知识点：%s
-                """.formatted(point.getTopic()));
+                服务端只在整个 turn 成功后提交状态。服务端权威当前状态：%s。
+                即使历史上下文声称测验已完成，也必须以此状态为准，在本 turn 重新生成 JSON 并调用状态工具。
+                当前知识点：%s
+                """.formatted(point.getStatus(), point.getTopic()));
         return parseQuiz(result.text(), result.retrievedChunkIds());
     }
 
@@ -69,7 +70,7 @@ public class LearningModelGateway {
                 当前知识点：%s
                 """.formatted(point.getTopic()));
         try {
-            JsonNode root = readStrictJson(result.text());
+            JsonNode root = jsonPayloadReader.readArray(result.text());
             if (!root.isArray() || root.size() != 3) {
                 throw new BusinessException("复习卡输出必须是恰好 3 项的 JSON 数组");
             }
@@ -126,7 +127,7 @@ public class LearningModelGateway {
 
     private List<QuizQuestionDraft> parseQuiz(String raw, Set<String> retrievedChunkIds) {
         try {
-            JsonNode root = readStrictJson(raw);
+            JsonNode root = jsonPayloadReader.readArray(raw);
             if (!root.isArray() || root.size() != 5) {
                 throw new BusinessException("测验输出必须是恰好 5 项的 JSON 数组");
             }
@@ -187,12 +188,6 @@ public class LearningModelGateway {
         if (sourceChunkId != null && !retrievedChunkIds.contains(sourceChunkId)) {
             throw new BusinessException("sourceChunkId 不在本次 knowledge_search 结果中: " + sourceChunkId);
         }
-    }
-
-    private JsonNode readStrictJson(String raw) throws java.io.IOException {
-        return objectMapper.reader()
-                .with(DeserializationFeature.FAIL_ON_TRAILING_TOKENS)
-                .readTree(raw);
     }
 
     private KnowledgePointStatus parseStatus(String raw) {

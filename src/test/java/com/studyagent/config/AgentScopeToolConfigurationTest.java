@@ -54,7 +54,11 @@ class AgentScopeToolConfigurationTest {
                     try {
                         assertThat(agent.getToolkit().getToolNames())
                                 .contains("knowledge_search", "learning_state_transition")
-                                .doesNotContain("review_card_write");
+                                .doesNotContain(
+                                        "review_card_write",
+                                        "grep_files",
+                                        "memory_search",
+                                        "execute");
                     } finally {
                         agent.close();
                     }

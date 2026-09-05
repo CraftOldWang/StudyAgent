@@ -63,6 +63,9 @@ public class AgentScopeAgentConfiguration {
                 .maxRetries(modelProperties.maxRetries())
                 .middleware(new ToolGovernanceInterceptor())
                 .compaction(learningCompactionConfig())
+                .disableFilesystemTools()
+                .disableShellTool()
+                .disableMemoryTools()
                 .disableSubagents()
                 .build();
     }
