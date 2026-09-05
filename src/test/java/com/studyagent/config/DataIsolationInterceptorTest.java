@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
 import com.studyagent.identity.CurrentUserContext;
 import com.studyagent.identity.IdentityResolver;
+import com.studyagent.identity.IdentityScope;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Locale;
@@ -32,7 +33,8 @@ import org.springframework.test.context.web.WebAppConfiguration;
 @ContextConfiguration(classes = {
         DataIsolationConfiguration.class,
         CurrentUserContext.class,
-        IdentityResolver.class
+        IdentityResolver.class,
+        IdentityScope.class
 })
 class DataIsolationInterceptorTest {
 
@@ -41,6 +43,12 @@ class DataIsolationInterceptorTest {
 
     @Autowired
     private WebApplicationContext applicationContext;
+
+    @Autowired
+    private IdentityResolver identityResolver;
+
+    @Autowired
+    private IdentityScope identityScope;
 
     @AfterEach
     void clearRequestContext() {
@@ -128,13 +136,15 @@ class DataIsolationInterceptorTest {
                     SqlCommandType.SELECT)
                     .build();
 
-            tenantLineInterceptor().beforeQuery(
-                    null,
-                    mappedStatement,
-                    null,
-                    RowBounds.DEFAULT,
-                    null,
-                    boundSql);
+            try (IdentityScope.Binding ignored = identityScope.bind(identityResolver.resolve(request))) {
+                tenantLineInterceptor().beforeQuery(
+                        null,
+                        mappedStatement,
+                        null,
+                        RowBounds.DEFAULT,
+                        null,
+                        boundSql);
+            }
             return boundSql.getSql();
         } finally {
             requestAttributes.requestCompleted();
