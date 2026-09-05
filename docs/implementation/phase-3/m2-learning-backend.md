@@ -69,6 +69,12 @@ Docker VM 曾发生全局 OOM。恢复后，应用以 `-Xmx384m` 在 8082 稳定
 docker start study-agent-es study-agent-m2-app
 ```
 
+DeepSeek 密钥只填写在仓库根目录的 `config/local-secrets.properties`：
+`study-agent.local.deepseek-api-key=<新密钥>`。该文件已被 Git 精确忽略，tracked `application.yml` 不再包含
+DeepSeek 密钥默认值；`DEEPSEEK_API_KEY` 环境变量仍可显式覆盖。宿主从仓库根启动时直接读取此文件；现有应用容器
+把同一仓库根挂载为 `/workspace` 并以 `/workspace` 为 working directory，因此重启应用后读取的是同一份文件，
+无需维护容器内副本。只填写文件不会改变已运行进程，必须重启应用才会生效。
+
 Linux 全量入口如下；必须先停止 `study-agent-m2-app`，并保持没有其它本项目 Maven JVM：
 
 ```powershell

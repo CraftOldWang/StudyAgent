@@ -2,6 +2,8 @@ server:
   port: 8080
 
 spring:
+  config:
+    import: optional:file:./config/local-secrets.properties
   application:
     name: study-agent
   servlet:
@@ -81,7 +83,7 @@ study-agent:
     chat:
       provider: deepseek
       model: deepseek-chat
-      api-key: ${DEEPSEEK_API_KEY:sk-c95b6007698c46b5be295e3bbe2b7421}
+      api-key: ${DEEPSEEK_API_KEY:${study-agent.local.deepseek-api-key:}}
       base-url: "${DEEPSEEK_BASE_URL:https://api.deepseek.com}"
       temperature: 0.2
       max-tokens: 1800

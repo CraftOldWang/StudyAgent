@@ -4,6 +4,7 @@ target/
 *.iml
 .env
 some_apiKey
+/config/local-secrets.properties
 logs/
 *.log
 frontend/node_modules/
@@ -19,4 +20,3 @@ scripts/
 
 .archive/
 .archify/
-
