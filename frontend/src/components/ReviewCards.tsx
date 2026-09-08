@@ -1,4 +1,5 @@
 import type { ReviewCard } from '../learningTypes'
+import { SourceLink } from './SourceDrawer'
 
 export function ReviewCards({ cards }: { cards: ReviewCard[] }) {
   if (cards.length === 0) return null
@@ -12,7 +13,7 @@ export function ReviewCards({ cards }: { cards: ReviewCard[] }) {
           <article key={card.id}>
             <strong>{card.front}</strong>
             <p>{card.back}</p>
-            <small>{card.sourceChunkId ? `来源 chunk #${card.sourceChunkId}` : '无可验证的来源 chunk'}</small>
+            <SourceLink chunkId={card.sourceChunkId} />
           </article>
         ))}
       </div>

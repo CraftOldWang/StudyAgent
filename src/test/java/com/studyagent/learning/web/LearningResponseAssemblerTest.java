@@ -33,6 +33,10 @@ class LearningResponseAssemblerTest {
         point.setSubtopicsJson("[\"bounds\"]");
         point.setEstimatedMinutes(20);
         point.setStatus("COMPLETED");
+        point.setChapterId(100L);
+        point.setChapterTitle("Types");
+        point.setPriority("HIGH");
+        point.setSourcesJson("[\"source-20\"]");
         Quiz quiz = new Quiz();
         quiz.setId(30L);
         quiz.setScore(80);
@@ -54,6 +58,10 @@ class LearningResponseAssemblerTest {
 
         assertThat(response.activeKnowledgePoint()).isNull();
         assertThat(response.plan()).hasSize(1);
+        assertThat(response.plan().getFirst().chapterId()).isEqualTo(100L);
+        assertThat(response.plan().getFirst().chapterTitle()).isEqualTo("Types");
+        assertThat(response.plan().getFirst().priority()).isEqualTo("HIGH");
+        assertThat(response.plan().getFirst().sourceChunkIds()).containsExactly("source-20");
         assertThat(response.currentQuiz().score()).isEqualTo(80);
         assertThat(response.currentQuiz().feedback()).hasSize(1);
         assertThat(response.cards()).hasSize(1);

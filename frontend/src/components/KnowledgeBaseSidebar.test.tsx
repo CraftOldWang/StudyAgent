@@ -10,8 +10,22 @@ const knowledgeBase = {
 }
 
 describe('KnowledgeBaseSidebar', () => {
+  it('preserves the create and rename drafts when the backend reports failure', async () => {
+    const onCreate = vi.fn().mockResolvedValue(false)
+    const onRename = vi.fn().mockResolvedValue(false)
+    render(<KnowledgeBaseSidebar busy={false} items={[knowledgeBase]} loading={false} onCreate={onCreate} onRename={onRename} onSelect={vi.fn()} selectedId="12" />)
+    fireEvent.change(screen.getByLabelText('新建知识库'), { target: { value: '待重试名称' } })
+    fireEvent.click(screen.getByRole('button', { name: '创建' }))
+    await waitFor(() => expect(onCreate).toHaveBeenCalled())
+    expect(screen.getByLabelText('新建知识库')).toHaveValue('待重试名称')
+    fireEvent.click(screen.getByRole('button', { name: `重命名 ${knowledgeBase.name}` }))
+    fireEvent.change(screen.getByLabelText(`重命名 ${knowledgeBase.name}`), { target: { value: '修改尚未保存' } })
+    fireEvent.click(screen.getByRole('button', { name: '保存' }))
+    await waitFor(() => expect(onRename).toHaveBeenCalled())
+    expect(screen.getByLabelText(`重命名 ${knowledgeBase.name}`)).toHaveValue('修改尚未保存')
+  })
   it('normalizes a new knowledge base name before creating it', async () => {
-    const onCreate = vi.fn().mockResolvedValue(undefined)
+    const onCreate = vi.fn().mockResolvedValue(true)
     render(
       <KnowledgeBaseSidebar
         busy={false}
@@ -32,7 +46,7 @@ describe('KnowledgeBaseSidebar', () => {
   })
 
   it('renames an existing knowledge base without changing selection', async () => {
-    const onRename = vi.fn().mockResolvedValue(undefined)
+    const onRename = vi.fn().mockResolvedValue(true)
     const onSelect = vi.fn()
     render(
       <KnowledgeBaseSidebar

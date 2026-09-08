@@ -1,5 +1,6 @@
 import { type FormEvent, useState } from 'react'
 import type { AgentSearchResult, SearchHit, SearchResult } from '../types'
+import { MultilineInput } from './ui/Field'
 
 type SearchMode = 'retrieval' | 'agent'
 
@@ -71,8 +72,10 @@ export function SearchPanel({ disabled, loading, result, onSearch }: Props) {
         </div>
       </div>
 
-      <form className="search-form" onSubmit={submit}>
-        <textarea
+      <form noValidate className="search-form" onSubmit={submit}>
+        <label className="visually-hidden" htmlFor="search-query">检索问题</label>
+        <MultilineInput
+          id="search-query"
           aria-label="检索问题"
           disabled={disabled || loading}
           onChange={(event) => setQuery(event.target.value)}
@@ -83,6 +86,7 @@ export function SearchPanel({ disabled, loading, result, onSearch }: Props) {
         <button disabled={disabled || loading || !query.trim()} type="submit">
           {loading ? '正在检索…' : mode === 'agent' ? '调用 Agent' : '开始检索'}
         </button>
+        {query && <button className="text-button" disabled={loading} onClick={() => setQuery('')} type="button">清空问题</button>}
       </form>
 
       {result && (

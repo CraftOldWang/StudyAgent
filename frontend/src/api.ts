@@ -30,7 +30,7 @@ export async function apiRequest<T>(path: string, init: RequestInit = {}): Promi
   try {
     response = await fetch(path, { ...init, headers })
   } catch {
-    throw new ApiError('无法连接后端，请确认服务已在 8082 端口启动。')
+    throw new ApiError('无法连接服务，请稍后重试。')
   }
 
   let envelope: ApiResponse<T> | undefined

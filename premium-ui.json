@@ -1,0 +1,16 @@
+{
+  "profile": "product-admin",
+  "sourceRoots": ["frontend/src"],
+  "canonicalMap": "UX-CONTRACT.md",
+  "requiredCapabilities": ["Form", "Scrollbar", "Toast", "CRUD", "Table Selection"],
+  "commands": {
+    "typecheck": "npm --prefix frontend run typecheck",
+    "tests": "npm --prefix frontend test",
+    "build": "npm --prefix frontend run build"
+  },
+  "requiredCommands": ["typecheck", "tests", "build"],
+  "evidence": {
+    "crudFullFlow": "frontend/src/components/KnowledgeBaseSidebar.test.tsx",
+    "failurePaths": "frontend/src/components/LearningPanel.test.tsx"
+  }
+}

@@ -1,4 +1,5 @@
 import { apiRequest } from './api'
+import { readEventStream, type StreamEvent } from './stream'
 import type {
   CreatedSession,
   GeneratedCards,
@@ -6,11 +7,28 @@ import type {
   LearningSession,
   LearningTurn,
   QuizResult,
+  ConversationTurn,
+  PlanningView,
 } from './learningTypes'
 
 const SESSION_PATH = '/api/learning/sessions'
 
 export const learningApi = {
+  history: (sessionId: string) => apiRequest<ConversationTurn[]>(`${SESSION_PATH}/${sessionId}/messages`),
+  streamMessage: async (sessionId: string, message: string, requestId: string,
+    onEvent: (event: StreamEvent) => void, signal?: AbortSignal) => {
+    const response = await fetch(`${SESSION_PATH}/${sessionId}/messages/stream`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-User-Id': '1' },
+      body: JSON.stringify({ message, requestId }), signal,
+    })
+    await readEventStream(response, onEvent)
+  },
+  createPlan: (knowledgeBaseId: string, learningGoal: string, lessonDocumentIds: string[], exerciseDocumentIds: string[], targetPointCount: number) =>
+    apiRequest<PlanningView>('/api/learning/plans', { method: 'POST',
+      body: JSON.stringify({ knowledgeBaseId, learningGoal, lessonDocumentIds, exerciseDocumentIds, targetPointCount }) }),
+  getPlan: (id: string) => apiRequest<PlanningView>(`/api/learning/plans/${id}`),
+  executePlan: (id: string) => apiRequest<PlanningView>(`/api/learning/plans/${id}/execute`, { method: 'POST' }),
+  planSession: (id: string) => apiRequest<LearningSession>(`/api/learning/plans/${id}/session`, { method: 'POST' }),
   createSession: (knowledgeBaseId: string, learningGoal: string) =>
     apiRequest<CreatedSession>(SESSION_PATH, {
       method: 'POST',

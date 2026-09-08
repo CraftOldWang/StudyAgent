@@ -1,13 +1,15 @@
 import { type FormEvent, useEffect, useState } from 'react'
 import type { Quiz } from '../learningTypes'
+import { SourceLink } from './SourceDrawer'
 
 interface Props {
   busy: boolean
   quiz: Quiz
   onSubmit: (answers: string[]) => Promise<void>
+  readOnly?: boolean
 }
 
-export function QuizSection({ busy, quiz, onSubmit }: Props) {
+export function QuizSection({ busy, quiz, onSubmit, readOnly = false }: Props) {
   const [answers, setAnswers] = useState<Record<number, string>>({})
 
   useEffect(() => setAnswers({}), [quiz.quizId])
@@ -27,10 +29,10 @@ export function QuizSection({ busy, quiz, onSubmit }: Props) {
       <div className="learning-section-heading">
         <div>
           <span className="eyebrow">五题测验</span>
-          <h2>{submitted ? `得分 ${quiz.score} / 100` : '检验刚刚学到的内容'}</h2>
+          <h2>{submitted ? `得分 ${quiz.score} / 100` : readOnly ? '已保存测验' : '检验刚刚学到的内容'}</h2>
         </div>
       </div>
-      <form onSubmit={submit}>
+      <form noValidate onSubmit={submit}>
         {quiz.questions.map((question, position) => {
           const feedback = quiz.feedback?.find((item) => item.questionIndex === question.questionIndex)
           return (
@@ -41,8 +43,8 @@ export function QuizSection({ busy, quiz, onSubmit }: Props) {
                   <label key={option}>
                     <input
                       checked={answers[question.questionIndex] === option}
-                      disabled={busy || submitted}
-                      name={`question-${question.questionIndex}`}
+                      disabled={busy || submitted || readOnly}
+                      name={`quiz-${quiz.quizId}-question-${question.questionIndex}`}
                       onChange={() => setAnswers((current) => ({
                         ...current,
                         [question.questionIndex]: option,
@@ -54,6 +56,7 @@ export function QuizSection({ busy, quiz, onSubmit }: Props) {
                   </label>
                 ))}
               </div>
+              <SourceLink chunkId={question.sourceChunkId} />
               {feedback && (
                 <div className={feedback.correct ? 'quiz-feedback correct' : 'quiz-feedback incorrect'}>
                   <strong>{feedback.correct ? '回答正确' : `正确答案：${feedback.correctAnswer}`}</strong>
@@ -63,7 +66,7 @@ export function QuizSection({ busy, quiz, onSubmit }: Props) {
             </fieldset>
           )
         })}
-        {!submitted && (
+        {!submitted && !readOnly && (
           <button disabled={busy || !complete} type="submit">
             {busy ? '正在评分…' : complete ? '提交五题答案' : '请完成全部五题'}
           </button>

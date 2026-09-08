@@ -10,6 +10,10 @@ export interface KnowledgePoint {
   status: KnowledgePointStatus
   explanation: string | null
   errorMessage: string | null
+  chapterId?: string | null
+  chapterTitle?: string | null
+  priority?: string | null
+  sourceChunkIds?: string[]
 }
 
 export interface QuizQuestion {
@@ -62,6 +66,49 @@ export interface LearningTurn {
   traceId: string
   answer: string
   session: LearningSession
+  turn?: ConversationTurn
+}
+
+export interface ConversationTurn {
+  id: string
+  requestId: string
+  userMessage: string
+  assistantMessage: string | null
+  status: 'RUNNING' | 'SUCCEEDED' | 'FAILED'
+  phase: string
+  errorMessage: string | null
+  artifactJson: string | null
+  createdAt: string
+  traceId: string
+}
+
+export interface PlanningTask {
+  knowledgePointId: string
+  chapterId: string
+  chapterTitle: string
+  topic: string
+  subtopics: string[]
+  sourceChunkIds: string[]
+  priority: string
+  estimatedMinutes: number
+  reason: string
+}
+
+export interface PlanningView {
+  id: string
+  knowledgeBaseId: string
+  learningGoal: string
+  status: string
+  errorMessage: string | null
+  sessionId: string | null
+  stages: { id: string; stage: string; status: string; errorMessage: string | null; attemptCount: number }[]
+  result: {
+    tasks: PlanningTask[]
+    emphasis: {
+      matches: { knowledgePointId: string; quote: string; lessonQuote: string; reason: string; priority: string }[]
+      unmatched: { quote: string; reason: string }[]
+    }
+  } | null
 }
 
 export interface GeneratedQuiz {

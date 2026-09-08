@@ -23,7 +23,16 @@ public record LearningSessionResponse(
             Integer estimatedMinutes,
             String status,
             @JsonInclude(JsonInclude.Include.ALWAYS) String explanation,
-            @JsonInclude(JsonInclude.Include.ALWAYS) String errorMessage) {
+            @JsonInclude(JsonInclude.Include.ALWAYS) String errorMessage,
+            Long chapterId,
+            String chapterTitle,
+            String priority,
+            List<String> sourceChunkIds) {
+        public KnowledgePointResponse(Long id, Integer sequenceNo, String topic, List<String> subtopics,
+                Integer estimatedMinutes, String status, String explanation, String errorMessage) {
+            this(id, sequenceNo, topic, subtopics, estimatedMinutes, status, explanation, errorMessage,
+                    null, null, null, List.of());
+        }
     }
 
     public record QuizResponse(

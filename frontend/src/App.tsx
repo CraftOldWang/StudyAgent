@@ -20,6 +20,7 @@ export default function App() {
   const [searchResult, setSearchResult] = useState<SearchResult | AgentSearchResult | null>(null)
   const [error, setError] = useState('')
   const [view, setView] = useState<'knowledge' | 'learning'>('knowledge')
+  const [learningVisited, setLearningVisited] = useState(false)
   const selectedIdRef = useRef<string | null>(selectedId)
   const documentRequestIdRef = useRef(0)
   const searchRequestIdRef = useRef(0)
@@ -87,15 +88,17 @@ export default function App() {
   }
 
   async function createKnowledgeBase(name: string) {
-    if (initialLoading) return
+    if (initialLoading) return false
     setMutationBusy(true)
     setError('')
     try {
       const created = await api.createKnowledgeBase(name)
       setKnowledgeBases((items) => [created, ...items])
       selectKnowledgeBase(created.id)
+      return true
     } catch (caught) {
       reportError(caught)
+      return false
     } finally {
       setMutationBusy(false)
     }
@@ -107,8 +110,10 @@ export default function App() {
     try {
       const renamed = await api.renameKnowledgeBase(id, name)
       setKnowledgeBases((items) => items.map((item) => item.id === id ? renamed : item))
+      return true
     } catch (caught) {
       reportError(caught)
+      return false
     } finally {
       setMutationBusy(false)
     }
@@ -156,6 +161,8 @@ export default function App() {
   const hasIndexedDocument = documents.some((document) =>
     isDocumentTerminal(document.pipelineStatus) && document.pipelineStatus.toUpperCase() === 'INDEXED')
 
+  useEffect(() => { document.title = `${view === 'knowledge' ? '资料库' : '学习'} — StudyPilot` }, [view])
+
   return (
     <div className="app-shell">
       <KnowledgeBaseSidebar
@@ -189,10 +196,10 @@ export default function App() {
               <button
                 aria-current={view === 'learning' ? 'page' : undefined}
                 className={view === 'learning' ? 'active' : ''}
-                onClick={() => setView('learning')}
+                onClick={() => { setLearningVisited(true); setView('learning') }}
                 type="button"
               >
-                学习闭环
+                学习工作台
               </button>
             </nav>
             <div className="content-grid" hidden={view !== 'knowledge'}>
@@ -211,14 +218,14 @@ export default function App() {
               />
             </div>
             <div hidden={view !== 'learning'}>
-              <LearningPanel
+              {learningVisited && <LearningPanel
                 knowledgeBase={selectedKnowledgeBase}
                 onSessionKnowledgeBase={(knowledgeBaseId) => {
                   if (knowledgeBases.some((item) => item.id === knowledgeBaseId)) {
                     selectKnowledgeBase(knowledgeBaseId)
                   }
                 }}
-              />
+              />}
             </div>
           </>
         ) : (

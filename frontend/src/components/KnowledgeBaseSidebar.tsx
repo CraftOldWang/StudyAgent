@@ -7,8 +7,8 @@ interface Props {
   loading: boolean
   busy: boolean
   onSelect: (id: string) => void
-  onCreate: (name: string) => Promise<void>
-  onRename: (id: string, name: string) => Promise<void>
+  onCreate: (name: string) => Promise<boolean>
+  onRename: (id: string, name: string) => Promise<boolean>
 }
 
 export function KnowledgeBaseSidebar({
@@ -28,8 +28,7 @@ export function KnowledgeBaseSidebar({
     event.preventDefault()
     const normalized = name.trim()
     if (!normalized) return
-    await onCreate(normalized)
-    setName('')
+    if (await onCreate(normalized)) setName('')
   }
 
   function beginRename(item: KnowledgeBase) {
@@ -41,8 +40,7 @@ export function KnowledgeBaseSidebar({
     event.preventDefault()
     const normalized = renameValue.trim()
     if (!normalized) return
-    await onRename(id, normalized)
-    setEditingId(null)
+    if (await onRename(id, normalized)) setEditingId(null)
   }
 
   return (
@@ -50,12 +48,12 @@ export function KnowledgeBaseSidebar({
       <div className="brand">
         <span className="brand-mark">S</span>
         <div>
-          <strong>StudyAgent</strong>
+          <strong>StudyPilot</strong>
           <small>资料驱动学习</small>
         </div>
       </div>
 
-      <form className="create-form" onSubmit={submitCreate}>
+      <form noValidate className="create-form" onSubmit={submitCreate}>
         <label htmlFor="knowledge-base-name">新建知识库</label>
         <div className="inline-form">
           <input
@@ -83,7 +81,7 @@ export function KnowledgeBaseSidebar({
           {items.map((item) => (
             <li className={item.id === selectedId ? 'selected' : ''} key={item.id}>
               {editingId === item.id ? (
-                <form className="rename-form" onSubmit={(event) => submitRename(event, item.id)}>
+                <form noValidate className="rename-form" onSubmit={(event) => submitRename(event, item.id)}>
                   <input
                     aria-label={`重命名 ${item.name}`}
                     autoFocus
@@ -96,7 +94,7 @@ export function KnowledgeBaseSidebar({
                 </form>
               ) : (
                 <>
-                  <button className="knowledge-select" onClick={() => onSelect(item.id)} type="button">
+                  <button className="knowledge-select" aria-current={item.id === selectedId ? 'page' : undefined} onClick={() => onSelect(item.id)} type="button">
                     <span className="book-icon">▤</span>
                     <span>{item.name}</span>
                   </button>

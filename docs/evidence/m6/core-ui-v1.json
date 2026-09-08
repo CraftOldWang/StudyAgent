@@ -1,0 +1,50 @@
+{
+  "scope": "M6 core learning UI; not full M6 acceptance",
+  "frontend": "http://127.0.0.1:5173",
+  "backend": "http://127.0.0.1:8080",
+  "automated": {
+    "frontendTests": 26,
+    "frontendFailures": 0,
+    "backendTargetedTests": 3,
+    "backendTargetedFailures": 0,
+    "typecheckAndBuildPassed": true,
+    "designLintErrors": 0,
+    "designLintWarnings": 0,
+    "runtimeTokensMatched": 23,
+    "premiumAuditErrors": 0
+  },
+  "browser": {
+    "provider": "Codex in-app browser via Computer Use",
+    "restoredSessionId": "6000001897478103200",
+    "restoredCardCount": 3,
+    "restoredHistoryVisible": true,
+    "displayedExistingPlanId": "2097419430076522497",
+    "existingPlanQualityAccepted": false,
+    "createdAndRenamedKnowledgeBase": "M6 界面验收 · 空资料库",
+    "nonexistentSessionErrorPreservedInput": "999",
+    "restoreInputTabReachedRestoreButton": true,
+    "sourceEscapeReturnedFocusToTrigger": true,
+    "narrowViewportCssPixels": 390,
+    "narrowDocumentScrollWidth": 380,
+    "narrowSourceDrawerWidth": 380,
+    "rootHorizontalOverflow": false,
+    "desktopAndNarrowScreensVisuallyInspected": true
+  },
+  "sourceApi": {
+    "knowledgeBaseId": "2097419265638834178",
+    "chunkId": "8efad9dce54a4efed2226065d46878b09d66c65544e220370e4d700e98db7372",
+    "documentId": "2097419275189264386",
+    "documentTitle": "2-编译器结构.pptx",
+    "contentCharacters": 1418,
+    "contentSha256": "bf5aefd517fed4d88a42a1d26248617027c2b58f1564cd8857126aa1aeafcd0e",
+    "crossKnowledgeBaseRejected": true,
+    "crossUserRejected": true
+  },
+  "modelAttemptsBefore": 394,
+  "modelAttemptsAfter": 394,
+  "limits": [
+    "No new real provider conversation or planning-v3 execution",
+    "Streaming interruption and IME assertions here are component tests, not real generation acceptance",
+    "No upload performance, Anki or ASR acceptance in this batch"
+  ]
+}

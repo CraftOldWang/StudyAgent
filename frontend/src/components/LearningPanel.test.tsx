@@ -1,77 +1,67 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { LearningSession } from '../learningTypes'
+import type { ConversationTurn, LearningSession } from '../learningTypes'
 
-const learningApiMock = vi.hoisted(() => ({
-  createSession: vi.fn(),
-  getSession: vi.fn(),
-  explain: vi.fn(),
-  sendMessage: vi.fn(),
-  generateQuiz: vi.fn(),
-  submitQuiz: vi.fn(),
-  generateCards: vi.fn(),
-}))
-
-vi.mock('../learningApi', () => ({ learningApi: learningApiMock }))
-
+const mock = vi.hoisted(() => ({ getSession: vi.fn(), history: vi.fn(), streamMessage: vi.fn() }))
+vi.mock('../learningApi', () => ({ learningApi: mock }))
+vi.mock('../api', () => ({ api: { listDocuments: vi.fn().mockResolvedValue([]) } }))
 import { LearningPanel } from './LearningPanel'
 
-const point = {
-  id: '9007199254741001',
-  sequenceNo: 1,
-  topic: 'JMM 可见性',
-  subtopics: ['happens-before'],
-  estimatedMinutes: 20,
-  status: 'NEW' as const,
-  explanation: null,
-  errorMessage: null,
+const point = { id: '901', sequenceNo: 1, topic: '可见性', subtopics: [], estimatedMinutes: 20,
+  status: 'EXPLAINING' as const, explanation: '已保存讲解', errorMessage: null }
+const session: LearningSession = { id: '9007199254740999', learningGoal: '理解内存模型', knowledgeBaseId: '20', status: 'ACTIVE',
+  activeKnowledgePoint: point, plan: [point], cards: [], currentQuiz: null, errorMessage: null }
+const turn: ConversationTurn = { id: '9007199254741001', requestId: 'saved-request', userMessage: '先前问题', assistantMessage: '先前回答',
+  status: 'SUCCEEDED', phase: 'COMPLETE', errorMessage: null, artifactJson: null, traceId: 'trace', createdAt: '' }
+async function restore() {
+  fireEvent.change(screen.getByLabelText('学习会话编号'), { target: { value: session.id } })
+  fireEvent.click(screen.getByRole('button', { name: '恢复会话' }))
+  await screen.findByRole('heading', { name: session.learningGoal })
 }
-
-const newSession: LearningSession = {
-  id: '9007199254740999',
-  learningGoal: '理解 Java 内存模型',
-  knowledgeBaseId: '9007199254740993',
-  status: 'ACTIVE',
-  errorMessage: null,
-  activeKnowledgePoint: point,
-  plan: [point],
-  currentQuiz: null,
-  cards: [],
-}
-
-describe('LearningPanel', () => {
-  beforeEach(() => vi.clearAllMocks())
-
-  it('creates a scoped plan and advances the active point to its real explanation', async () => {
-    learningApiMock.createSession.mockResolvedValue({ traceId: 'trace-create', session: newSession })
-    learningApiMock.explain.mockResolvedValue({
-      traceId: 'trace-explain',
-      answer: '同步关系建立跨线程可见性。',
-      session: {
-        ...newSession,
-        activeKnowledgePoint: { ...point, status: 'EXPLAINING', explanation: '这是持久化后的讲解。' },
-        plan: [{ ...point, status: 'EXPLAINING', explanation: '这是持久化后的讲解。' }],
-      },
+describe('durable learning conversation', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    HTMLElement.prototype.scrollIntoView = vi.fn()
+    mock.getSession.mockResolvedValue(session)
+    mock.history.mockResolvedValue([turn])
+  })
+  it('restores full saved history and retries uncertain delivery using exactly the same request', async () => {
+    mock.streamMessage.mockRejectedValueOnce(new Error('连接断开'))
+    mock.streamMessage.mockImplementationOnce(async (_id, message, requestId, onEvent) => {
+      onEvent({ event: 'result', data: { session, answer: '新的回答', turn: { ...turn, id: '9007199254741002', requestId, userMessage: message, assistantMessage: '新的回答' } } })
     })
-    render(
-      <LearningPanel
-        knowledgeBase={{ id: '9007199254740993', name: 'JMM 资料', createdAt: '', updatedAt: '' }}
-        onSessionKnowledgeBase={vi.fn()}
-      />,
-    )
-
-    fireEvent.change(screen.getByLabelText('这次想学会什么？'), {
-      target: { value: '  理解 Java 内存模型  ' },
-    })
-    fireEvent.click(screen.getByRole('button', { name: '生成学习计划' }))
-    await waitFor(() => expect(learningApiMock.createSession).toHaveBeenCalledWith(
-      '9007199254740993', '理解 Java 内存模型'))
-    expect((await screen.findAllByText('JMM 可见性')).length).toBe(2)
-    expect(screen.getByText('学习会话 #9007199254740999')).toBeInTheDocument()
-
-    fireEvent.click(screen.getByRole('button', { name: '开始这个知识点' }))
-    await waitFor(() => expect(learningApiMock.explain).toHaveBeenCalledWith('9007199254740999'))
-    expect(await screen.findByText('这是持久化后的讲解。')).toBeInTheDocument()
-    expect(screen.getByText('同步关系建立跨线程可见性。')).toBeInTheDocument()
+    render(<LearningPanel knowledgeBase={{ id: '20', name: '课程', createdAt: '', updatedAt: '' }} onSessionKnowledgeBase={vi.fn()} />)
+    await restore()
+    expect(screen.getByText('先前问题')).toBeInTheDocument()
+    expect(screen.getByText('先前回答')).toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText('继续学习或提问'), { target: { value: '再举个例子' } })
+    fireEvent.keyDown(screen.getByLabelText('继续学习或提问'), { key: 'Enter', ctrlKey: true, isComposing: true })
+    expect(mock.streamMessage).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: '发送消息' }))
+    expect(await screen.findByText('连接断开')).toBeInTheDocument()
+    expect(screen.getByLabelText('继续学习或提问')).toHaveValue('再举个例子')
+    expect(screen.getByRole('button', { name: '发送消息' })).toBeDisabled()
+    fireEvent.click(screen.getByRole('button', { name: '重试原回合' }))
+    expect(await screen.findByText('新的回答')).toBeInTheDocument()
+    expect(mock.streamMessage.mock.calls[0].slice(0, 3)).toEqual(mock.streamMessage.mock.calls[1].slice(0, 3))
+    expect(screen.getByLabelText('继续学习或提问')).toHaveValue('')
+    expect(screen.getByText('先前回答')).toBeInTheDocument()
+  })
+  it('does not show a failed history read as an empty restored conversation', async () => {
+    mock.history.mockRejectedValueOnce(new Error('聊天记录读取失败'))
+    render(<LearningPanel knowledgeBase={{ id: '20', name: '课程', createdAt: '', updatedAt: '' }} onSessionKnowledgeBase={vi.fn()} />)
+    fireEvent.change(screen.getByLabelText('学习会话编号'), { target: { value: session.id } })
+    fireEvent.click(screen.getByRole('button', { name: '恢复会话' }))
+    expect(await screen.findByText('聊天记录读取失败')).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: session.learningGoal })).not.toBeInTheDocument()
+  })
+  it('keeps the session scope when the sidebar selects another knowledge base', async () => {
+    const select = vi.fn()
+    const { rerender } = render(<LearningPanel knowledgeBase={{ id: '20', name: '课程', createdAt: '', updatedAt: '' }} onSessionKnowledgeBase={select} />)
+    await restore()
+    rerender(<LearningPanel knowledgeBase={{ id: '99', name: '另一个资料库', createdAt: '', updatedAt: '' }} onSessionKnowledgeBase={select} />)
+    fireEvent.click(screen.getByRole('button', { name: '切回会话资料库' }))
+    await waitFor(() => expect(select).toHaveBeenLastCalledWith('20'))
+    expect(screen.getByText('先前回答')).toBeInTheDocument()
   })
 })
