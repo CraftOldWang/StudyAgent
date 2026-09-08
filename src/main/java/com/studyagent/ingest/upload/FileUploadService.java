@@ -41,6 +41,7 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @Service
 @RequiredArgsConstructor
+@lombok.extern.slf4j.Slf4j
 public class FileUploadService {
 
     private final FileRecordMapper fileRecordMapper;
@@ -238,7 +239,10 @@ public class FileUploadService {
         lock.lock();
         try {
             // 完成阶段重新计算所有分片的 SHA-256，不能只信任客户端声明的哈希。
+            long verifyStarted = System.nanoTime();
             String actualFileHash = calculateMergedHash(session);
+            log.info("UPLOAD_METRIC phase=VERIFY uploadSessionId={} bytes={} elapsedMillis={}", session.getId(),
+                    session.getFileSize(), Duration.ofNanos(System.nanoTime() - verifyStarted).toMillis());
             if (!session.getFileHash().equalsIgnoreCase(actualFileHash)) {
                 throw new BusinessException("合并文件 SHA-256 与初始化 SHA-256 不一致");
             }
@@ -263,7 +267,10 @@ public class FileUploadService {
 
             String objectKey = "files/" + actualFileHash + "/" + safeFilename(session.getFilename());
             // 这里按顺序读取临时分片形成一个连续流，避免把大文件完整加载到内存。
+            long mergeStarted = System.nanoTime();
             putMergedObject(session, objectKey);
+            log.info("UPLOAD_METRIC phase=MERGE uploadSessionId={} bytes={} elapsedMillis={}", session.getId(),
+                    session.getFileSize(), Duration.ofNanos(System.nanoTime() - mergeStarted).toMillis());
             FileRecord fileRecord = createFileRecord(
                     userId,
                     knowledgeBaseId,

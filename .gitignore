@@ -40,6 +40,8 @@ scripts/*
 !scripts/verify-planning-recovery.py
 !scripts/smoke-api.py
 !scripts/requirements-eval.txt
+!scripts/benchmark-upload.py
+!scripts/summarize-upload-benchmark.py
 .agentscope/workspace/state/
 .eval/
 config/local-secrets.properties
