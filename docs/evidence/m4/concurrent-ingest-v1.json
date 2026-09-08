@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "jarSha256": "8946905a662691c1f97c35249295594eb6419869b9cfaac49236d73a4527a0d0",
+  "sourceCommitBeforeFix": "aea7f48",
+  "realConcurrentIngest": {
+    "waves": 2,
+    "uploadsPerWave": 4,
+    "documents": [
+      {
+        "documentId": "2097411662063063041",
+        "status": "INDEXED",
+        "attemptCount": 1,
+        "chunkCount": 2
+      },
+      {
+        "documentId": "2097411662063063042",
+        "status": "INDEXED",
+        "attemptCount": 1,
+        "chunkCount": 2
+      },
+      {
+        "documentId": "2097411662067257346",
+        "status": "INDEXED",
+        "attemptCount": 1,
+        "chunkCount": 2
+      },
+      {
+        "documentId": "2097411662084034561",
+        "status": "INDEXED",
+        "attemptCount": 1,
+        "chunkCount": 2
+      },
+      {
+        "documentId": "2097411680568332289",
+        "status": "INDEXED",
+        "attemptCount": 1,
+        "chunkCount": 2
+      },
+      {
+        "documentId": "2097411680572526593",
+        "status": "INDEXED",
+        "attemptCount": 1,
+        "chunkCount": 2
+      },
+      {
+        "documentId": "2097411680576720898",
+        "status": "INDEXED",
+        "attemptCount": 1,
+        "chunkCount": 2
+      },
+      {
+        "documentId": "2097411680576720899",
+        "status": "INDEXED",
+        "attemptCount": 1,
+        "chunkCount": 2
+      }
+    ],
+    "deadlockCounterBefore": 1,
+    "deadlockCounterAfter": 1
+  },
+  "originalMarkdownRecovery": {
+    "documentId": "2097408029410549761",
+    "firstAttempt": "FAILED CHUNKING deadlock",
+    "secondAttempt": "INDEXED via MQ redelivery before fix"
+  },
+  "emptyDocument": {
+    "documentId": "2097408033680351233",
+    "status": "FAILED",
+    "stage": "PARSING",
+    "message": "文档未解析出有效文本"
+  },
+  "formatRetrieval": {
+    "traceId": "8027d37b-37d1-4b04-b475-109ccca52958",
+    "mode": "RRF",
+    "sourceDocumentIds": [
+      "2097408026902355969",
+      "2097408029410549761"
+    ],
+    "markdownHeadingPathObserved": true
+  },
+  "tests": {
+    "count": 11,
+    "failed": 0,
+    "errors": 0
+  },
+  "rawEvidence": [
+    ".eval/chunk-deadlock-innodb.txt",
+    ".eval/chunk-deadlock-counter-before.tsv",
+    ".eval\\runs\\m4-concurrent-chunks-v1",
+    ".eval/runs/m4-text-formats/http.jsonl"
+  ]
+}

@@ -75,7 +75,11 @@ public class DocumentPipelinePersistence {
         writeOwned(document, update -> update.set("pipeline_status", "CHUNKED")
                 .set("chunker_version", chunkerVersion).set("index_target", null)
                 .set("last_successful_stage", "CHUNKED"));
-        documentChunkMapper.delete(Wrappers.<DocumentChunk>query().eq("document_id", document.getId()));
+        // An empty range DELETE takes a gap lock: concurrent new documents can block each other's inserts.
+        // The document row already serializes its writers; read existing IDs without locking the range.
+        List<DocumentChunk> previous = documentChunkMapper.selectList(Wrappers.<DocumentChunk>query()
+                .select("id").eq("document_id", document.getId()));
+        for (DocumentChunk old : previous) { documentChunkMapper.deleteById(old.getId()); }
         for (DocumentChunk chunk : chunks) { documentChunkMapper.insert(chunk); }
     }
 

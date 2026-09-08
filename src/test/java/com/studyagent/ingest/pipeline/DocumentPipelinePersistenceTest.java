@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -46,15 +47,34 @@ class DocumentPipelinePersistenceTest {
         DocumentPipelinePersistence persistence = persistence(documentMapper, chunkMapper);
         DocumentChunk parent = new DocumentChunk();
         DocumentChunk child = new DocumentChunk();
+        DocumentChunk previous = new DocumentChunk();
+        previous.setId(50L);
+        when(chunkMapper.selectList(any(Wrapper.class))).thenReturn(List.of(previous));
 
         Document document = new Document();
         document.setId(10L);
         document.setProcessingToken("owner-token");
         persistence.replaceChunks(document, List.of(parent, child), "chunker-test-version");
 
-        verify(chunkMapper).delete(any(Wrapper.class));
+        verify(chunkMapper).deleteById(50L);
+        verify(chunkMapper, never()).delete(any(Wrapper.class));
         verify(chunkMapper, times(2)).insert(any(DocumentChunk.class));
         verify(documentMapper).update(isNull(), any(Wrapper.class));
+    }
+
+    @Test
+    void newDocumentDoesNotDeleteAnEmptySecondaryIndexRange() {
+        DocumentMapper mapper = mock(DocumentMapper.class);
+        DocumentChunkMapper chunks = mock(DocumentChunkMapper.class);
+        when(mapper.update(isNull(), any(Wrapper.class))).thenReturn(1);
+        when(chunks.selectList(any(Wrapper.class))).thenReturn(List.of());
+        Document document = new Document();
+        document.setId(11L);
+        document.setProcessingToken("owner");
+        persistence(mapper, chunks).replaceChunks(document, List.of(new DocumentChunk()), "v2");
+        verify(chunks, never()).delete(any(Wrapper.class));
+        verify(chunks, never()).deleteById(org.mockito.ArgumentMatchers.anyLong());
+        verify(chunks).insert(any(DocumentChunk.class));
     }
 
     @Test
