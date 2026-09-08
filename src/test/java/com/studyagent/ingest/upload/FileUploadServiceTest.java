@@ -26,6 +26,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -102,8 +104,10 @@ class FileUploadServiceTest {
         verify(uploadSessionMapper, never()).insert(any(UploadSession.class));
     }
 
-    @Test
-    void uploadSingleShouldDeduplicateBySha256BeforeWritingObject() {
+    @ParameterizedTest
+    @CsvSource({"demo.pdf,application/pdf", "course.pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            "notes.txt,text/plain", "notes.md,text/markdown", "notes.markdown,text/plain", "course.PPTX,application/octet-stream"})
+    void uploadSingleShouldDeduplicateBySha256BeforeWritingObject(String filename, String contentType) {
         String contentHash = "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824";
         FileRecord existing = new FileRecord();
         existing.setId(22L);
@@ -114,7 +118,7 @@ class FileUploadServiceTest {
         var response = fileUploadService.uploadSingle(
                 1L,
                 1L,
-                new MockMultipartFile("file", "demo.pdf", "application/pdf", "hello".getBytes(StandardCharsets.UTF_8))
+                new MockMultipartFile("file", filename, contentType, "hello".getBytes(StandardCharsets.UTF_8))
         );
 
         assertThat(response.fileId()).isEqualTo(22L);
@@ -122,6 +126,16 @@ class FileUploadServiceTest {
         verify(objectStorageService, never()).putObject(any(), any(), anyLong(), any());
         verify(documentMapper).insert(any(Document.class));
         verify(documentIndexProducer).send(null, 1L);
+    }
+
+    @ParameterizedTest
+    @CsvSource({"notes.docx,application/octet-stream", "notes.zip,application/zip", "notes.pdf,text/plain"})
+    void unsupportedOrMismatchedDocumentIsRejectedBeforeStorage(String filename, String contentType) {
+        assertThatThrownBy(() -> fileUploadService.uploadSingle(1L, 1L,
+                new MockMultipartFile("file", filename, contentType, new byte[]{1})))
+                .isInstanceOf(BusinessException.class);
+        verify(objectStorageService, never()).putObject(any(), any(), anyLong(), any());
+        verify(documentIndexProducer, never()).send(any(), any());
     }
 
     @Test

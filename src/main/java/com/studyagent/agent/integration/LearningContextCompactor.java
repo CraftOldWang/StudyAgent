@@ -44,6 +44,7 @@ public class LearningContextCompactor {
                         oneOffConfig(),
                         harnessAgent.getName(),
                         harnessAgent.getAgentId())
+                .contextWrite(ModelCallScope.capture())
                 .block();
         if (compacted == null || compacted.isEmpty()) {
             throw new BusinessException("知识点完成后上下文未按 one-off 契约压缩");

@@ -52,6 +52,8 @@ study-agent:
         api-key: ${study-agent.ai.chat.api-key}
         base-url: "${study-agent.ai.chat.base-url}"
         max-tokens: ${study-agent.ai.chat.max-tokens}
+        thinking-enabled: ${DEEPSEEK_THINKING_ENABLED:false}
+        temperature: ${study-agent.ai.chat.temperature}
   object-storage:
     endpoint: "${S3_ENDPOINT:http://localhost:9000}"
     access-key: study
@@ -79,8 +81,8 @@ study-agent:
       provider: dashscope
       model: text-embedding-v3
       dimensions: 1024
-      api-key: ${AI_DASHSCOPE_API_KEY:sk-7ef2b4dacb134c41ac7feee0319ee673}
-      base-url: "${AI_DASHSCOPE_BASE_URL:https://dashscope.aliyuncs.com/api/v1}"
+      api-key: ${AI_DASHSCOPE_API_KEY:${bailian_for_embedding:}}
+      base-url: "${AI_DASHSCOPE_BASE_URL:${bailian_openai_compatible:https://dashscope.aliyuncs.com/api/v1}}"
     chat:
       provider: deepseek
       model: deepseek-chat

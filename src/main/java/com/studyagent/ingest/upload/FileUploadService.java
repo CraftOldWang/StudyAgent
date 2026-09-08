@@ -71,7 +71,7 @@ public class FileUploadService {
     @Transactional
     public UploadResultResponse uploadSingle(Long userId, Long knowledgeBaseId, MultipartFile file) {
         knowledgeBaseService.requireOwned(userId, knowledgeBaseId);
-        validatePdf(file.getOriginalFilename(), file.getContentType());
+        validateDocumentType(file.getOriginalFilename(), file.getContentType());
         String fileHash = calculateSha256(file);
         RLock lock = redissonClient.getLock("lock:file:dedup:" + fileHash);
         lock.lock();
@@ -118,7 +118,7 @@ public class FileUploadService {
     @Transactional
     public InitMultipartUploadResponse initMultipart(Long userId, InitMultipartUploadRequest request) {
         knowledgeBaseService.requireOwned(userId, request.knowledgeBaseId());
-        validatePdf(request.filename(), request.contentType());
+        validateDocumentType(request.filename(), request.contentType());
         String fileHash = normalizeSha256(request.sha256());
         validateInitRequest(request);
         RLock lock = redissonClient.getLock("lock:file:dedup:" + fileHash);
@@ -578,10 +578,22 @@ public class FileUploadService {
         return normalized;
     }
 
-    private void validatePdf(String filename, String contentType) {
+    private void validateDocumentType(String filename, String contentType) {
         String safeName = safeFilename(filename).toLowerCase(Locale.ROOT);
-        if (!safeName.endsWith(".pdf") || !"application/pdf".equalsIgnoreCase(contentType)) {
-            throw new BusinessException("M1 只接受 content-type 为 application/pdf 的 PDF 文件");
+        int dot = safeName.lastIndexOf('.');
+        String extension = dot < 0 ? "" : safeName.substring(dot);
+        String expectedType = switch (extension) {
+            case ".pdf" -> "application/pdf";
+            case ".pptx" -> "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+            case ".txt" -> "text/plain";
+            case ".md", ".markdown" -> "text/markdown";
+            default -> throw new BusinessException("仅支持 TXT、Markdown、PDF、PPTX 文件");
+        };
+        String declaredType = contentType(contentType).split(";", 2)[0].trim().toLowerCase(Locale.ROOT);
+        // Browser MIME inference varies for Markdown and binary uploads; Tika detects the bytes.
+        if (!expectedType.equals(declaredType) && !"application/octet-stream".equals(declaredType)
+                && !(expectedType.equals("text/markdown") && declaredType.equals("text/plain"))) {
+            throw new BusinessException("文件扩展名与 content-type 不匹配");
         }
     }
 

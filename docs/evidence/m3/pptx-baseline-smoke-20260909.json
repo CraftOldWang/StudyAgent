@@ -1,0 +1,145 @@
+{
+  "source": {
+    "path": "D:\\Download\\BDNetdisk_DL\\操作系统\\课件\\5.3OS_IPCandConcurrency-并发控制的方法-2024.pptx",
+    "sha256": "f647b80fc9334e04ef6793dad728a08537d51fbd2275a2f0dd398648a5b120fb",
+    "bytes": 998057,
+    "result": {
+      "fileId": "2097360470759587842",
+      "documentId": "2097360470860251137",
+      "status": "UPLOADED"
+    }
+  },
+  "knowledgeBaseId": "2097359594016399362",
+  "documentStatus": {
+    "id": "2097360470860251137",
+    "knowledgeBaseId": "2097359594016399362",
+    "fileRecordId": "2097360470759587842",
+    "title": "5.3OS_IPCandConcurrency-并发控制的方法-2024.pptx",
+    "contentType": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "pipelineStatus": "INDEXED",
+    "createdAt": "2026-09-08T16:24:38",
+    "updatedAt": "2026-09-08T16:26:05"
+  },
+  "baselineChunkStatistics": {
+    "parents": 241,
+    "children": 241
+  },
+  "pipelineConsumerElapsedMillis": 86505,
+  "retrieval": {
+    "query": "信号量的 P 操作和 V 操作分别有什么作用？",
+    "hits": [
+      {
+        "chunkId": "5f11a43d8a735370bb29b2ef0abcd0d33f19b217fd21040f5bd4218a0b194e20",
+        "content": "初始化完成后，只能通过P()和V()操作修改\n",
+        "provenance": {
+          "documentId": "2097360470860251137",
+          "documentTitle": "5.3OS_IPCandConcurrency-并发控制的方法-2024.pptx",
+          "sourceLocation": "{\"startOffset\":12440,\"endOffset\":12463,\"headingPath\":[]}"
+        },
+        "score": 0.03125763125763126
+      },
+      {
+        "chunkId": "df6af8e71fa21bbf71a78409dfdf21bfaf4d38e8b3880b18a4ae6d7c28beca0a",
+        "content": "PV操作不能次序错误、重复或遗漏\n必须成对使用P()操作和V()操作\n■\n",
+        "provenance": {
+          "documentId": "2097360470860251137",
+          "documentTitle": "5.3OS_IPCandConcurrency-并发控制的方法-2024.pptx",
+          "sourceLocation": "{\"startOffset\":12859,\"endOffset\":12896,\"headingPath\":[]}"
+        },
+        "score": 0.031099324975891997
+      },
+      {
+        "chunkId": "d38ce38ffbc6aaa7f0d99c8dac7ec7652c57be91b20183d3635be3e48dc74042",
+        "content": "V()操作在使用后释放临界资源\nmutex = new Semaphore(1);\nmutex->P();\nCritical Section;\nmutex->V();\n每个临界区设置一个信号量，其初值为1\n",
+        "provenance": {
+          "documentId": "2097360470860251137",
+          "documentTitle": "5.3OS_IPCandConcurrency-并发控制的方法-2024.pptx",
+          "sourceLocation": "{\"startOffset\":12897,\"endOffset\":13000,\"headingPath\":[]}"
+        },
+        "score": 0.031054405392392875
+      },
+      {
+        "chunkId": "f2beb53afcd3b250688d1e1a8501401fd571518e20d708bedfeb514096b4f453",
+        "content": "P()操作保证互斥访问临界资源\n",
+        "provenance": {
+          "documentId": "2097360470860251137",
+          "documentTitle": "5.3OS_IPCandConcurrency-并发控制的方法-2024.pptx",
+          "sourceLocation": "{\"startOffset\":12842,\"endOffset\":12858,\"headingPath\":[]}"
+        },
+        "score": 0.030776515151515152
+      },
+      {
+        "chunkId": "674856113a4d8de768624fb71dbbae7b9101c95bac81a369725d2c55e2cb6d74",
+        "content": "由操作系统保证，PV操作是原子操作\n",
+        "provenance": {
+          "documentId": "2097360470860251137",
+          "documentTitle": "5.3OS_IPCandConcurrency-并发控制的方法-2024.pptx",
+          "sourceLocation": "{\"startOffset\":12464,\"endOffset\":12482,\"headingPath\":[]}"
+        },
+        "score": 0.03021353930031804
+      },
+      {
+        "chunkId": "73f8b2d97f8b1525614057b9c6bfbc0cf409bfe97c0c29c4bcaa6fc914a55632",
+        "content": "信号量的特性\nP() 可能阻塞，V()不会阻塞\n■\n",
+        "provenance": {
+          "documentId": "2097360470860251137",
+          "documentTitle": "5.3OS_IPCandConcurrency-并发控制的方法-2024.pptx",
+          "sourceLocation": "{\"startOffset\":12329,\"endOffset\":12355,\"headingPath\":[]}"
+        },
+        "score": 0.030158730158730156
+      }
+    ]
+  },
+  "limits": [
+    "Single real API smoke, not a benchmark or retrieval-quality evaluation.",
+    "Original baseline chunker and embedding path; no stage artifact reuse yet."
+  ],
+  "http": [
+    {
+      "stage": "create",
+      "elapsedMillis": 43.973399995593354
+    },
+    {
+      "stage": "create",
+      "status": 200,
+      "traceId": "aa032965-54e7-45fa-956c-a8c51de961a3",
+      "elapsedMillis": 345.71690000302624
+    },
+    {
+      "stage": "upload",
+      "status": 500,
+      "traceId": "ff3ae342-fc0c-4fa7-bb6b-8bbda9a27cc9",
+      "elapsedMillis": 762.0490999979666
+    },
+    {
+      "stage": "status",
+      "status": 200,
+      "traceId": "6b84ee1b-4327-4c9d-917b-9f24c821f247",
+      "elapsedMillis": 72.70479999715462
+    },
+    {
+      "stage": "upload",
+      "status": 200,
+      "traceId": "874d365f-9708-4c8a-9721-763b080c986e",
+      "elapsedMillis": 708.1667999882484
+    },
+    {
+      "stage": "status",
+      "status": 200,
+      "traceId": "d26042b2-4a3c-4728-b9b7-f8df029d6cbb",
+      "elapsedMillis": 68.05089999397751
+    },
+    {
+      "stage": "status",
+      "status": 200,
+      "traceId": "9204b9aa-38f1-4cac-8006-a94d188658b5",
+      "elapsedMillis": 90.39300000586081
+    },
+    {
+      "stage": "search",
+      "status": 200,
+      "traceId": "523d5f1e-1225-413a-b1dc-f0589a79aebb",
+      "elapsedMillis": 1157.349000000977
+    }
+  ]
+}

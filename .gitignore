@@ -15,7 +15,14 @@ frontend/vite-dev.*.log
 
 docker/rocketmq/参考用的broker.conf
 简历.md
-scripts/
+scripts/*
+!scripts/run-with-local-keys.ps1
+!scripts/summarize-model-usage.py
+!scripts/smoke-api.py
+!scripts/requirements-eval.txt
+.agentscope/workspace/state/
+.eval/
+config/local-secrets.properties
 
 .archive/
 .archify/

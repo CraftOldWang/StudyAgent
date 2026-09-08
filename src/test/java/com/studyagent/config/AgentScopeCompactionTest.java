@@ -78,6 +78,7 @@ class AgentScopeCompactionTest {
             call(agent, runtimeContext, "knowledge point completion recorded");
 
             assertThat(model.summaryPrompts()).hasSize(1);
+            assertThat(model.responseSequence.get()).isEqualTo(5);
             assertThat(model.summaryPrompts().getFirst())
                     .contains(TARGET, STATUS, DISCOVERY);
 

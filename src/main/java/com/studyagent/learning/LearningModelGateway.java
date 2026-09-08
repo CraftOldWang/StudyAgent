@@ -1,5 +1,6 @@
 package com.studyagent.learning;
 
+import com.studyagent.agent.integration.ModelCallScope;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.studyagent.agent.integration.AgentInvocationScopeFactory;
 import com.studyagent.agent.integration.KnowledgeSearchExecution;
@@ -108,7 +109,7 @@ public class LearningModelGateway {
                 parseStatus(point.getStatus()), expectedTarget);
         context.put(LearningTransitionIntent.class, intent);
         try {
-            Msg response = harnessAgent.call(prompt, context).block();
+            Msg response = harnessAgent.call(prompt, context).contextWrite(ModelCallScope.capture()).block();
             if (response == null || response.getTextContent() == null || response.getTextContent().isBlank()) {
                 throw new BusinessException("DeepSeek 未返回有效内容");
             }

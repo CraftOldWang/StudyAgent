@@ -71,6 +71,7 @@ public class AgentScopeAgentConfiguration {
                 .disableFilesystemTools()
                 .disableShellTool()
                 .disableMemoryTools()
+                .disableMemoryHooks()
                 .disableSubagents()
                 .build();
     }

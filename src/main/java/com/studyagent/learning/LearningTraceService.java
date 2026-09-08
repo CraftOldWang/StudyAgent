@@ -1,5 +1,6 @@
 package com.studyagent.learning;
 
+import com.studyagent.agent.integration.ModelCallScope;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.studyagent.common.exception.BusinessException;
 import com.studyagent.mapper.AgentTraceEventMapper;
@@ -17,7 +18,8 @@ public class LearningTraceService {
     private final AgentTraceEventMapper traceEventMapper;
 
     public String start() {
-        return UUID.randomUUID().toString();
+        ModelCallScope scope = ModelCallScope.current();
+        return scope == null ? UUID.randomUUID().toString() : scope.traceId();
     }
 
     public void record(

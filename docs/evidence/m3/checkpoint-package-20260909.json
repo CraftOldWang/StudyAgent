@@ -1,0 +1,9 @@
+{
+  "command": "mvn -q -DskipTests -Dmaven.jar.forceCreation=true package",
+  "exitCode": 0,
+  "jarBytes": 213403666,
+  "jarSha256": "ec8781d7e228632082437473a66431982bd39673a4eba01286a2adc61b73b811",
+  "zipCrcValid": true,
+  "tests": "linux-tests-20260909.json",
+  "note": "Separate package after full test reports passed and the combined repackage step failed for memory allocation."
+}

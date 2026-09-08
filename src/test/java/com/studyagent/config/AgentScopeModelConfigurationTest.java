@@ -2,6 +2,7 @@ package com.studyagent.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.agentscope.core.model.Model;
 import io.agentscope.core.model.GenerateOptions;
 import io.agentscope.core.model.ModelRegistry;
@@ -39,6 +40,7 @@ class AgentScopeModelConfigurationTest {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withUserConfiguration(AgentScopeModelConfiguration.class)
+            .withBean(ObjectMapper.class, ObjectMapper::new)
             .withPropertyValues(
                     "study-agent.agentscope.model.primary-model-id=" + DEEPSEEK_MODEL_ID,
                     "study-agent.agentscope.model.max-retries=1",
@@ -46,7 +48,9 @@ class AgentScopeModelConfigurationTest {
                     "study-agent.agentscope.model.dashscope.base-url=https://dashscope.example.test",
                     "study-agent.agentscope.model.deepseek.api-key=test-deepseek-key",
                     "study-agent.agentscope.model.deepseek.base-url=https://deepseek.example.test",
-                    "study-agent.agentscope.model.deepseek.max-tokens=1800");
+                    "study-agent.agentscope.model.deepseek.max-tokens=1800",
+                    "study-agent.agentscope.model.deepseek.thinking-enabled=false",
+                    "study-agent.agentscope.model.deepseek.temperature=0.2");
 
     @BeforeEach
     void resetModelRegistryBeforeTest() {
@@ -89,6 +93,8 @@ class AgentScopeModelConfigurationTest {
                     .creationContext(DEEPSEEK_MODEL_ID, properties)
                     .component(GenerateOptions.class);
             assertThat(options.getMaxTokens()).isEqualTo(1800);
+            assertThat(options.getTemperature()).isEqualTo(0.2);
+            assertThat(options.getAdditionalBodyParams()).containsEntry("thinking", java.util.Map.of("type", "disabled"));
             assertThat(AgentScopeModelConfiguration
                     .creationContext(DASHSCOPE_MODEL_ID, properties)
                     .component(GenerateOptions.class))

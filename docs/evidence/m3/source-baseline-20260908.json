@@ -1,0 +1,59 @@
+{
+  "recordedAt": "2026-09-08T14:52:27.2046296Z",
+  "gitSha": "78a6225cabe26610ac7e7f469b52c17b67350cf0",
+  "evidenceLevel": "source-baseline-only",
+  "measurementsCollected": false,
+  "files": [
+    {
+      "path": "src/main/java/com/studyagent/ingest/upload/FileUploadService.java",
+      "sha256": "601bbc59cdf9f66a4a06272a9967f7d81338a0c4af87b8f234332b56c257d45c"
+    },
+    {
+      "path": "src/main/java/com/studyagent/agent/integration/LearningContextCompactor.java",
+      "sha256": "867dc539a1c54ce2364ecb1fdbea174b2ed58131b9d53568bde8b30cba89ac5e"
+    },
+    {
+      "path": "src/main/java/com/studyagent/config/AgentScopeAgentConfiguration.java",
+      "sha256": "84c60db92414e73cfef37646ecef4a3813d05e786ed63efcd6d395bed16e009f"
+    },
+    {
+      "path": "src/main/java/com/studyagent/algo/chunk/TokenWindowChunker.java",
+      "sha256": "27213cb7fb67ca508eef749bc72df16f61286ec2c224147646ab5736f35ba9ec"
+    },
+    {
+      "path": "src/main/java/com/studyagent/algo/chunk/StructuredChunker.java",
+      "sha256": "fcf3281ffade0a332e9c81ff49d3477bc20877c18af5f07b15762c62637b491f"
+    },
+    {
+      "path": "src/main/java/com/studyagent/config/ChunkingConfiguration.java",
+      "sha256": "1d577f632f7af1f52eaeca4e6a6822c2622afd311d5fdf6d065b162a6bf1fdee"
+    },
+    {
+      "path": "src/main/resources/application.yml",
+      "sha256": "389b3aefc057b46d4298b811f930addf062c7412d0089cce0a493d689960815b"
+    },
+    {
+      "path": "frontend/vite.config.ts",
+      "sha256": "d837beb75db9de10a9dc1e6efd9dabd3a2988e763bc1da51b13cf6aeb36fec24"
+    }
+  ],
+  "configuration": {
+    "chatModel": "deepseek-chat",
+    "embeddingModel": "text-embedding-v3",
+    "embeddingDimensions": 1024,
+    "childTokens": 900,
+    "childOverlap": 120,
+    "parentTokens": 2400,
+    "parentOverlap": 240,
+    "thresholdMessages": 6,
+    "thresholdKeep": 2,
+    "completionTrigger": 1,
+    "completionKeep": 1
+  },
+  "upload": "temporary objects; ordered reread for SHA-256 then reread for merged putObject",
+  "notes": [
+    "No performance or token-saving claim from this record.",
+    "Raw configuration is intentionally not archived because it contained a literal credential fallback.",
+    "Source baseline belongs to Git SHA plus per-file hashes; later benchmark must record actual runtime model and configuration."
+  ]
+}

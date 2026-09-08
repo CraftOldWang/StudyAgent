@@ -1,0 +1,22 @@
+{
+  "environment": "Windows Java 21.0.2; isolated source snapshot; TieredStopAtLevel=1",
+  "totals": {
+    "tests": 148,
+    "failures": 0,
+    "errors": 1,
+    "skipped": 3
+  },
+  "unresolved": [
+    {
+      "suite": "com.studyagent.config.ElasticsearchConfigurationTest",
+      "test": "createsTypedClientWithoutOpeningRemoteConnection",
+      "type": "java.lang.IllegalStateException"
+    }
+  ],
+  "fullSuitePassed": false,
+  "sourceManifest": ".eval/host-check/source-manifest.json",
+  "notes": [
+    "LearningSkillTemplateTest rerun after restoring snapshot skill resources; current aggregate uses latest report per suite.",
+    "Three database integration tests require explicit integration environment and remain skipped."
+  ]
+}

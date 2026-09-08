@@ -1,0 +1,104 @@
+{
+  "source": {
+    "path": "D:\\Download\\BDNetdisk_DL\\算法设计和分析\\课件\\Chap01.pdf",
+    "sha256": "1491584332013087542d91cfc5ebb30da4599f51f63b40331733797dabe31d47",
+    "bytes": 1253887,
+    "result": {
+      "fileId": "2097350211044790273",
+      "documentId": "2097350211195785217",
+      "status": "UPLOADED"
+    }
+  },
+  "knowledgeBaseId": "2097346892705816578",
+  "documentStatus": {
+    "id": "2097350211195785217",
+    "knowledgeBaseId": "2097346892705816578",
+    "fileRecordId": "2097350211044790273",
+    "title": "Chap01.pdf",
+    "contentType": "application/pdf",
+    "pipelineStatus": "INDEXED",
+    "createdAt": "2026-09-08T15:43:52",
+    "updatedAt": "2026-09-08T15:45:29"
+  },
+  "baselineChunkStatistics": {
+    "parents": 245,
+    "children": 245,
+    "childrenIdenticalToParent": 245,
+    "minCharacters": 5,
+    "meanCharactersRounded": 44.4,
+    "maxCharacters": 157
+  },
+  "pipelineConsumerElapsedMillis": 83423,
+  "retrieval": {
+    "query": "什么是稳定匹配？",
+    "hits": [
+      {
+        "chunkId": "84cf1a9ff638a9cf08b07539aa00eb2b8fa6669449b529a0bf64efde275bbdee",
+        "content": "Stable matching problem.   \n",
+        "provenance": {
+          "documentId": "2097350211195785217",
+          "documentTitle": "Chap01.pdf",
+          "sourceLocation": "{\"startOffset\":5704,\"endOffset\":5732,\"headingPath\":[]}"
+        },
+        "score": 0.01639344262295082
+      },
+      {
+        "chunkId": "7a8c0715fa044d39fbffaa60be01ebf98df3a9b556277a05fe3e942926e57688",
+        "content": "Def.(1-4).  A stable matching is a perfect matching \nwith no existence of unstable pairs. \n",
+        "provenance": {
+          "documentId": "2097350211195785217",
+          "documentTitle": "Chap01.pdf",
+          "sourceLocation": "{\"startOffset\":2007,\"endOffset\":2098,\"headingPath\":[]}"
+        },
+        "score": 0.016129032258064516
+      },
+      {
+        "chunkId": "db8b1ee6abbaab2c6aaeb0df7e8ed6be6155d2b9139308debaae7682ce0c3467",
+        "content": "Stable matching problem.  Given preference profiles \nof 𝑛 men and 𝑛 women, find a stable matching. \n",
+        "provenance": {
+          "documentId": "2097350211195785217",
+          "documentTitle": "Chap01.pdf",
+          "sourceLocation": "{\"startOffset\":8903,\"endOffset\":9005,\"headingPath\":[]}"
+        },
+        "score": 0.015873015873015872
+      },
+      {
+        "chunkId": "2cc1f3c0313c8d9cacbdf97bb88d1776f7eb4ae9b745b5904ed716d95dc1d69b",
+        "content": "Corollary(1-1). Man-optimal assignment is a stable \nmatching. \n",
+        "provenance": {
+          "documentId": "2097350211195785217",
+          "documentTitle": "Chap01.pdf",
+          "sourceLocation": "{\"startOffset\":7140,\"endOffset\":7203,\"headingPath\":[]}"
+        },
+        "score": 0.015625
+      },
+      {
+        "chunkId": "4511da5b5427a4a014ecbaf1a11851bdec240766b56f25dfad80b2e2ced283b4",
+        "content": "Stable matching problem. Given the preference \nlists of 𝑛 men and 𝑛 women, find a stable matching \nif one exists. \n",
+        "provenance": {
+          "documentId": "2097350211195785217",
+          "documentTitle": "Chap01.pdf",
+          "sourceLocation": "{\"startOffset\":2102,\"endOffset\":2219,\"headingPath\":[]}"
+        },
+        "score": 0.015384615384615385
+      },
+      {
+        "chunkId": "15b946db6b6f049383262e55645d0526ab94faf812020dd4841bc40966ed647e",
+        "content": "Theorem(1-6).  For instances by Def.(1-7)  There \nexists a stable matching. \n",
+        "provenance": {
+          "documentId": "2097350211195785217",
+          "documentTitle": "Chap01.pdf",
+          "sourceLocation": "{\"startOffset\":9816,\"endOffset\":9893,\"headingPath\":[]}"
+        },
+        "score": 0.015151515151515152
+      }
+    ],
+    "traceId": "caaa9c98-2684-417d-b9dc-9eb99d94a052"
+  },
+  "notes": [
+    "One real PDF smoke run; not a retrieval benchmark.",
+    "Chunk statistics were verified with SQL by document id; parent equality compared content_hash in a child-parent join.",
+    "Pipeline elapsed time is from the real consumer log and includes parse/chunk/embed/index, not upload or MQ queue wait.",
+    "Raw API events are retained in .eval/runs/m3-smoke/http.jsonl."
+  ]
+}

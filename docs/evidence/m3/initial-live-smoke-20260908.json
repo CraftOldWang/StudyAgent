@@ -1,0 +1,48 @@
+{
+  "jarSha256": "ea635bd27994cdd0d385f165dfa86524a8bea1b5b945e7e1022aff72d4331da5",
+  "knowledgeBaseId": "2097346892705816578",
+  "chatModel": "deepseek-v4-flash",
+  "embeddingModel": "qwen3.7-text-embedding",
+  "embeddingDimensions": 1024,
+  "http": [
+    {
+      "stage": "create",
+      "status": 200,
+      "traceId": "30cf7152-d55c-4bf4-bcdf-aa82249e13d5",
+      "elapsedMillis": 1710.9602
+    },
+    {
+      "stage": "search",
+      "status": 200,
+      "traceId": "e5fec3b5-8677-4697-966e-f2598a762162",
+      "elapsedMillis": 2978.9293
+    },
+    {
+      "stage": "hello",
+      "status": 200,
+      "traceId": "e23f4357-b607-477b-b2ba-d14bc5d47b57",
+      "elapsedMillis": 4647.7583
+    }
+  ],
+  "modelUsage": {
+    "attempts": 2,
+    "statusCounts": {
+      "SUCCEEDED": 2
+    },
+    "withoutTerminalEvent": 0,
+    "attemptsWithoutUsage": 0,
+    "usageComplete": true,
+    "knownInputTokens": 3418,
+    "knownOutputTokens": 218,
+    "knownCachedInputTokens": 0,
+    "knownTotalTokens": 3636,
+    "cacheNote": "Cached input is a subset of input; SDK cache zero may mean unreported.",
+    "totalsNote": "Known totals exclude missing usage and are lower bounds when usageComplete=false."
+  },
+  "limitations": [
+    "One empty-KB query verifies endpoint/connectivity, not retrieval quality.",
+    "Hello triggered two model attempts with the same HTTP trace; initial SDK memory hooks were still enabled.",
+    "These are smoke results, not performance or token-saving benchmarks.",
+    "Raw HTTP responses remain in .eval/runs/m3-smoke/http.jsonl."
+  ]
+}

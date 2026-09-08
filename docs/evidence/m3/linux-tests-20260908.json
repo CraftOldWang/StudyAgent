@@ -1,0 +1,506 @@
+{
+  "environment": "Linux Temurin Java 21.0.9; Maven 3.9.11; capped heap; serial run",
+  "totals": {
+    "tests": 148,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 3
+  },
+  "suites": [
+    {
+      "suite": "com.studyagent.agent.governance.KnowledgeSearchRetryExecutorTest",
+      "reportModifiedAt": "2026-09-08T15:22:30.592347+00:00",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.agent.governance.ToolGovernanceInterceptorTest",
+      "reportModifiedAt": "2026-09-08T15:22:31.676057+00:00",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.agent.integration.AgentHelloServiceTest",
+      "reportModifiedAt": "2026-09-08T15:22:36.677198+00:00",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.agent.integration.AgentInvocationScopeFactoryTest",
+      "reportModifiedAt": "2026-09-08T15:22:37.727318+00:00",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.agent.integration.KnowledgeSearchAgentServiceTest",
+      "reportModifiedAt": "2026-09-08T15:22:38.167431+00:00",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.agent.integration.KnowledgeSearchToolTest",
+      "reportModifiedAt": "2026-09-08T15:22:40.505072+00:00",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.agent.integration.LearningContextCompactorTest",
+      "reportModifiedAt": "2026-09-08T15:22:43.074802+00:00",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.agent.integration.ObservedModelTest",
+      "reportModifiedAt": "2026-09-08T15:22:43.310984+00:00",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.agent.integration.ReviewCardWriteToolTest",
+      "reportModifiedAt": "2026-09-08T15:22:43.535949+00:00",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.agent.skill.LearningSkillTemplateTest",
+      "reportModifiedAt": "2026-09-08T15:22:44.086455+00:00",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.agent.web.AgentHelloControllerTest",
+      "reportModifiedAt": "2026-09-08T15:22:56.661324+00:00",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.algo.chunk.JtokkitTokenCounterTest",
+      "reportModifiedAt": "2026-09-08T15:22:57.649060+00:00",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.algo.chunk.StructuredChunkerTest",
+      "reportModifiedAt": "2026-09-08T15:22:57.902155+00:00",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.algo.chunk.TextChunkerTest",
+      "reportModifiedAt": "2026-09-08T15:22:58.151586+00:00",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.algo.chunk.TokenWindowChunkerTest",
+      "reportModifiedAt": "2026-09-08T15:22:58.422911+00:00",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.algo.fsrs.FsrsSchedulerTest",
+      "reportModifiedAt": "2026-09-08T15:22:58.687001+00:00",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.algo.metric.RecallMetricCalculatorTest",
+      "reportModifiedAt": "2026-09-08T15:22:58.938183+00:00",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.algo.rrf.RrfRankerTest",
+      "reportModifiedAt": "2026-09-08T15:22:59.191921+00:00",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.config.AgentScopeAgentConfigurationTest",
+      "reportModifiedAt": "2026-09-08T15:22:59.446362+00:00",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.config.AgentScopeCompactionTest",
+      "reportModifiedAt": "2026-09-08T15:22:59.690961+00:00",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.config.AgentScopeModelConfigurationTest",
+      "reportModifiedAt": "2026-09-08T15:22:59.935272+00:00",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.config.AgentScopeToolConfigurationTest",
+      "reportModifiedAt": "2026-09-08T15:23:00.191806+00:00",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.config.AgentScopeWorkspaceConfigurationTest",
+      "reportModifiedAt": "2026-09-08T15:23:00.447961+00:00",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.config.ChunkingConfigurationTest",
+      "reportModifiedAt": "2026-09-08T15:23:00.698431+00:00",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.config.DashScopeEmbeddingConfigurationTest",
+      "reportModifiedAt": "2026-09-08T15:23:00.972784+00:00",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.config.DataIsolationInterceptorTest",
+      "reportModifiedAt": "2026-09-08T15:23:01.241240+00:00",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.config.ElasticsearchConfigurationTest",
+      "reportModifiedAt": "2026-09-08T15:23:01.726776+00:00",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.config.KnowledgeSearchAgentConfigurationTest",
+      "reportModifiedAt": "2026-09-08T15:23:01.965055+00:00",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.config.S3ConfigTest",
+      "reportModifiedAt": "2026-09-08T15:23:04.704101+00:00",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.identity.IdentityResolverTest",
+      "reportModifiedAt": "2026-09-08T15:23:04.940606+00:00",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.ingest.parse.TikaDocumentTextParserTest",
+      "reportModifiedAt": "2026-09-08T15:23:07.971457+00:00",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.ingest.pipeline.DocumentPipelinePersistenceTest",
+      "reportModifiedAt": "2026-09-08T15:23:08.212826+00:00",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.ingest.pipeline.DocumentPipelineTest",
+      "reportModifiedAt": "2026-09-08T15:23:08.677810+00:00",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.ingest.upload.FileUploadServiceTest",
+      "reportModifiedAt": "2026-09-08T15:23:10.149399+00:00",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.learning.KnowledgePointLifecycleTest",
+      "reportModifiedAt": "2026-09-08T15:23:10.404058+00:00",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.learning.LearningFlowServiceTest",
+      "reportModifiedAt": "2026-09-08T15:23:10.906727+00:00",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.learning.LearningModelGatewayTest",
+      "reportModifiedAt": "2026-09-08T15:23:11.182018+00:00",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.learning.LearningPersistenceServiceTest",
+      "reportModifiedAt": "2026-09-08T15:23:11.443708+00:00",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.learning.LearningPlanServiceTest",
+      "reportModifiedAt": "2026-09-08T15:23:11.710537+00:00",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.learning.LearningStateTransitionToolTest",
+      "reportModifiedAt": "2026-09-08T15:23:11.967299+00:00",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.learning.LearningTraceServiceTest",
+      "reportModifiedAt": "2026-09-08T15:23:12.208721+00:00",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.learning.LearningTransitionToolChoiceHookTest",
+      "reportModifiedAt": "2026-09-08T15:23:12.458633+00:00",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.learning.web.LearningResponseAssemblerTest",
+      "reportModifiedAt": "2026-09-08T15:23:12.699981+00:00",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.learning.web.LearningRestContractTest",
+      "reportModifiedAt": "2026-09-08T15:23:12.961238+00:00",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.migration.IngestSchemaMigrationIntegrationTest",
+      "reportModifiedAt": "2026-09-08T15:23:13.211275+00:00",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    {
+      "suite": "com.studyagent.migration.ReviewLearningSchemaMigrationIntegrationTest",
+      "reportModifiedAt": "2026-09-08T15:23:13.453901+00:00",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    {
+      "suite": "com.studyagent.migration.UserSchemaMigrationIntegrationTest",
+      "reportModifiedAt": "2026-09-08T15:23:13.695966+00:00",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    {
+      "suite": "com.studyagent.model.IngestModelMappingTest",
+      "reportModifiedAt": "2026-09-08T15:23:13.947469+00:00",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.model.ReviewLearningModelMappingTest",
+      "reportModifiedAt": "2026-09-08T15:23:14.204098+00:00",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.rag.embedding.DashScopeEmbeddingServiceTest",
+      "reportModifiedAt": "2026-09-08T15:23:14.434856+00:00",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.rag.index.ElasticsearchIndexerTest",
+      "reportModifiedAt": "2026-09-08T15:23:14.670322+00:00",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.rag.index.ElasticsearchIndexInitializerTest",
+      "reportModifiedAt": "2026-09-08T15:23:14.893348+00:00",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.rag.retrieval.BM25RetrieverTest",
+      "reportModifiedAt": "2026-09-08T15:23:15.124299+00:00",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.rag.retrieval.KnowledgeRetrievalServiceTest",
+      "reportModifiedAt": "2026-09-08T15:23:15.355264+00:00",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.rag.retrieval.ParentAggregatorTest",
+      "reportModifiedAt": "2026-09-08T15:23:15.590880+00:00",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.rag.retrieval.RetrievalServiceTest",
+      "reportModifiedAt": "2026-09-08T15:23:15.836242+00:00",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.rag.retrieval.VectorRetrieverTest",
+      "reportModifiedAt": "2026-09-08T15:23:16.071194+00:00",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.review.ReviewCardServiceTest",
+      "reportModifiedAt": "2026-09-08T15:23:16.311429+00:00",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "excludedStaleReports": [
+    {
+      "suite": "com.studyagent.modules.evaluation.application.DeepseekGeneratedCasesParserTest",
+      "reportModifiedAt": "2026-09-03T06:54:24.586216+00:00",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.modules.evaluation.application.RagRecallEvaluationServiceTest",
+      "reportModifiedAt": "2026-09-03T06:54:24.805112+00:00",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.studyagent.modules.storage.application.FileUploadServiceTest",
+      "reportModifiedAt": "2026-09-03T06:54:25.884498+00:00",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "command": "docker compose -f docker-compose.yml -f docker-compose.eval.yml run --rm --no-deps eval-app mvn -q test",
+  "notes": [
+    "Only reports modified during this run are counted.",
+    "Three opt-in database integration tests skipped; this is not full real-dependency acceptance."
+  ]
+}

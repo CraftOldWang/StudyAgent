@@ -1,0 +1,522 @@
+{
+  "command": "mvn -q test package",
+  "runtime": "Docker maven:3.9.11-eclipse-temurin-21",
+  "cutoffUtc": "2026-09-08T16:27:31Z",
+  "exitCode": 1,
+  "totals": {
+    "tests": 160,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 3
+  },
+  "reports": [
+    {
+      "suite": "com.studyagent.agent.governance.KnowledgeSearchRetryExecutorTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "41145d50f9568b67c478271adb6cc87abda84bd467ab68b6374cbee8dbf96406"
+    },
+    {
+      "suite": "com.studyagent.agent.governance.ToolGovernanceInterceptorTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "619e6e07175691c6636b15a68427fce8d04c1e86c7ffd49f779abb0cf4508201"
+    },
+    {
+      "suite": "com.studyagent.agent.integration.AgentHelloServiceTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "8594132839beb1231ff51b85d7c392255b8f23e462d73e343232399e046e0889"
+    },
+    {
+      "suite": "com.studyagent.agent.integration.AgentInvocationScopeFactoryTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "87ffb3aa439aa5ef930b5bcc909e8d696a42ce0f49a37e4b0e6837c6d4e76140"
+    },
+    {
+      "suite": "com.studyagent.agent.integration.KnowledgeSearchAgentServiceTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "0f58d55888bb7423b6e5be58e0a2e072a39ec4238197677ac7d5f79f9896d709"
+    },
+    {
+      "suite": "com.studyagent.agent.integration.KnowledgeSearchToolTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "bc811b9abc50b5241343b1cf430834ec398ef1b0089d64c250ee6acd59f7bec4"
+    },
+    {
+      "suite": "com.studyagent.agent.integration.LearningContextCompactorTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "bdb4333459493be10c83cf7098217a6266cf8bb513e8b484c7b9d0f01fce6ef4"
+    },
+    {
+      "suite": "com.studyagent.agent.integration.ObservedModelTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "de90dc0ba65185b13ece0997449acf7b4d2ecec817e58b1e6b5664318a439d96"
+    },
+    {
+      "suite": "com.studyagent.agent.integration.ReviewCardWriteToolTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "4b29c6c1d156822c1d064a4450fdd3faf79b0102673b746486d24c472288b85c"
+    },
+    {
+      "suite": "com.studyagent.agent.skill.LearningSkillTemplateTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "e5cabe114e93d01704d68f8ba916db52b75e725cb1ae47995606dd88e3fb07ed"
+    },
+    {
+      "suite": "com.studyagent.agent.web.AgentHelloControllerTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "1b9fe7a7aadf64c039ef89d0cfc5fb04c5a2d0800a0decb1205d263ee7e70e2a"
+    },
+    {
+      "suite": "com.studyagent.algo.chunk.JtokkitTokenCounterTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "eb11869be062e4ab89d45db94686c8680d752ab37b7599feceb7ba1e08d713ad"
+    },
+    {
+      "suite": "com.studyagent.algo.chunk.StructuredChunkerTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "e789106984510e8adca6d145c26dbfd8c7d05977d13eda741d83762b0cba7def"
+    },
+    {
+      "suite": "com.studyagent.algo.chunk.TextChunkerTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "da6b8b7dce540eb0c08fcfe11a41c7baecd69b3ba0fb9ec8a3b82aea93fb641e"
+    },
+    {
+      "suite": "com.studyagent.algo.chunk.TokenWindowChunkerTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "5a2198abe8a34d2b7b7f8afe3b9fd33bd9bc02c5e5584febc30f7fb8401304b9"
+    },
+    {
+      "suite": "com.studyagent.algo.fsrs.FsrsSchedulerTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "04847cbc923124f2647d0269920b03f5c9ad3018358caaa66d7cac6a02b62968"
+    },
+    {
+      "suite": "com.studyagent.algo.metric.RecallMetricCalculatorTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "8a0e6be9309357e84589e68d6a6fe5bcc91dce49a737d831b68a3fba4159997d"
+    },
+    {
+      "suite": "com.studyagent.algo.rrf.RrfRankerTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "0c52502a3c813f60f1973d30b39db423435a67d05b21670428eab0e22341105a"
+    },
+    {
+      "suite": "com.studyagent.config.AgentScopeAgentConfigurationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "eaaeaf862e8cb6f2dff08587f0a63aadeb18880f4d8877d2668df1d3780b4390"
+    },
+    {
+      "suite": "com.studyagent.config.AgentScopeCompactionTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "85246969d7281ddb8f0714cc4dbfa025d393f8ef378e3a02a0468b0f1fd8fd6a"
+    },
+    {
+      "suite": "com.studyagent.config.AgentScopeModelConfigurationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "5992a50838b4cd5bf8e39b93834c76cbdf6a4710fec6b370eb5a4c2939d41a51"
+    },
+    {
+      "suite": "com.studyagent.config.AgentScopeModelWireContractTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "c0caf4ad34d12a62dab3f347bc1b2037a82834da143c1009c6a1f62347ec7269"
+    },
+    {
+      "suite": "com.studyagent.config.AgentScopeToolConfigurationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "4069f362bc1ab139efd19887a5154f723d142ac32fe0b3ecf6223ff30488dac7"
+    },
+    {
+      "suite": "com.studyagent.config.AgentScopeWorkspaceConfigurationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "e7c9859abef76de9fb18b482e364a79b3ed671e314adf8ff401e73c9c525ce34"
+    },
+    {
+      "suite": "com.studyagent.config.ChunkingConfigurationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "208789808e4569adbbb751c3ca364a9490c0f4238257e802b8ecceab02858906"
+    },
+    {
+      "suite": "com.studyagent.config.DashScopeEmbeddingConfigurationTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "375dc2cf0ee340dfe7c4b7cfa24503533e62c1181ed35ad1a2fb92c5dc257bba"
+    },
+    {
+      "suite": "com.studyagent.config.DataIsolationInterceptorTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "dc97878bbb11040c25df97a0b174e19ce66fcca07b926eff4938de7c2ae419cc"
+    },
+    {
+      "suite": "com.studyagent.config.ElasticsearchConfigurationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "7de7ce4eb85c7e900b4c3a6de5ed1674697e3d48698f83896bcc793c8a38a25c"
+    },
+    {
+      "suite": "com.studyagent.config.KnowledgeSearchAgentConfigurationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "6190ed3d57aefc5aa0d3c769b69f73d79b1eacd10aaf682909acb82f7e6bbe46"
+    },
+    {
+      "suite": "com.studyagent.config.LearningRuntimeToolChoiceTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "8afb543b91e142967c1e299caa8309165d1506652dd1f50a4d55aefe9816bb7d"
+    },
+    {
+      "suite": "com.studyagent.config.S3ConfigTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "06f8540e18b157172c48a50c9ae68d4571e748a94d8913bf2cdcf6644839c7ac"
+    },
+    {
+      "suite": "com.studyagent.identity.IdentityResolverTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "00addbaf3f29679ed055716e897e2de5df4d180275d7a1ca7e9635aff7ecb83f"
+    },
+    {
+      "suite": "com.studyagent.ingest.parse.TikaDocumentTextParserTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "ce6ba2d738a061618fae711270b860ca647ff565f9966af520f282a9a789428f"
+    },
+    {
+      "suite": "com.studyagent.ingest.pipeline.DocumentPipelinePersistenceTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "51bc159105ccce2db073a7524d2d5c237efac0fc00c1b08cb82174c3cb6b9a66"
+    },
+    {
+      "suite": "com.studyagent.ingest.pipeline.DocumentPipelineTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "59e163a592dd09c1fffad51a4c40f3fb22efde6059051ee46e756f37e6353c81"
+    },
+    {
+      "suite": "com.studyagent.ingest.upload.FileUploadServiceTest",
+      "tests": 14,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "7b0c26df18a2f6b914acebf8f782f1d0b70de78aeb4e7b95e5d325faa969c0e1"
+    },
+    {
+      "suite": "com.studyagent.learning.KnowledgePointLifecycleTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "0b1123de878a688a5bd932cd7c7dd147f78b4833bab5334615e01e867291510b"
+    },
+    {
+      "suite": "com.studyagent.learning.LearningFlowServiceTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "4c78184a1559e1cf3d4560c0ab2767bf34437541b41e9f41de7f06ff66b8cece"
+    },
+    {
+      "suite": "com.studyagent.learning.LearningModelGatewayTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "58c477061d71b4eb63333303688456a6676d34e0993cbf8ff7091c1598ee37d2"
+    },
+    {
+      "suite": "com.studyagent.learning.LearningPersistenceServiceTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "bbe3239a8a362e624f06af1a1f59167d5c05ccecf106353b8745728569d4cb09"
+    },
+    {
+      "suite": "com.studyagent.learning.LearningPlanServiceTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "baee61a84a9cc6cbfd4eab201b979ef63d7bb72b32c4690055e3c4187fafb715"
+    },
+    {
+      "suite": "com.studyagent.learning.LearningStateTransitionToolTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "f1488fee88966a7af045b7bc95bbf6dbfded87faa850834ff0fc22e5b1514ff4"
+    },
+    {
+      "suite": "com.studyagent.learning.LearningTraceServiceTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "995c363b450091c81c4056bd2532e49febdb0cf40b4fc4d78227d3111bae2426"
+    },
+    {
+      "suite": "com.studyagent.learning.LearningTransitionToolChoiceHookTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "8103c8a461684531b5af89460948e809903e4ad0e11cf6f45e3874db200538f8"
+    },
+    {
+      "suite": "com.studyagent.learning.web.LearningResponseAssemblerTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "804ac83baf4ff551b954c30ed03f67f09a01d7593c5a92f7485a429e77b10e61"
+    },
+    {
+      "suite": "com.studyagent.learning.web.LearningRestContractTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "a6c6de0d4ae8ec26e22af933fd9bfcc2bd2f13051172de061e196f5e2bb7d349"
+    },
+    {
+      "suite": "com.studyagent.migration.IngestSchemaMigrationIntegrationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "reportSha256": "605527ce02c34d6e14e52ad2a121bb6908beec6c8fa09a210ca8e0195e98842a"
+    },
+    {
+      "suite": "com.studyagent.migration.ReviewLearningSchemaMigrationIntegrationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "reportSha256": "6469cf1689ab6c6bf2e774a8ee989d48d0db3bd2fa3419235dd7be073dfe6a51"
+    },
+    {
+      "suite": "com.studyagent.migration.UserSchemaMigrationIntegrationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "reportSha256": "f604bfed6869c861d0a3b85060af80a2f46982a5e56a454c216d78b3efec0e84"
+    },
+    {
+      "suite": "com.studyagent.model.IngestModelMappingTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "d48f82702f46c40ac369be64637920870aaf06e5975e3f07030a812ef1609ac0"
+    },
+    {
+      "suite": "com.studyagent.model.ReviewLearningModelMappingTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "4eff8787704304f4e24030e153ad28ea124de04acf6b72d99d5a33b895be996e"
+    },
+    {
+      "suite": "com.studyagent.rag.embedding.DashScopeEmbeddingServiceTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "1d16366d765673611a21660768716e90ecc4ed5d20e9d36a1c744403b026c665"
+    },
+    {
+      "suite": "com.studyagent.rag.index.ElasticsearchIndexerTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "69da9901921d81714b6f6830ecbeda2b91475838164b61c2a186cf3cacf45c21"
+    },
+    {
+      "suite": "com.studyagent.rag.index.ElasticsearchIndexInitializerTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "8216abb44514f95c8200403deaf3c30ba21a934072190dacf859f5c0a14eadac"
+    },
+    {
+      "suite": "com.studyagent.rag.retrieval.BM25RetrieverTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "60906db97d443e1a5bb9fd0911a58fafb11fdbf77aa99dd61c87fab7d8c6e730"
+    },
+    {
+      "suite": "com.studyagent.rag.retrieval.KnowledgeRetrievalServiceTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "f37395e99f373ed5bbe0528a3160016d7311b467b8dd8e8418023234d7120aa4"
+    },
+    {
+      "suite": "com.studyagent.rag.retrieval.ParentAggregatorTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "3b64665372f395d490196a8a04696427f5fda8a2a031e33473d6b115cf1f6b24"
+    },
+    {
+      "suite": "com.studyagent.rag.retrieval.RetrievalServiceTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "472ec31ffabaf341149e61f1b970f367fbd6b4775b913fee9df6417945479914"
+    },
+    {
+      "suite": "com.studyagent.rag.retrieval.VectorRetrieverTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "69b7ea702214cc2a854eea9fc3357df35dd7de5e8b8fbf5939f9181f9aa7228c"
+    },
+    {
+      "suite": "com.studyagent.review.ReviewCardServiceTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "2afb66353e2a899b505a02f3e0bb46a49208239884baf1eba37135380963424f"
+    }
+  ],
+  "excludedStaleReports": [
+    {
+      "suite": "com.studyagent.modules.evaluation.application.DeepseekGeneratedCasesParserTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "aa25ca71bb06b07a87b26b14d0ef7d9362504681859371150703832f1904675a"
+    },
+    {
+      "suite": "com.studyagent.modules.evaluation.application.RagRecallEvaluationServiceTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "3d5c954719eff2295d4b20eff00bf50000b0589d115f5c8a8164b933890f5e67"
+    },
+    {
+      "suite": "com.studyagent.modules.storage.application.FileUploadServiceTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "reportSha256": "e8476cae1206282e78d279347bf9a228fa680e90f384a636b1b66ccedf381821"
+    }
+  ],
+  "buildFailure": "All current test reports passed; Spring Boot repackage failed: Cannot allocate memory. Partial JAR is not a usable artifact.",
+  "reportScope": "160 tests from this run, excluding 3 stale suites. Tests passed; combined command failed at repackage. Standalone package outcome is recorded separately."
+}

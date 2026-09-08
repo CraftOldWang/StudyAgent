@@ -1,0 +1,29 @@
+services:
+  eval-app:
+    image: maven:3.9.11-eclipse-temurin-21
+    working_dir: /workspace
+    command: ["java", "-jar", "target/study-agent-0.0.1-SNAPSHOT.jar", "--spring.profiles.active=eval"]
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/workspace
+      - ./.agentscope/workspace/skills:/workspace/.eval/agentscope/skills:ro
+      - eval-maven-cache:/root/.m2
+    environment:
+      MAVEN_OPTS: -Xmx256m
+      JAVA_TOOL_OPTIONS: -Xmx384m
+      EVAL_MYSQL_HOST: mysql
+      EVAL_MYSQL_PORT: 3306
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      ROCKETMQ_NAME_SERVER: rocketmq-namesrv:9876
+      ROCKETMQ_PRODUCER_GROUP: study-agent-eval-producer
+      S3_ENDPOINT: http://rustfs:9000
+      STUDY_AGENT_ELASTICSEARCH_ENDPOINT: http://elasticsearch:9200
+    networks:
+      - study-agent-net
+
+volumes:
+  eval-maven-cache:
+    external: true
+    name: study-agent-maven-cache

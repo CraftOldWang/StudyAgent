@@ -36,7 +36,7 @@ public final class KnowledgeSearchAgentService {
                 .put(KnowledgeSearchScope.class, scope)
                 .put(KnowledgeSearchExecution.class, execution)
                 .build();
-        Msg response = agent.call(normalizedQuery, context).block();
+        Msg response = agent.call(normalizedQuery, context).contextWrite(ModelCallScope.capture()).block();
         if (response == null || response.getTextContent() == null || response.getTextContent().isBlank()) {
             throw new BusinessException("DeepSeek 未返回知识库回答");
         }

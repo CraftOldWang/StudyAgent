@@ -1,0 +1,50 @@
+{
+  "jarManifest": "checkpoint-package-20260909.json",
+  "http": {
+    "stage": "hello",
+    "method": "POST",
+    "path": "/api/agent/hello",
+    "recordedAt": "2026-09-08T16:37:10.876777+00:00",
+    "status": 200,
+    "traceId": "72e942ab-958f-4203-b459-023df11e23de",
+    "response": {
+      "code": 0,
+      "message": "ok",
+      "data": "Hello! How can I help you today?\n\nI'm set up to assist with your StudyAgent project. I can help with things like:\n\n- **Explaining** a knowledge point from your verified knowledge base\n- **Quizzing** you on a topic with source-grounded questions\n- **Generating review cards** for spaced repetition\n\nWhat would you like to work on?"
+    },
+    "elapsedMillis": 2301.944899998489
+  },
+  "modelEvents": [
+    {
+      "callId": "eb5e9de4-f0a9-499e-bdbc-3ad4a16eb060",
+      "status": "STARTED",
+      "recordedAt": "2026-09-08T16:37:11.252726422",
+      "model": "deepseek-v4-flash",
+      "traceId": "72e942ab-958f-4203-b459-023df11e23de",
+      "operation": "POST /api/agent/hello",
+      "attemptNumber": "43",
+      "messageCount": 2,
+      "tools": [
+        "knowledge_search",
+        "load_skill_through_path",
+        "learning_state_transition",
+        "wait_async_results"
+      ],
+      "toolChoice": "DEFAULT"
+    },
+    {
+      "callId": "eb5e9de4-f0a9-499e-bdbc-3ad4a16eb060",
+      "status": "SUCCEEDED",
+      "recordedAt": "2026-09-08T16:37:13.050399119",
+      "elapsedMillis": 1778.708849,
+      "usageAvailable": true,
+      "inputTokens": 2761,
+      "outputTokens": 77,
+      "cachedInputTokens": 0,
+      "totalTokens": "2838"
+    }
+  ],
+  "counterResumedAt": 43,
+  "newModelCalls": 1,
+  "scope": "Startup and hello smoke only; learning-loop acceptance remains open."
+}

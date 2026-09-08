@@ -1,5 +1,6 @@
 package com.studyagent.learning;
 
+import com.studyagent.agent.integration.ModelCallScope;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -84,6 +85,7 @@ public class LearningPlanService {
                             messages,
                             List.of(),
                             GenerateOptions.builder().stream(false).build())
+                    .contextWrite(ModelCallScope.capture())
                     .collectList()
                     .block();
         } catch (RuntimeException ex) {

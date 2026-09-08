@@ -23,7 +23,7 @@ public class AgentHelloService {
                 .build();
 
         log.info("调用最简 Agent: userId={}, sessionId={}", userId, sessionId);
-        Msg response = harnessAgent.call("hello", context).block();
+        Msg response = harnessAgent.call("hello", context).contextWrite(ModelCallScope.capture()).block();
         return response.getTextContent();
     }
 }

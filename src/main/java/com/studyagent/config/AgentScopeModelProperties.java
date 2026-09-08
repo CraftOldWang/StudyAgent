@@ -11,6 +11,7 @@ public record AgentScopeModelProperties(
         Provider deepseek
 ) {
 
-    public record Provider(String apiKey, String baseUrl, Integer maxTokens) {
+    public record Provider(String apiKey, String baseUrl, Integer maxTokens,
+            Boolean thinkingEnabled, Double temperature) {
     }
 }
