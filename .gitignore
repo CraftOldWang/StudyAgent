@@ -36,6 +36,8 @@ scripts/*
 !scripts/run-parent-comparison.py
 !scripts/report-rag-evaluation.py
 !scripts/verify-concurrent-ingest.py
+!scripts/run-planning-smoke.py
+!scripts/verify-planning-recovery.py
 !scripts/smoke-api.py
 !scripts/requirements-eval.txt
 .agentscope/workspace/state/

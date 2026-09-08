@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "reviewer": "Codex source-backed review, not human annotation",
+  "v1": {
+    "runId": "2097419430076522497",
+    "sessionId": "2097419870356807681",
+    "actualModelCalls": 5,
+    "repeatedExecutionAdditionalCalls": 0,
+    "concurrentSessionIdsEqual": true,
+    "qualityAccepted": false,
+    "findings": [
+      "The goal requested five points but output contained ten; initial request had no explicit count field.",
+      "Homework scheduling was included as a teaching topic.",
+      "Specific compiler-phase questions were broadly mapped to compiler basics."
+    ]
+  },
+  "v2": {
+    "runId": "2097422040987742209",
+    "qualityAccepted": false,
+    "successfulSourceExtractionReused": true,
+    "outlinePointCountAfterFlatSchema": 5,
+    "emphasisMatches": 8,
+    "emphasisUnmatched": 0,
+    "findings": [
+      "Mixed prose/image placeholder parent incorrectly rejected by mutually exclusive uncovered validation; repaired and retried only that stage.",
+      "Nested outline produced nine points instead of five and was rejected; flat schema produced five on next attempt.",
+      "The emphasis matches cite a true but overly broad analysis/synthesis definition; it does not establish the tested lexical/syntax/semantic/load phase relationships.",
+      "TASKS output contains a JSON Markdown fence; rejected by strict parser.",
+      "Planned interruption did not occur because sampled execution either failed earlier or progressed past the selected stage. No crash-recovery pass is claimed for these runs."
+    ]
+  },
+  "nextVersion": "planning-v3 uses native JSON output and a stricter direct-evidence prompt; requires separate real validation."
+}

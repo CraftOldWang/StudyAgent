@@ -42,6 +42,11 @@ public class KnowledgePoint {
     @TableField("error_message")
     private String errorMessage;
 
+    private Long chapterId;
+    private String chapterTitle;
+    private String priority;
+    private String sourcesJson;
+
     @TableField("started_at")
     private LocalDateTime startedAt;
 

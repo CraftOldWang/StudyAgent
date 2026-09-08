@@ -28,6 +28,8 @@ public class LearningPersistenceService {
     private final KnowledgePointMapper knowledgePointMapper;
     private final QuizMapper quizMapper;
     private final ObjectMapper objectMapper;
+    private final com.studyagent.mapper.LearningPlanRunMapper planningRuns;
+    private final com.studyagent.mapper.LearningPlanStageMapper planningStages;
     private final KnowledgePointLifecycle lifecycle = new KnowledgePointLifecycle();
 
     @Transactional
@@ -37,6 +39,35 @@ public class LearningPersistenceService {
             String learningGoal,
             String agentScopeSessionId,
             List<LearningPlanItem> items) {
+        return createRecords(userId, knowledgeBaseId, learningGoal, agentScopeSessionId, items, null);
+    }
+
+    @Transactional
+    public LearningSession createFromPlanning(Long userId, Long runId) {
+        var run = planningRuns.selectOne(com.baomidou.mybatisplus.core.toolkit.Wrappers.<com.studyagent.model.LearningPlanRun>query()
+                .eq("id", runId).eq("user_id", userId).last("FOR UPDATE"));
+        if (run == null) { throw new BusinessException(404, "规划任务不存在"); }
+        if (run.getSessionId() != null) { return requireSession(userId, run.getSessionId()); }
+        if (!"SUCCEEDED".equals(run.getStatus())) { throw new BusinessException("规划完成后才能创建学习会话"); }
+        var stage = planningStages.selectOne(com.baomidou.mybatisplus.core.toolkit.Wrappers.<com.studyagent.model.LearningPlanStage>query()
+                .eq("run_id", runId).eq("stage_key", "TASKS").eq("status", "SUCCEEDED")
+                .orderByDesc("attempt_count").last("LIMIT 1"));
+        if (stage == null) { throw new BusinessException("规划缺少已提交的任务阶段"); }
+        PlanningData.Result result;
+        try { result = objectMapper.readValue(stage.getOutputJson(), PlanningData.Result.class); }
+        catch (JsonProcessingException e) { throw new IllegalStateException("读取规划任务失败", e); }
+        List<LearningPlanItem> items = result.tasks().stream()
+                .map(t -> new LearningPlanItem(t.topic(), t.subtopics(), t.estimatedMinutes())).toList();
+        LearningSession session = createRecords(userId, run.getKnowledgeBaseId(), run.getLearningGoal(),
+                java.util.UUID.randomUUID().toString(), items, result.tasks());
+        run.setSessionId(session.getId());
+        run.setUpdatedAt(LocalDateTime.now());
+        planningRuns.updateById(run);
+        return session;
+    }
+
+    private LearningSession createRecords(Long userId, Long knowledgeBaseId, String learningGoal,
+            String agentScopeSessionId, List<LearningPlanItem> items, List<PlanningData.Task> tasks) {
         if (items == null || items.isEmpty()) {
             throw new BusinessException("学习计划不能为空");
         }
@@ -54,13 +85,21 @@ public class LearningPersistenceService {
         LearningPlan plan = new LearningPlan();
         plan.setSessionId(session.getId());
         plan.setUserId(userId);
-        plan.setPlanJson(toJson(items));
+        plan.setPlanJson(toJson(tasks == null ? items : tasks));
         plan.setCreatedAt(now);
         planMapper.insert(plan);
 
         for (int index = 0; index < items.size(); index++) {
             LearningPlanItem item = items.get(index);
             KnowledgePoint point = new KnowledgePoint();
+            if (tasks != null) {
+                PlanningData.Task task = tasks.get(index);
+                point.setId(task.knowledgePointId());
+                point.setChapterId(task.chapterId());
+                point.setChapterTitle(task.chapterTitle());
+                point.setPriority(task.priority());
+                point.setSourcesJson(toJson(task.sourceChunkIds()));
+            }
             point.setSessionId(session.getId());
             point.setUserId(userId);
             point.setSequenceNo(index + 1);

@@ -1,0 +1,68 @@
+{
+  "version": "planning-corpus-v2",
+  "sourceRoot": "D:\\Download\\BDNetdisk_DL",
+  "selectionPolicy": "Add the real compiler-phase lecture to the initial planning smoke corpus to test direct positive exercise mappings as well as missing-coverage cases. Separate from frozen RAG evaluation.",
+  "files": [
+    {
+      "id": "compiler-01",
+      "course": "compiler",
+      "courseRole": "held-out-course",
+      "relativePath": "编译原理/课件/第1章/2-编译器结构.pptx",
+      "sha256": "402d29639db83d62fcb2d6b38556b40bb2fc05b61abc942b3a80fb66dcca9663",
+      "bytes": 35865536,
+      "format": "pptx",
+      "inspection": {
+        "units": 9,
+        "nonemptyTextUnits": 9,
+        "textChars": 1100,
+        "extractor": "pptx-ooxml-text"
+      },
+      "planningRole": "LESSON"
+    },
+    {
+      "id": "compiler-phases",
+      "course": "compiler",
+      "planningRole": "LESSON",
+      "relativePath": "编译原理/课件/第1章/4-编译的多个阶段.pptx",
+      "sha256": "9f3d5ed91fc5bffacbbd7f2f5d73717ab4b654f8330826d32f1df0d544aecd2a",
+      "bytes": 18342270,
+      "format": "pptx",
+      "inspection": {
+        "units": 11,
+        "textChars": 1324,
+        "extractor": "python-pptx"
+      }
+    },
+    {
+      "id": "compiler-05",
+      "course": "compiler",
+      "courseRole": "held-out-course",
+      "relativePath": "编译原理/课件/第8章/1-三地址码.pptx",
+      "sha256": "e3d9dbc622365be278b2fa915abe6609d494fab1b141144db949f92c20090000",
+      "bytes": 31217809,
+      "format": "pptx",
+      "inspection": {
+        "units": 13,
+        "nonemptyTextUnits": 13,
+        "textChars": 2279,
+        "extractor": "pptx-ooxml-text"
+      },
+      "planningRole": "LESSON"
+    },
+    {
+      "id": "compiler-exercise-01",
+      "course": "compiler",
+      "planningRole": "EXERCISE",
+      "relativePath": "编译原理/习题/选择题整理.pdf",
+      "sha256": "c47fce4452946e3f0d4054984c32cd86242273eddcae871f5f1b9fce0c5a0292",
+      "bytes": 116774,
+      "format": "pdf",
+      "inspection": {
+        "units": 2,
+        "nonemptyTextUnits": 2,
+        "textChars": 1051,
+        "extractor": "pypdf"
+      }
+    }
+  ]
+}
