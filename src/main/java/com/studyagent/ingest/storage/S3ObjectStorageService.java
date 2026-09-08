@@ -24,6 +24,10 @@ import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.UploadPartRequest;
 import software.amazon.awssdk.services.s3.model.UploadPartResponse;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
+import software.amazon.awssdk.services.s3.model.ListMultipartUploadsRequest;
 
 /**
  * S3 兼容对象存储适配器，可对接 MinIO、RustFS 等实现。
@@ -85,6 +89,15 @@ public class S3ObjectStorageService implements ObjectStorageService {
         return response.uploadId();
     }
 
+    @Override
+    public String findMultipartUpload(String objectKey) {
+        var matching = s3Client.listMultipartUploads(ListMultipartUploadsRequest.builder()
+                        .bucket(properties.bucket()).prefix(objectKey).build()).uploads().stream()
+                .filter(upload -> objectKey.equals(upload.key())).toList();
+        if (matching.size() > 1) throw new IllegalStateException("Multiple multipart uploads for one session key");
+        return matching.isEmpty() ? null : matching.getFirst().uploadId();
+    }
+
     /**
      * 上传 S3 Multipart Upload 的一个 part。
      */
@@ -140,7 +153,12 @@ public class S3ObjectStorageService implements ObjectStorageService {
                 .key(objectKey)
                 .uploadId(uploadId)
                 .build();
-        s3Client.abortMultipartUpload(request);
+        try {
+            s3Client.abortMultipartUpload(request);
+        } catch (S3Exception ex) {
+            if (ex.statusCode() != 404 || ex.awsErrorDetails() == null
+                    || !"NoSuchUpload".equals(ex.awsErrorDetails().errorCode())) throw ex;
+        }
     }
 
     /**
@@ -154,6 +172,22 @@ public class S3ObjectStorageService implements ObjectStorageService {
                 .build();
         ResponseInputStream<?> response = s3Client.getObject(request);
         return response;
+    }
+
+    @Override
+    public Long objectSize(String objectKey) {
+        try {
+            return s3Client.headObject(HeadObjectRequest.builder().bucket(properties.bucket()).key(objectKey).build())
+                    .contentLength();
+        } catch (S3Exception ex) {
+            if (ex.statusCode() == 404) return null;
+            throw ex;
+        }
+    }
+
+    @Override
+    public void deleteObject(String objectKey) {
+        s3Client.deleteObject(DeleteObjectRequest.builder().bucket(properties.bucket()).key(objectKey).build());
     }
 
     /**

@@ -1,0 +1,138 @@
+{
+  "status": "SUCCEEDED",
+  "checks": [
+    {
+      "name": "duplicate_part_has_one_durable_etag",
+      "evidence": true
+    },
+    {
+      "name": "bitmap_loss_recovers_from_mysql",
+      "evidence": {
+        "uploadSessionId": "2097473610747437058",
+        "knowledgeBaseId": "2097473609795330049",
+        "filename": "synthetic-throughput.pdf",
+        "fileHash": "52cc6437238df2379223c707b0063f54de05500e86275179df577d8e81ff0c86",
+        "fileSize": "20000000",
+        "chunkSize": 8388608,
+        "totalChunks": 3,
+        "uploadedChunks": 1,
+        "uploadedChunkIndexes": [
+          0
+        ],
+        "missingChunkIndexes": [
+          1,
+          2
+        ],
+        "status": "UPLOADING",
+        "expiresAt": "2026-09-09T23:54:13"
+      }
+    },
+    {
+      "name": "process_restart_resumes_only_missing_bytes",
+      "evidence": {
+        "missingIndexes": [
+          1,
+          2
+        ],
+        "resumedBytes": 11611392,
+        "retainedBytes": 8388608
+      }
+    },
+    {
+      "name": "concurrent_complete_returns_one_file_and_document",
+      "evidence": [
+        {
+          "fileId": "2097473762949591042",
+          "documentId": "2097473763054448641",
+          "status": "COMPLETED"
+        },
+        {
+          "fileId": "2097473762949591042",
+          "documentId": "2097473763054448641",
+          "status": "UPLOADED"
+        }
+      ]
+    },
+    {
+      "name": "repeated_init_reuses_existing_document",
+      "evidence": {
+        "duplicated": true,
+        "fileId": "2097473762949591042",
+        "documentId": "2097473763054448641",
+        "status": "DUPLICATED",
+        "uploadedChunks": 0,
+        "totalChunks": 3
+      }
+    },
+    {
+      "name": "other_user_rejected",
+      "evidence": {
+        "httpStatus": 400,
+        "body": {
+          "code": 400,
+          "message": "\u4e0a\u4f20\u4f1a\u8bdd\u4e0d\u5b58\u5728"
+        }
+      }
+    },
+    {
+      "name": "other_knowledge_base_rejected",
+      "evidence": {
+        "httpStatus": 400,
+        "body": {
+          "code": 400,
+          "message": "\u5b8c\u6210\u4e0a\u4f20\u7684\u77e5\u8bc6\u5e93\u4e0e\u521d\u59cb\u5316\u4e0d\u4e00\u81f4"
+        }
+      }
+    },
+    {
+      "name": "hash_mismatch_does_not_publish",
+      "evidence": {
+        "httpStatus": 400,
+        "body": {
+          "code": 400,
+          "message": "\u5b8c\u6574\u6587\u4ef6\u5927\u5c0f\u6216 SHA-256 \u4e0e\u521d\u59cb\u5316\u58f0\u660e\u4e0d\u4e00\u81f4\uff0c\u8bf7\u91cd\u65b0\u4e0a\u4f20"
+        }
+      }
+    },
+    {
+      "name": "cancel_failed_object_and_repeat_cancel",
+      "evidence": true
+    },
+    {
+      "name": "missing_parts_rejected",
+      "evidence": {
+        "httpStatus": 400,
+        "body": {
+          "code": 400,
+          "message": "\u7f3a\u5c11\u5206\u7247\uff0c\u4e0d\u80fd\u5b8c\u6210\u4e0a\u4f20"
+        }
+      }
+    },
+    {
+      "name": "cancel_incomplete_native_upload",
+      "evidence": true
+    },
+    {
+      "name": "no_model_calls",
+      "evidence": {
+        "before": 394,
+        "after": 394
+      }
+    }
+  ],
+  "fixtures": {
+    "knowledgeBaseId": "2097473609795330049",
+    "uploadSessionId": "2097473610747437058",
+    "payloadBytes": 20000000,
+    "sha256": "52cc6437238df2379223c707b0063f54de05500e86275179df577d8e81ff0c86",
+    "documentId": "2097473763054448641",
+    "wrongHashSession": "2097473771615023106"
+  },
+  "publicationEnqueueCount": 1,
+  "recoveryEnqueueCountInCapturedLog": 2,
+  "jarSha256": "ec89e2aefae6c3368840f2b8fe4a4b9f607e607224b42f12ec9ac651fd78c415",
+  "limits": [
+    "Synthetic local bytes; consumer disabled; not document parsing acceptance",
+    "Scheduled STORED recovery may requeue the same document; publication HTTP enqueue is counted separately"
+  ]
+}

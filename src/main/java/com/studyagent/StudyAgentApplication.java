@@ -6,6 +6,7 @@ import com.studyagent.config.ElasticsearchProperties;
 import com.studyagent.config.ObjectStorageProperties;
 import com.studyagent.config.RagProperties;
 import com.studyagent.config.StudyRocketMqProperties;
+import com.studyagent.config.UploadProperties;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -22,6 +23,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
         ElasticsearchProperties.class,
         RagProperties.class,
         StudyRocketMqProperties.class,
+        UploadProperties.class,
         CanalProperties.class
 })
 public class StudyAgentApplication {

@@ -17,7 +17,7 @@
 - [ ] M8：真实音视频转写，复用知识库链路完成检索与学习验收。
 - [ ] 收尾：独立验收、文档一致性检查、证据归档，以及按实测结果改写简历与面试说明。
 
-**下一步：** M4已完成，正式评测见 `docs/implementation/m4-rag-validation-report.md`，并发死锁修正与格式验收见 `docs/implementation/m4-concurrent-ingest.md`。60道可回答验证题中BM25 Hit@5为70%，VECTOR/RRF均91.7%；父块没有总体改善，自动回答评审有确认的漏判，不将其通过率当作准确率。LLM账本394/2000次尝试，两次早期失败usage未知。M5本地实现/全量测试/数据库阶段恢复与M6核心界面初版已验证；400MB旧上传基线10次已完成，开始原生multipart及续传/唯一约束/界面接入，再做相同口径对照。当前8080运行独立上传测试库，解析消费者停用；课程环境恢复使用 `.eval/config-m5-learning.json` 部署脚本。规划v3真实调用因自动审批拒绝暂停，未绕过；真实模型trace、完整自然学习与正式压缩实验仍待验收。Goal尚未完成。
+**下一步：** M4已完成，正式评测见 `docs/implementation/m4-rag-validation-report.md`，并发死锁修正与格式验收见 `docs/implementation/m4-concurrent-ingest.md`。60道可回答验证题中BM25 Hit@5为70%，VECTOR/RRF均91.7%；父块没有总体改善，自动回答评审有确认的漏判，不将其通过率当作准确率。LLM账本394/2000次尝试，两次早期失败usage未知。400MB旧上传基线10次已完成；原生后端20项定向/完整207项(3跳过)通过，真实API发现分片user_id缺失后V13修正、11项复验通过，20MB真实重启/Bitmap恢复/并发完成/哈希拒绝/取消通过(模型零增量)。继续原生400MB对照与上传界面接入，详见 `docs/implementation/m6-upload.md`。当前8080运行独立上传测试库，解析消费者停用；课程环境恢复使用 `.eval/config-m5-learning.json` 部署脚本。规划v3真实调用因自动审批拒绝暂停，未绕过；真实模型trace、完整自然学习与正式压缩实验仍待验收。Goal尚未完成。
 
 **完成门槛：** M3–M8 全部真实验收，三类指标可复现，Anki 实际导入与 ASR 实际链路通过；不预设指标涨幅，不因计划落盘或第一批完成关闭 Goal。
 

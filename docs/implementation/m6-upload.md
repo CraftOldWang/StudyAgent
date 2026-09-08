@@ -34,16 +34,27 @@
 
 ## 原生实现约束
 
-下述内容为待实现方案：
+以下后端方案已实现；浏览器界面仍待接入：
 
 1. 原生 `CreateMultipartUpload → UploadPart → CompleteMultipartUpload`；MySQL 保存 uploadId、每片编号/ETag，Bitmap 用于进度。数据库中的已成功分片可恢复丢失的 Bitmap。
 2. 对象 key 属于上传会话，避免仅凭客户端自报哈希覆盖已有对象。合并后流式读取完整对象验证 SHA-256，通过后才建立可用文件/文档并入队。
 3. 合并、校验、发布的阶段结果持久化；重复完成返回原结果，中断后复用已经合并的对象。S3 完成后丢失 HTTP 响应时检查该会话对象，不能盲目创建另一份文件。
 4. `(user_id, knowledge_base_id, file_hash)` 唯一约束兜底文件并发去重；返回已有文档，不重复入队。锁覆盖数据库提交，避免现有 `@Transactional` 方法在事务提交前释放锁的问题。
 5. 分片写入不更新整份过时会话快照；进度从分片事实聚合。参数不同的文件不能误复用旧上传布局。跨用户/跨库、哈希不匹配、未完成、过期与取消有明确结果。
-6. 浏览器在 Worker 中增量计算 SHA-256，默认 8 MiB/4 并发，展示字节进度、校验/合并状态及可恢复错误；暂停后查询缺失分片继续，不把前端断开当成服务器取消成功。
+6. 浏览器 Worker 增量 SHA-256 与上传客户端已编写，界面接入待完成。目标为默认 8 MiB/4 并发，展示字节进度、校验/合并状态及可恢复错误；暂停后查询缺失分片继续，不把前端断开当成服务器取消成功。
 
 S3 官方契约要求非末片至少 5 MiB、part 编号 1–10,000；complete 使用保存的编号和 ETag，ETag 不作为完整 SHA-256。具体 RustFS 行为仍以本地真实验收为准。参考 [multipart 限制](https://docs.aws.amazon.com/AmazonS3/latest/userguide/qfacts.html)、[multipart 生命周期](https://docs.aws.amazon.com/AmazonS3/latest/userguide/mpuoverview.html)。
+
+## 原生后端验收
+
+- 定向 20 项通过，完整后端 207 项中 204 项通过、3 项既有跳过。首轮真实 API 在初始化后读取分片时发现全局租户拦截器自动追加 `user_id`，而 V12 新表缺少该列；失败保留在 `.eval/runs/m6-native-upload-acceptance-v1`。
+- V13 为分片表补齐 user_id，并从所属会话回填；不绕过租户隔离。修正后 11 项定向回归/打包通过，V12/V13 在独立库实际迁移成功。
+- [真实 API 验收 v2](../evidence/m6/native-upload-acceptance-v2.json)：20 MB 合成样本先存首片 8,388,608 字节，重复分片保持一条 ETag；删除 Redis Bitmap 后从 MySQL 恢复。重启应用，初始化复用同一 session/uploadId，只上传剩余 11,611,392 字节。
+- 两个并发 complete 返回相同文件和文档，重复 init 复用同一文档；数据库每类记录各一条。HTTP 发布路径仅一次 MQ 入队。消费者被禁用，因此 STORED 补偿任务仍可能周期性重新入队同一个 documentId；这与重复上传创建第二份处理任务不同，不声称 MQ exactly-once。
+- 错误哈希保留 HASH_FAILED 且不产生文档，已合并错误对象可取消，重复取消幂等。未上传完整拒绝完成；不同用户和不同知识库不能操作该会话。
+- 本轮模型调用 394→394，零新增 chunk。真实验收不代表解析、课程模型或完整学习流程通过。完整对象校验仍保留；新实现同时减少逐片重复统计和长事务，性能比较不能只归因于单个 S3 调用。
+
+完整源码在 `ingest/upload`，短事务发布为 `UploadPublicationService`；阶段为 INITIALIZING → UPLOADING → MERGING → VERIFYING → VERIFIED → COMPLETED，哈希失败单独标记。合并响应丢失后按会话唯一 key 查对象，已验证阶段重试不重新读文件；上述完成阶段恢复先有单元测试，真实重启验收目前发生在分片上传后。
 
 ## 待验收
 

@@ -42,6 +42,7 @@ scripts/*
 !scripts/requirements-eval.txt
 !scripts/benchmark-upload.py
 !scripts/summarize-upload-benchmark.py
+!scripts/verify-native-upload.py
 .agentscope/workspace/state/
 .eval/
 config/local-secrets.properties

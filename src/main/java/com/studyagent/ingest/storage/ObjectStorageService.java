@@ -23,6 +23,9 @@ public interface ObjectStorageService {
      */
     String initiateMultipartUpload(String objectKey, String contentType);
 
+    /** Recover an initialization whose response or local persistence was interrupted. */
+    String findMultipartUpload(String objectKey);
+
     /**
      * 上传 Multipart Upload 的单个 part。
      *
@@ -51,6 +54,11 @@ public interface ObjectStorageService {
      * 读取对象内容流，调用方负责关闭。
      */
     InputStream getObject(String objectKey);
+
+    /** Returns null only for a missing key; dependency failures remain errors. */
+    Long objectSize(String objectKey);
+
+    void deleteObject(String objectKey);
 
     /**
      * 在同一 bucket 内复制对象。

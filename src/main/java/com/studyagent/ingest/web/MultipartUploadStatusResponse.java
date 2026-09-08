@@ -20,6 +20,7 @@ public record MultipartUploadStatusResponse(
         String status,
         Long fileId,
         Long documentId,
-        LocalDateTime expiresAt
+        LocalDateTime expiresAt,
+        String errorMessage
 ) {
 }

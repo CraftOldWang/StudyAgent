@@ -87,4 +87,10 @@ public class FileUploadController {
         return ApiResponse.ok(fileUploadService.completeMultipart(
                 currentUserContext.userId(), request.uploadSessionId(), request.knowledgeBaseId()));
     }
+
+    @PostMapping("/multipart/{uploadSessionId}/cancel")
+    public ApiResponse<Void> cancelMultipart(@PathVariable Long uploadSessionId) {
+        fileUploadService.cancelMultipart(currentUserContext.userId(), uploadSessionId);
+        return ApiResponse.ok(null);
+    }
 }

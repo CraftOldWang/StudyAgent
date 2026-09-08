@@ -9,7 +9,7 @@ import lombok.Setter;
 /**
  * 分片上传会话实体，保存一次大文件上传的业务状态和完成结果。
  *
- * <p>已上传分片明细保存在 Redis Bitmap 中，本表只保存可恢复的会话元数据和进度摘要。</p>
+ * <p>upload_parts 保存持久化 ETag；Redis Bitmap 是可以从分片事实重建的进度缓存。</p>
  */
 @Getter
 @Setter
@@ -29,6 +29,9 @@ public class UploadSession {
     private Long completedFileId;
     private Long completedDocumentId;
     private String status;
+    private String storageUploadId;
+    private String storageKey;
+    private String errorMessage;
     private LocalDateTime expiresAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
