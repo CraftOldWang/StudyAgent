@@ -46,6 +46,7 @@ class ElasticsearchIndexerTest {
         ElasticsearchClient client = mock(ElasticsearchClient.class);
         BulkResponse response = mock(BulkResponse.class);
         when(response.errors()).thenReturn(false);
+        when(response.items()).thenReturn(List.of(item("chunk-1", 201), item("chunk-2", 201)));
         when(client.bulk(any(BulkRequest.class))).thenReturn(response);
         ElasticsearchIndexer indexer = new ElasticsearchIndexer(client, properties(2));
 
@@ -103,5 +104,24 @@ class ElasticsearchIndexerTest {
                 "chunks-v1-read",
                 "chunks-v1-write",
                 dimensions);
+    }
+
+    private co.elastic.clients.elasticsearch.core.bulk.BulkResponseItem item(String id, int status) {
+        return co.elastic.clients.elasticsearch.core.bulk.BulkResponseItem.of(i -> i
+                .operationType(co.elastic.clients.elasticsearch.core.bulk.OperationType.Index)
+                .index("chunks-v1").id(id).status(status));
+    }
+
+    @Test
+    void preservesPartialAcknowledgementsEvenWhenOneItemFails() throws Exception {
+        ElasticsearchClient client = mock(ElasticsearchClient.class);
+        BulkResponse response = mock(BulkResponse.class);
+        when(response.errors()).thenReturn(true);
+        when(response.items()).thenReturn(List.of(item("chunk-1", 201), item("chunk-2", 429)));
+        when(client.bulk(any(BulkRequest.class))).thenReturn(response);
+        var result = new ElasticsearchIndexer(client, properties(2))
+                .bulkIndexAcknowledged(List.of(document("chunk-1"), document("chunk-2")));
+        assertThat(result.succeededIds()).containsExactly("chunk-1");
+        assertThat(result.failures()).containsExactly("chunk-2: 429");
     }
 }

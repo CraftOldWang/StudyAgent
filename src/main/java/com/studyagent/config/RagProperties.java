@@ -1,6 +1,7 @@
 package com.studyagent.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 
 /**
  * RAG 检索、切块和父子检索配置。
@@ -17,6 +18,18 @@ public record RagProperties(
         int parentChunkOverlap,
         int bm25CandidateSize,
         int vectorCandidateSize,
-        int rrfK
+        int rrfK,
+        @DefaultValue("STRUCTURED") ChunkStrategy chunkStrategy
 ) {
+    public enum ChunkStrategy { STRUCTURED, FIXED }
+
+    public RagProperties {
+        if (chunkSize <= 0 || chunkOverlap < 0 || chunkOverlap >= chunkSize
+                || parentChunkSize < chunkSize || parentChunkOverlap < 0 || parentChunkOverlap >= parentChunkSize) {
+            throw new IllegalArgumentException("Invalid child/parent token window configuration");
+        }
+        if (chunkStrategy == null || (chunkStrategy == ChunkStrategy.STRUCTURED && parentChunkOverlap != 0)) {
+            throw new IllegalArgumentException("Structured parents require zero overlap");
+        }
+    }
 }

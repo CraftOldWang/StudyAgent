@@ -1,0 +1,71 @@
+{
+  "recordedDate": "2026-09-09",
+  "candidate": "v2-jtokkit1.1.0-cl100k-structured-c800o80-p2400o0",
+  "index": "eval-qwen37-1024-structured-v2-c800-p2400",
+  "jarSha256": "5f885196b8cac8dcdabcbd65ebb6c92f7826c116842668e677711facd7b72f77",
+  "status": "SMOKE_ONLY",
+  "recovery": "V8 widened chunker_version from 32 to 128; original failed documents recovered through MQ redelivery after restart, without reupload. This is not stage artifact reuse evidence.",
+  "limitations": [
+    "No formal quality or performance claim",
+    "Parent context dedup/budget still pending",
+    "Tika plain-text fallback does not establish PDF/PPTX geometric heading recovery"
+  ],
+  "runs": [
+    {
+      "run": "m4-pdf",
+      "knowledgeBaseId": "2097370518867218434",
+      "documentId": "2097370522948276225",
+      "file": {
+        "path": "D:\\Download\\BDNetdisk_DL\\算法设计和分析\\课件\\Chap01.pdf",
+        "sha256": "1491584332013087542d91cfc5ebb30da4599f51f63b40331733797dabe31d47",
+        "bytes": 1253887,
+        "result": {
+          "fileId": "2097370522910527489",
+          "documentId": "2097370522948276225",
+          "status": "UPLOADED"
+        }
+      },
+      "status": "INDEXED",
+      "chunkCounts": {
+        "PARENT": 2,
+        "CHILD": 6
+      },
+      "parentEmbeddingStatus": "NOT_REQUIRED",
+      "childEmbeddingStatus": "COMPLETED",
+      "documentEmbeddingSdkCalls": 6,
+      "providerTotalTokens": 4288,
+      "query": "什么是稳定匹配？",
+      "returnedHits": 6,
+      "uniqueReturnedContent": 2,
+      "topHitId": "a4d067f6eb914635abc1715a23147ea7414b3ca6e1c73536ab08596a1a7c0d3a"
+    },
+    {
+      "run": "m4-pptx",
+      "knowledgeBaseId": "2097370535669600258",
+      "documentId": "2097370537775140866",
+      "file": {
+        "path": "D:\\Download\\BDNetdisk_DL\\操作系统\\课件\\5.3OS_IPCandConcurrency-并发控制的方法-2024.pptx",
+        "sha256": "f647b80fc9334e04ef6793dad728a08537d51fbd2275a2f0dd398648a5b120fb",
+        "bytes": 998057,
+        "result": {
+          "fileId": "2097370537758363650",
+          "documentId": "2097370537775140866",
+          "status": "UPLOADED"
+        }
+      },
+      "status": "INDEXED",
+      "chunkCounts": {
+        "PARENT": 3,
+        "CHILD": 11
+      },
+      "parentEmbeddingStatus": "NOT_REQUIRED",
+      "childEmbeddingStatus": "COMPLETED",
+      "documentEmbeddingSdkCalls": 11,
+      "providerTotalTokens": 6470,
+      "query": "信号量的 P 操作和 V 操作分别有什么作用？",
+      "returnedHits": 6,
+      "uniqueReturnedContent": 3,
+      "topHitId": "1d518c8b2b90a79bb91a0728bfc1b7a85f9052b9a97aebbbc6e7144be1194ff9"
+    }
+  ]
+}

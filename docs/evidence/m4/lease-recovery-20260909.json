@@ -1,0 +1,1300 @@
+{
+  "container": "study-agent-eval-app-1",
+  "events": [
+    {
+      "method": "POST",
+      "path": "/api/knowledge-bases",
+      "status": 200,
+      "traceId": "58de49ab-099a-41ad-841d-5a78d544ece4",
+      "at": 1788889096.633267
+    },
+    {
+      "method": "POST",
+      "path": "/api/files/upload",
+      "status": 200,
+      "traceId": "1ef5710b-e934-46d7-8dbe-ea8c5ef549ec",
+      "at": 1788889097.2661943
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 502,
+      "traceId": null,
+      "at": 1788889103.640173
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "139d35e7-8cc5-4dc5-9184-4e90ca1db381",
+      "at": 1788889154.0872824
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "3b53563e-2f19-4ea0-874b-3116b1ad2d7b",
+      "at": 1788889156.1143463
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "dc6e86c4-1a34-4676-aaff-1f846898bb4f",
+      "at": 1788889158.1558886
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "17c4a74d-f993-4be7-8111-bd7f3663067e",
+      "at": 1788889160.1964078
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "c062c883-acc0-4964-a905-280b5d9f114f",
+      "at": 1788889162.2586641
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "0bd43b7a-3020-4981-b3c9-6ed5538be994",
+      "at": 1788889164.3149412
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "a05644eb-5737-42c5-8716-defce7a165dd",
+      "at": 1788889166.363515
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "5ce9583f-d1ad-42c8-95f9-492d2ec6ac4e",
+      "at": 1788889168.4264276
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "39c4150c-9c21-41de-b8cc-a5e514ef2647",
+      "at": 1788889170.49054
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "8cb54ab4-7007-4376-8546-5070fd9d9bf4",
+      "at": 1788889172.5454257
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "2a5741c5-f621-477a-b2ca-28f5bc1c1cec",
+      "at": 1788889174.606216
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "cb79055b-51d4-4569-8366-39ede2629db8",
+      "at": 1788889176.641721
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "759a4a86-99e6-45eb-9b7b-de1e37c816ed",
+      "at": 1788889178.6920571
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "dc66bd29-b8ce-4e70-9960-04fda91bb84d",
+      "at": 1788889180.7445579
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "996b5341-74c5-4915-a224-58bb168084ae",
+      "at": 1788889182.7844038
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "e85d4c2e-8df7-475b-b432-699667125dd3",
+      "at": 1788889184.8202531
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "16f905fd-8606-4459-94e2-81877e54a089",
+      "at": 1788889186.8628974
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "c376a1b1-df57-4027-a9fd-66364d794d3a",
+      "at": 1788889188.9176621
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "d15dfa61-fc2f-4b98-bb5e-d392ee6a54c1",
+      "at": 1788889190.9565704
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "9263755a-85ed-41f3-89f2-6a534103d22f",
+      "at": 1788889193.0028524
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "249f312b-45c4-4dbb-8cc6-b94243e03fd9",
+      "at": 1788889195.0266788
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "3bdca779-92b7-4fb5-9d06-02b90498f773",
+      "at": 1788889197.0721734
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "32c61536-1397-4e11-b4b0-cba783cd9237",
+      "at": 1788889199.1212134
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "4c733418-c8ba-41aa-8ee7-7e0dca27d301",
+      "at": 1788889201.1801333
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "bbac0f61-e16f-4bc6-afba-cdb326521c54",
+      "at": 1788889203.2236252
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "2578000f-6730-4fdb-bd61-2d5a1e919cf9",
+      "at": 1788889205.267777
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "4d963cfb-3480-4bd8-a02a-72c4e149a042",
+      "at": 1788889207.3046277
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "e949e3a2-3001-4d11-9734-8bfb7baf2887",
+      "at": 1788889209.3409104
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "83d4bc3a-7cc3-4dab-8206-fc203457d1ae",
+      "at": 1788889211.3946557
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "43223bb1-b5a1-43d0-88b0-40c1c7a50b44",
+      "at": 1788889213.4501972
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "a6fcac70-8b54-462d-9808-b43481d85883",
+      "at": 1788889215.5029833
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "d3544619-3ada-43a1-b277-d1361b947e1d",
+      "at": 1788889217.551036
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "3dedc4a1-fb57-4fd1-ae9b-bfe52622bebd",
+      "at": 1788889219.5723748
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "d800b828-c5df-4570-a4bd-c258787fe9c3",
+      "at": 1788889221.6274748
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "c2edb857-eadb-4d69-badb-aa965c7653d1",
+      "at": 1788889223.6856704
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "7cb98ec1-3e56-483f-9196-d8edcf844905",
+      "at": 1788889225.7374103
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "8a78a146-bb7d-4a6b-b167-72e2e5c8a978",
+      "at": 1788889227.7841716
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "6a80e0e1-484b-41f3-be54-9b5c7c7c9880",
+      "at": 1788889229.8053002
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "46f7a796-9638-4d34-983b-ce277de5ac84",
+      "at": 1788889231.8538609
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "c27062f6-5aa0-47a5-8109-3033095e51bd",
+      "at": 1788889233.9105434
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "665fa627-2ef1-417e-a0ff-02731609d31d",
+      "at": 1788889235.9519162
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "85ebe99b-79f4-47aa-b363-b20d9d6425a7",
+      "at": 1788889237.9928806
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "6efdd311-1a4b-4477-bf6d-54df8f8ef129",
+      "at": 1788889240.0303519
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "f4d4e4fc-cfc7-4a7b-a7a6-9b8015a95c5b",
+      "at": 1788889242.077885
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "c0bb344a-70b1-4b76-90ea-5ad0dcd8dd56",
+      "at": 1788889244.1281192
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "7082ded6-d475-477c-a7ac-7e2b9fff7462",
+      "at": 1788889246.1866782
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "4308bee4-1773-4174-b302-98c50f517ffc",
+      "at": 1788889248.222042
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "beae0994-b493-42f9-bf7e-325aae5fbbdb",
+      "at": 1788889250.2657378
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "b818c4d9-1d41-47c9-bc37-522301352dd0",
+      "at": 1788889252.3252869
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "1e698e60-80f3-4c75-90e1-0da183455cb3",
+      "at": 1788889254.3706903
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "ad4ba36e-3b05-4df8-8b32-92792f704664",
+      "at": 1788889256.4167128
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "5f1e26ac-b275-40a6-947a-1fd678ccbbff",
+      "at": 1788889258.4773648
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "68f44057-5403-46bd-a280-7eb106dc4691",
+      "at": 1788889260.5106373
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "61c5aed2-8d39-44e6-a1f7-2c867b47ce91",
+      "at": 1788889262.5442054
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "889383ef-12a7-4826-98a5-dcd9da1a1762",
+      "at": 1788889264.5924306
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "8e25952d-7557-4f25-a05f-e1f8e85ff9d2",
+      "at": 1788889266.6372085
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "242cd6e0-1b9b-4c33-a729-0da905fa954b",
+      "at": 1788889268.6719604
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "e0e1343f-2904-4836-9755-3dfb03adc850",
+      "at": 1788889270.7096124
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "b8526e27-e794-4c5e-bc38-08454d0d79ee",
+      "at": 1788889272.765273
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "2cfe50b3-be60-4ec4-9610-423e2187df55",
+      "at": 1788889274.8165498
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "507d5ddf-6b62-43f8-af48-f196969b30e7",
+      "at": 1788889276.8688865
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "46334fdf-cbde-45fd-802f-31aeef95549d",
+      "at": 1788889278.9272728
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "584347e0-a6c5-4020-bfd3-7b8e650a4602",
+      "at": 1788889280.9793105
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "1238c8f5-4de2-4650-bca4-983399dc9167",
+      "at": 1788889283.0269477
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "5aa2d82f-df56-4803-b070-c9225e04e1d3",
+      "at": 1788889285.0701432
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "36b78455-e8ae-468d-96f7-c6670ab350e1",
+      "at": 1788889287.1119058
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "3b89c83f-d119-4d42-a049-75be52195c12",
+      "at": 1788889289.165951
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "8876381f-0922-4e1f-a978-d044db182672",
+      "at": 1788889291.2208092
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "aa328e9b-c1cc-497e-a6b1-017b494e1be9",
+      "at": 1788889293.265287
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "88b9a002-50e7-42ef-bb6e-b6898fe441ab",
+      "at": 1788889295.3024511
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "099daf0c-a57d-46ee-b5ca-b4d2c995270f",
+      "at": 1788889297.3546133
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "47182277-7218-42f7-9e6f-b4ec28276c4d",
+      "at": 1788889299.4145324
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "04c11bb6-9327-479f-8a3d-fed85d4b93af",
+      "at": 1788889301.451356
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "8d914e81-7b28-4c3a-861a-25ad09fdc64b",
+      "at": 1788889303.4933295
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "952bf4f4-7dd0-40e8-bf6a-5b3eaceb89ea",
+      "at": 1788889305.5490086
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "2ce46f36-0332-44f8-b90c-2774765fcaf3",
+      "at": 1788889307.5955784
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "8d24b059-d794-43a8-9f35-95c1fd88d43e",
+      "at": 1788889309.6483033
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "d3d8008c-4965-4aac-967f-0b6941767999",
+      "at": 1788889311.6926763
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "3ee5a17b-13fc-4bf4-a8be-5207a5f08556",
+      "at": 1788889313.7415996
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "1724ef85-dfe3-43c3-b3e1-fb2a293ed2ad",
+      "at": 1788889315.7877417
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "5b18dfb9-e708-4c51-b27c-f258971cab81",
+      "at": 1788889317.8346078
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "b8128ffd-cccb-4b28-b354-ec77660accbb",
+      "at": 1788889319.866465
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "e42b5142-2aea-4974-a3f6-99a80348c038",
+      "at": 1788889321.8995202
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "01ccc968-4862-44bd-b304-a6ec302a4e34",
+      "at": 1788889323.9540172
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "063a21f2-81e0-4256-a6c5-598363c49887",
+      "at": 1788889325.9929957
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "30c99880-aa92-4f38-b5e6-b9385b5d5f33",
+      "at": 1788889328.0535932
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "eef5f8b2-9a89-4f59-9aaf-ae33e47102c0",
+      "at": 1788889330.1036227
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "768b7b17-f6bf-450b-b605-8c959e82f140",
+      "at": 1788889332.1584268
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "c8a13ed8-1280-4a92-9160-9a07ed9529a9",
+      "at": 1788889334.2045684
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "8ec4c474-ff50-43c3-a61b-685ed72340dc",
+      "at": 1788889336.2383125
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "97f035a9-5bfa-49a6-b4b4-a465a45e1350",
+      "at": 1788889338.2825449
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "930d1ffb-39d0-4ffa-9bbb-3317e1816f03",
+      "at": 1788889340.325741
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "5252dcf7-eee6-43b3-88b2-06b549428839",
+      "at": 1788889342.3629704
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "4e1cf34e-90a2-4528-8706-a177224c4bc7",
+      "at": 1788889344.4208746
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "972386ab-f54b-4e50-b225-9cba2785aa6e",
+      "at": 1788889346.4416478
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "a405d8fd-6c29-43b1-9e5c-06c9a7ad2e3c",
+      "at": 1788889348.4971433
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "f3595619-f338-4fdd-8938-2d6cc7c935bf",
+      "at": 1788889350.552007
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "1cd754ae-17a0-41db-bc54-cf889dd78821",
+      "at": 1788889352.6009076
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "da4e11c4-63f4-4293-83af-3f5ea729b07d",
+      "at": 1788889354.6568704
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "36685fed-aab7-4982-951c-b204c8d869ef",
+      "at": 1788889356.7032611
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "45ebd1ad-f8bb-439e-b53c-8b6ff92bfb27",
+      "at": 1788889358.7528193
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "2d0fa7e6-caad-48d4-9d54-6c69d61afe49",
+      "at": 1788889360.8070145
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "41ffc527-e82a-401a-92cc-d7d3ce00ac36",
+      "at": 1788889362.8402164
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "27e33519-c7bd-4433-8533-0b2144c13b85",
+      "at": 1788889364.8966084
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "a89f4a00-d62f-4116-91ae-fc166c6a27d5",
+      "at": 1788889366.9300134
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "471b520e-4453-478e-b1ec-3b29991714ef",
+      "at": 1788889368.9757798
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "ebf69781-285d-4958-b69d-12e6bf27fd08",
+      "at": 1788889371.0327563
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "4cc16a8c-9902-49c3-862b-c8a8cba0a0c2",
+      "at": 1788889373.0634983
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "a44a7f1e-a26c-422f-9a7f-2b04caccd69b",
+      "at": 1788889375.0981874
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "92a7089d-3f81-4039-973c-dce9cda8dabe",
+      "at": 1788889377.1436343
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "0435d60e-6536-4f2f-b464-74ee7e8eabbb",
+      "at": 1788889379.1952424
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "c5514949-f891-4ca6-8326-cf4cc4027fb7",
+      "at": 1788889381.2448835
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "90ffceaa-2a21-457f-b587-0df027e0a6ac",
+      "at": 1788889383.2889192
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "698cae77-da5d-4af2-830d-5990aa5f08ac",
+      "at": 1788889385.3439772
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "5e2feda1-cd3d-4d81-8b22-5840a192f1b2",
+      "at": 1788889387.3824065
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "7ec9dc9a-243d-4550-b1cb-6f4234df12c5",
+      "at": 1788889389.4049737
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "db10f8fb-eb61-4382-b682-811f599a971e",
+      "at": 1788889391.4472704
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "f2b10d8b-dc3e-4eff-8e7d-2b7c571e0a9a",
+      "at": 1788889393.495147
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "1be693da-e3ce-4d3d-8efa-684cc8bf7139",
+      "at": 1788889395.5148327
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "c356c7f6-3d36-440a-8ef3-b43c964c899c",
+      "at": 1788889397.5943964
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "73140ece-7caf-4388-a0af-05d89dab7755",
+      "at": 1788889399.6505075
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "d33c0266-a0be-47a7-a283-ecd5c8f333bc",
+      "at": 1788889401.6865144
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "52404960-1d2f-483d-9554-a1cc522f9fb7",
+      "at": 1788889403.7405477
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "d555db85-d844-45a2-8c9d-37bf79f10dd0",
+      "at": 1788889405.7970276
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "aafe862e-1561-42b5-a184-466cc3c3057b",
+      "at": 1788889407.8645337
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "92327f30-9dd5-4303-8d44-332e8045b60e",
+      "at": 1788889409.9251711
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "51caf072-40da-4396-b63f-75ad581abcf4",
+      "at": 1788889411.9717615
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "1cc20bd3-fd07-483c-9329-37c63dc1cd30",
+      "at": 1788889414.0065138
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "77352112-e9e8-4529-ba31-7cb75f1cc317",
+      "at": 1788889416.0510416
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "907b1e17-d738-4621-ab5a-3b6d9a51b4a8",
+      "at": 1788889418.0887115
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "9836d5f8-4966-4557-a0a8-4feb073bb88b",
+      "at": 1788889420.1078882
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "898f02a1-876f-411a-8321-07c3d146af6d",
+      "at": 1788889422.1611793
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "f458d93d-b266-49a4-8e40-8e7cbad5b0f6",
+      "at": 1788889424.2193758
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "50efd5de-9dde-48bc-9682-ab4874c7dd7e",
+      "at": 1788889426.2611763
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "06ed0445-6a9b-4666-bc8a-7c153225121b",
+      "at": 1788889428.2913854
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "56088006-b2fc-4709-9266-150c728d15c4",
+      "at": 1788889430.3409572
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "772a8d09-3146-47d4-9f50-b4b38478d2c5",
+      "at": 1788889432.3615339
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097379003958149121/documents",
+      "status": 200,
+      "traceId": "f729de3e-177d-4d68-9de8-0cc7a9e5b859",
+      "at": 1788889434.404986
+    }
+  ],
+  "knowledgeBaseId": "2097379003958149121",
+  "fileSha256": "f647b80fc9334e04ef6793dad728a08537d51fbd2275a2f0dd398648a5b120fb",
+  "documentId": "2097379006365679617",
+  "callsBeforeKill": [
+    {
+      "callId": "4144a529-d063-42f8-90f0-7b8c7f3d287d",
+      "status": "STARTED",
+      "recordedAt": "2026-09-08T17:38:21.350456093",
+      "boundary": "DASHSCOPE_SDK_CALL",
+      "traceId": "66eab561-90ad-4daf-b729-868f891a6a2d",
+      "operation": "INGEST /documents/2097379006365679617",
+      "model": "qwen3.7-text-embedding",
+      "dimensions": 1024,
+      "purpose": "DOCUMENT",
+      "contentSha256": "dae3c58d189e349b24816151e37e152ffcc01378949256c35b4e21e1dfbcbb65"
+    },
+    {
+      "callId": "4144a529-d063-42f8-90f0-7b8c7f3d287d",
+      "status": "SUCCEEDED",
+      "recordedAt": "2026-09-08T17:38:21.641246581",
+      "usageAvailable": true,
+      "totalTokens": 691,
+      "providerRequestId": "9f887768-e395-9036-9ead-eb4237a7c988",
+      "elapsedMillis": 287.811297
+    }
+  ],
+  "killedAt": 1788889102.7008588,
+  "restartedAt": 1788889103.6206381,
+  "observationResumedAt": 1788889153.5656548,
+  "lastObservedDocument": {
+    "id": "2097379006365679617",
+    "knowledgeBaseId": "2097379003958149121",
+    "fileRecordId": "2097379006269210626",
+    "title": "5.3OS_IPCandConcurrency-并发控制的方法-2024.pptx",
+    "contentType": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "pipelineStatus": "INDEXED",
+    "createdAt": "2026-09-08T17:38:17",
+    "updatedAt": "2026-09-08T17:43:54"
+  },
+  "callsAfterRecovery": [
+    {
+      "callId": "4144a529-d063-42f8-90f0-7b8c7f3d287d",
+      "status": "STARTED",
+      "recordedAt": "2026-09-08T17:38:21.350456093",
+      "boundary": "DASHSCOPE_SDK_CALL",
+      "traceId": "66eab561-90ad-4daf-b729-868f891a6a2d",
+      "operation": "INGEST /documents/2097379006365679617",
+      "model": "qwen3.7-text-embedding",
+      "dimensions": 1024,
+      "purpose": "DOCUMENT",
+      "contentSha256": "dae3c58d189e349b24816151e37e152ffcc01378949256c35b4e21e1dfbcbb65"
+    },
+    {
+      "callId": "4144a529-d063-42f8-90f0-7b8c7f3d287d",
+      "status": "SUCCEEDED",
+      "recordedAt": "2026-09-08T17:38:21.641246581",
+      "usageAvailable": true,
+      "totalTokens": 691,
+      "providerRequestId": "9f887768-e395-9036-9ead-eb4237a7c988",
+      "elapsedMillis": 287.811297
+    },
+    {
+      "callId": "d1da95b3-9d07-4c12-90fb-3ea750d2bc87",
+      "status": "STARTED",
+      "recordedAt": "2026-09-08T17:38:21.720890535",
+      "boundary": "DASHSCOPE_SDK_CALL",
+      "traceId": "66eab561-90ad-4daf-b729-868f891a6a2d",
+      "operation": "INGEST /documents/2097379006365679617",
+      "model": "qwen3.7-text-embedding",
+      "dimensions": 1024,
+      "purpose": "DOCUMENT",
+      "contentSha256": "6e4c0f7336e1faf1f00a50e27b5c7f89b091778848de131acb3680b6bfc129ab"
+    },
+    {
+      "callId": "a521848f-c0d3-4815-9904-2c7373ccf3ad",
+      "status": "STARTED",
+      "recordedAt": "2026-09-08T17:43:51.199764468",
+      "boundary": "DASHSCOPE_SDK_CALL",
+      "traceId": "6ba7e0d2-19a9-443b-8d2a-7a992ac801a9",
+      "operation": "INGEST /documents/2097379006365679617",
+      "model": "qwen3.7-text-embedding",
+      "dimensions": 1024,
+      "purpose": "DOCUMENT",
+      "contentSha256": "6e4c0f7336e1faf1f00a50e27b5c7f89b091778848de131acb3680b6bfc129ab"
+    },
+    {
+      "callId": "a521848f-c0d3-4815-9904-2c7373ccf3ad",
+      "status": "SUCCEEDED",
+      "recordedAt": "2026-09-08T17:43:51.395879333",
+      "usageAvailable": true,
+      "totalTokens": 621,
+      "providerRequestId": "b5d6de5b-f8fd-97e2-a9f3-b2c8a24ce1c9",
+      "elapsedMillis": 192.245932
+    },
+    {
+      "callId": "2fadba0a-67b6-450b-9c80-cf0bcb87f457",
+      "status": "STARTED",
+      "recordedAt": "2026-09-08T17:43:51.464524906",
+      "boundary": "DASHSCOPE_SDK_CALL",
+      "traceId": "6ba7e0d2-19a9-443b-8d2a-7a992ac801a9",
+      "operation": "INGEST /documents/2097379006365679617",
+      "model": "qwen3.7-text-embedding",
+      "dimensions": 1024,
+      "purpose": "DOCUMENT",
+      "contentSha256": "1c7d4dfa0dad2afcfc0437fef593fc1b42db7f891659e6b77fc4067a3130bda9"
+    },
+    {
+      "callId": "2fadba0a-67b6-450b-9c80-cf0bcb87f457",
+      "status": "SUCCEEDED",
+      "recordedAt": "2026-09-08T17:43:51.625130313",
+      "usageAvailable": true,
+      "totalTokens": 627,
+      "providerRequestId": "97235a6d-642f-90bf-ad2c-e5e0a282cb76",
+      "elapsedMillis": 157.181743
+    },
+    {
+      "callId": "d972dfe1-ede4-467a-8003-319d932021c5",
+      "status": "STARTED",
+      "recordedAt": "2026-09-08T17:43:51.666117525",
+      "boundary": "DASHSCOPE_SDK_CALL",
+      "traceId": "6ba7e0d2-19a9-443b-8d2a-7a992ac801a9",
+      "operation": "INGEST /documents/2097379006365679617",
+      "model": "qwen3.7-text-embedding",
+      "dimensions": 1024,
+      "purpose": "DOCUMENT",
+      "contentSha256": "a8e19574e7aa9441cb9c1e8a04b03ef7a03d860576842791824771bcb9fb4f07"
+    },
+    {
+      "callId": "d972dfe1-ede4-467a-8003-319d932021c5",
+      "status": "SUCCEEDED",
+      "recordedAt": "2026-09-08T17:43:51.801441363",
+      "usageAvailable": true,
+      "totalTokens": 175,
+      "providerRequestId": "04da857d-6f04-9976-9a48-e41f72f0013e",
+      "elapsedMillis": 132.060941
+    },
+    {
+      "callId": "7aca0586-c6d5-4c90-8d82-4be1adc51930",
+      "status": "STARTED",
+      "recordedAt": "2026-09-08T17:43:51.844126049",
+      "boundary": "DASHSCOPE_SDK_CALL",
+      "traceId": "6ba7e0d2-19a9-443b-8d2a-7a992ac801a9",
+      "operation": "INGEST /documents/2097379006365679617",
+      "model": "qwen3.7-text-embedding",
+      "dimensions": 1024,
+      "purpose": "DOCUMENT",
+      "contentSha256": "69c0bbe9ddd6eac1ae492b1233a8367f494e55100a82590ddb0a2c72a61c4229"
+    },
+    {
+      "callId": "7aca0586-c6d5-4c90-8d82-4be1adc51930",
+      "status": "SUCCEEDED",
+      "recordedAt": "2026-09-08T17:43:52.189675140",
+      "usageAvailable": true,
+      "totalTokens": 710,
+      "providerRequestId": "3bb77817-dfe0-9664-9c92-bd937f500265",
+      "elapsedMillis": 344.988412
+    },
+    {
+      "callId": "6c9fc80f-a103-41e9-aa5f-cada817558a9",
+      "status": "STARTED",
+      "recordedAt": "2026-09-08T17:43:52.234139168",
+      "boundary": "DASHSCOPE_SDK_CALL",
+      "traceId": "6ba7e0d2-19a9-443b-8d2a-7a992ac801a9",
+      "operation": "INGEST /documents/2097379006365679617",
+      "model": "qwen3.7-text-embedding",
+      "dimensions": 1024,
+      "purpose": "DOCUMENT",
+      "contentSha256": "30b2cd13f292d12798f0e6f7543c3b5ba11c233a27d10e675daa7cef2ea2d49a"
+    },
+    {
+      "callId": "6c9fc80f-a103-41e9-aa5f-cada817558a9",
+      "status": "SUCCEEDED",
+      "recordedAt": "2026-09-08T17:43:52.472846994",
+      "usageAvailable": true,
+      "totalTokens": 705,
+      "providerRequestId": "8e0d4138-890e-9358-a8aa-ffa9723061e1",
+      "elapsedMillis": 235.154679
+    },
+    {
+      "callId": "87549901-4ad2-4ac6-a5e2-259c150efb7d",
+      "status": "STARTED",
+      "recordedAt": "2026-09-08T17:43:52.512923281",
+      "boundary": "DASHSCOPE_SDK_CALL",
+      "traceId": "6ba7e0d2-19a9-443b-8d2a-7a992ac801a9",
+      "operation": "INGEST /documents/2097379006365679617",
+      "model": "qwen3.7-text-embedding",
+      "dimensions": 1024,
+      "purpose": "DOCUMENT",
+      "contentSha256": "aa06a258f07d721e997020f3f7edf5622483dd296688ae59eb340b5624951b01"
+    },
+    {
+      "callId": "87549901-4ad2-4ac6-a5e2-259c150efb7d",
+      "status": "SUCCEEDED",
+      "recordedAt": "2026-09-08T17:43:52.789922693",
+      "usageAvailable": true,
+      "totalTokens": 670,
+      "providerRequestId": "76ef1a99-0246-90b3-b269-06feb8ef98ad",
+      "elapsedMillis": 273.935069
+    },
+    {
+      "callId": "7309bca8-20c2-4975-89fc-0a99843e67b6",
+      "status": "STARTED",
+      "recordedAt": "2026-09-08T17:43:52.830848544",
+      "boundary": "DASHSCOPE_SDK_CALL",
+      "traceId": "6ba7e0d2-19a9-443b-8d2a-7a992ac801a9",
+      "operation": "INGEST /documents/2097379006365679617",
+      "model": "qwen3.7-text-embedding",
+      "dimensions": 1024,
+      "purpose": "DOCUMENT",
+      "contentSha256": "d84fdcfc2c0d1d6c49348ca709fe27b5e4ec84221d37033eecb38a64959d2ab5"
+    },
+    {
+      "callId": "7309bca8-20c2-4975-89fc-0a99843e67b6",
+      "status": "SUCCEEDED",
+      "recordedAt": "2026-09-08T17:43:52.978681680",
+      "usageAvailable": true,
+      "totalTokens": 249,
+      "providerRequestId": "2ed33022-db68-90db-a89e-977552f9f299",
+      "elapsedMillis": 144.823182
+    },
+    {
+      "callId": "a3bdd35a-f922-48dd-9807-59d29f93a62e",
+      "status": "STARTED",
+      "recordedAt": "2026-09-08T17:43:53.023314919",
+      "boundary": "DASHSCOPE_SDK_CALL",
+      "traceId": "6ba7e0d2-19a9-443b-8d2a-7a992ac801a9",
+      "operation": "INGEST /documents/2097379006365679617",
+      "model": "qwen3.7-text-embedding",
+      "dimensions": 1024,
+      "purpose": "DOCUMENT",
+      "contentSha256": "7eeebbbd2b006f18f0edc60de11e8d44017ba9fa975e6c38e388c83d8cd08990"
+    },
+    {
+      "callId": "a3bdd35a-f922-48dd-9807-59d29f93a62e",
+      "status": "SUCCEEDED",
+      "recordedAt": "2026-09-08T17:43:53.191867527",
+      "usageAvailable": true,
+      "totalTokens": 771,
+      "providerRequestId": "641aa6bc-2d0e-9594-b5f9-cbf5150468fc",
+      "elapsedMillis": 165.499851
+    },
+    {
+      "callId": "95cf01fa-8e50-4838-9e27-cd18466f1385",
+      "status": "STARTED",
+      "recordedAt": "2026-09-08T17:43:53.231459565",
+      "boundary": "DASHSCOPE_SDK_CALL",
+      "traceId": "6ba7e0d2-19a9-443b-8d2a-7a992ac801a9",
+      "operation": "INGEST /documents/2097379006365679617",
+      "model": "qwen3.7-text-embedding",
+      "dimensions": 1024,
+      "purpose": "DOCUMENT",
+      "contentSha256": "0a7d1af03d8addf50b6f8178a4220a952d244b0e4df53a6b37aabbe0e183961b"
+    },
+    {
+      "callId": "95cf01fa-8e50-4838-9e27-cd18466f1385",
+      "status": "SUCCEEDED",
+      "recordedAt": "2026-09-08T17:43:53.392603684",
+      "usageAvailable": true,
+      "totalTokens": 655,
+      "providerRequestId": "24a724b8-af04-9dfd-b6aa-a18c68301172",
+      "elapsedMillis": 158.029476
+    },
+    {
+      "callId": "4de4d0f7-36df-48ee-8bcc-56ba98fca1ba",
+      "status": "STARTED",
+      "recordedAt": "2026-09-08T17:43:53.430246008",
+      "boundary": "DASHSCOPE_SDK_CALL",
+      "traceId": "6ba7e0d2-19a9-443b-8d2a-7a992ac801a9",
+      "operation": "INGEST /documents/2097379006365679617",
+      "model": "qwen3.7-text-embedding",
+      "dimensions": 1024,
+      "purpose": "DOCUMENT",
+      "contentSha256": "0dcc5bc34bfea82e1dd104e179795c7cbdaa80bde942b6adc29c66c7883d1a3c"
+    },
+    {
+      "callId": "4de4d0f7-36df-48ee-8bcc-56ba98fca1ba",
+      "status": "SUCCEEDED",
+      "recordedAt": "2026-09-08T17:43:53.877136555",
+      "usageAvailable": true,
+      "totalTokens": 596,
+      "providerRequestId": "4e4effda-f267-9386-b711-191e2edf37d0",
+      "elapsedMillis": 443.841756
+    }
+  ],
+  "completedAt": 1788889434.4109876,
+  "afterKillDatabaseCheck": {
+    "pipelineStatus": "EMBEDDING",
+    "lastSuccessfulStage": "CHUNKED",
+    "attemptCount": 1,
+    "leaseUntil": "2026-09-08T17:43:21.705324",
+    "parentCount": 3,
+    "childCount": 11,
+    "completedChildEmbeddings": 1,
+    "indexedChunks": 0
+  },
+  "independentFinalDatabaseCheck": {
+    "pipelineStatus": "INDEXED",
+    "lastSuccessfulStage": "INDEXED",
+    "attemptCount": 2,
+    "leaseUntil": null
+  },
+  "usageSummary": {
+    "sdkAttempts": 12,
+    "terminalAttempts": 11,
+    "interruptedWithoutTerminalUsage": 1,
+    "knownProviderTokens": 6470,
+    "explicitRetryCalls": 0
+  }
+}

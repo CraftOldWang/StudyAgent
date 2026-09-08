@@ -6,6 +6,7 @@ import com.alibaba.dashscope.embeddings.TextEmbeddingResult;
 import com.alibaba.dashscope.embeddings.TextEmbeddingResultItem;
 import com.studyagent.common.exception.BusinessException;
 import com.studyagent.config.AiModelProperties;
+import com.studyagent.eval.EmbeddingUsageRecorder;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ public class DashScopeEmbeddingService implements EmbeddingService {
 
     private final TextEmbedding textEmbedding;
     private final AiModelProperties properties;
+    private final EmbeddingUsageRecorder usageRecorder;
 
     @Override
     public float[] embed(String text, EmbeddingPurpose purpose) {
@@ -34,13 +36,20 @@ public class DashScopeEmbeddingService implements EmbeddingService {
                 .textType(textType(purpose))
                 .dimension(embedding.dimensions())
                 .build();
+        String callId = usageRecorder.start(embedding, purpose, text);
+        long startedAt = System.nanoTime();
+        TextEmbeddingResult result = null;
+        float[] vector;
         try {
-            return vector(textEmbedding.call(param));
-        } catch (BusinessException ex) {
-            throw ex;
+            result = textEmbedding.call(param);
+            vector = vector(result);
         } catch (Exception ex) {
+            usageRecorder.finish(callId, "FAILED", result, System.nanoTime() - startedAt, ex);
+            if (ex instanceof BusinessException businessException) { throw businessException; }
             throw new BusinessException("DashScope embedding 调用失败: " + ex.getMessage());
         }
+        usageRecorder.finish(callId, "SUCCEEDED", result, System.nanoTime() - startedAt, null);
+        return vector;
     }
 
     private TextEmbeddingParam.TextType textType(EmbeddingPurpose purpose) {
@@ -60,6 +69,9 @@ public class DashScopeEmbeddingService implements EmbeddingService {
             throw new BusinessException("DashScope embedding 返回空向量");
         }
         List<Double> values = items.getFirst().getEmbedding();
+        if (values.size() != properties.embedding().dimensions()) {
+            throw new BusinessException("DashScope embedding 维度与配置不匹配: " + values.size());
+        }
         float[] vector = new float[values.size()];
         for (int index = 0; index < values.size(); index++) {
             vector[index] = values.get(index).floatValue();

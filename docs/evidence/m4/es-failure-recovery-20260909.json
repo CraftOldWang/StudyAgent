@@ -1,0 +1,199 @@
+{
+  "index": "eval-qwen37-1024-structured-v2-c800-p2400",
+  "file": "D:\\Download\\BDNetdisk_DL\\算法设计和分析\\课件\\Chap01.pdf",
+  "events": [
+    {
+      "method": "POST",
+      "path": "/api/knowledge-bases",
+      "status": 200,
+      "traceId": "15c895db-37af-4848-b965-6b5908a543a8",
+      "at": 1788888945.2612367
+    },
+    {
+      "method": "POST",
+      "path": "/api/files/upload",
+      "status": 200,
+      "traceId": "a4c2016b-2b33-4e80-bc4c-e315a8555af7",
+      "at": 1788888946.4654844
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097378369016020994/documents",
+      "status": 200,
+      "traceId": "e0458a88-c22e-4800-ac43-3d51c9b2cfec",
+      "at": 1788888946.5382419
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097378369016020994/documents",
+      "status": 200,
+      "traceId": "01758698-5bc8-42af-8cb3-a38d2ec5eaf3",
+      "at": 1788888947.0688488
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097378369016020994/documents",
+      "status": 200,
+      "traceId": "a00d1104-bd2e-4e1d-ad6d-461b46cdd9ad",
+      "at": 1788888947.6224704
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097378369016020994/documents",
+      "status": 200,
+      "traceId": "8b91b21c-1ee2-4597-8e92-2da2cac6058a",
+      "at": 1788888948.1593647
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097378369016020994/documents",
+      "status": 200,
+      "traceId": "607e2681-a24c-41d4-b5b7-aa284993d031",
+      "at": 1788888948.6937914
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097378369016020994/documents",
+      "status": 200,
+      "traceId": "fe52c1f9-fe73-4990-b295-451606f759a4",
+      "at": 1788888949.2373207
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097378369016020994/documents",
+      "status": 200,
+      "traceId": "92a7d6ad-961f-4b5e-9405-fce2fe88ddc5",
+      "at": 1788888949.7952826
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097378369016020994/documents",
+      "status": 200,
+      "traceId": "25cd1575-46e7-4fbe-a229-a2989cce1d27",
+      "at": 1788888950.330545
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097378369016020994/documents",
+      "status": 200,
+      "traceId": "c9cfb1c5-e51d-4319-b31d-e4028adae941",
+      "at": 1788888950.8751044
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097378369016020994/documents",
+      "status": 200,
+      "traceId": "3d5a1bb2-a53c-4b61-812e-ff201ee929b0",
+      "at": 1788888951.4301383
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097378369016020994/documents",
+      "status": 200,
+      "traceId": "da4d1199-3010-47d0-b21e-43942b090356",
+      "at": 1788888951.972321
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097378369016020994/documents",
+      "status": 200,
+      "traceId": "3b9e5a87-6b61-4cd8-83ff-be6a6903d9b3",
+      "at": 1788888952.5220056
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097378369016020994/documents",
+      "status": 200,
+      "traceId": "40e4aedc-a785-4d68-aa60-c51e55b90b43",
+      "at": 1788888953.0749378
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/2097378373776556034/retry",
+      "status": 200,
+      "traceId": "00e2a5da-38d3-47e2-9ad3-70226e9a32d1",
+      "at": 1788888953.417469
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097378369016020994/documents",
+      "status": 200,
+      "traceId": "f20bdc38-7f78-4331-94c7-e7010608ecaa",
+      "at": 1788888953.4566965
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097378369016020994/documents",
+      "status": 200,
+      "traceId": "31adfb78-4970-4486-bb1a-d5dc5247e816",
+      "at": 1788888953.9790378
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge-bases/2097378369016020994/documents",
+      "status": 200,
+      "traceId": "b81587af-933b-495c-acfd-324f91d989a2",
+      "at": 1788888954.5188606
+    }
+  ],
+  "originalWriteBlock": null,
+  "knowledgeBaseId": "2097378369016020994",
+  "writeBlockEnabled": true,
+  "sha256": "1491584332013087542d91cfc5ebb30da4599f51f63b40331733797dabe31d47",
+  "documentId": "2097378373776556034",
+  "failed": {
+    "id": "2097378373776556034",
+    "knowledgeBaseId": "2097378369016020994",
+    "fileRecordId": "2097378373747195905",
+    "title": "Chap01.pdf",
+    "contentType": "application/pdf",
+    "pipelineStatus": "FAILED",
+    "errorMessage": "INDEXING: 部分 chunk 索引失败: [ad0c34154d30a6b65dd4224cd57efdae11ae1cc9f7447d6ad3b667623d820e8f: index [eval-qwen37-1024-structured-v2-c800-p2400] blocked by: [FORBIDDEN/8/index write (api)];, f7794a19d68a575532c7032ff725f9649e90281b0cc83b98d3aa01fa36c60c9a: index [eval-qwen37-1024-structured-v2-c800-p2400] blocked by: [FORBIDDEN/8/index write (api)];, bc9a90f454a65621ad438dc81e225712829c0221a8ed24eaa6f0815320065050: index [eval-qwen37-1024-structured-v2-c800-p2400] blocked by: [FORBIDDEN/8/index write (api)];, 8eb556ff7bb1814d291d007842fe493032340a342765462d4a60f1b51fbb2cac: index [eval-qwen37-1024-structured-v2-c800-p2400] blocked by: [FORBIDDEN/8/index write (api)];, cab1da3420e8100de4a5da23fa5a26d3d8ca0a612a4533198ecd95278b7709b2: index [eval-qwen37-1024-structured-v2-c800-p2400] blocked by: [FORBIDDEN/8/index write (api)];, ec722436b1238dc7f4e25f190d12ea03797e809cf1bac0431611e204ac266ee9: index [eval-qwen37-1024-structured-v2-c800-p2400] blocked by: [FORBIDDEN/8/index write (api)];, 28fb84343e8cffd7dc092dff5c6dd7f8c93fe9fd6d725bdd53629c2ebe9c5f69: index [eval-qwen37-1024-structured-v2-c800-p2400] blocked by: [FORBIDDEN/8/index write (api)];, 0bcdd075f00ed2c4b454481f72d0010089fae4c9c408e31634436761fe12f2ad: index [eval-qwen37-1024-structured-v2-c800-p2400] blocked by: [FORBIDDEN/8/index write (api)];]",
+    "createdAt": "2026-09-08T17:35:46",
+    "updatedAt": "2026-09-08T17:35:53"
+  },
+  "documentCallIdsBeforeRecovery": [
+    "1f5cad64-6922-45a6-9da4-eefdb739ebe6",
+    "ace62162-16f5-4bf2-a00b-387f17949b98",
+    "9769ceb4-6934-47db-bb55-208b3bc105ee",
+    "f95f87bd-5ace-4054-be48-f203b6780ef8",
+    "14c898ed-2e1f-4106-99ed-2c794cf5701d",
+    "e8041614-f814-461f-8a18-1b1bb9e1834e"
+  ],
+  "writeBlockRestored": true,
+  "retry": {
+    "documentId": "2097378373776556034",
+    "retryRequested": true
+  },
+  "recovered": {
+    "id": "2097378373776556034",
+    "knowledgeBaseId": "2097378369016020994",
+    "fileRecordId": "2097378373747195905",
+    "title": "Chap01.pdf",
+    "contentType": "application/pdf",
+    "pipelineStatus": "INDEXED",
+    "createdAt": "2026-09-08T17:35:46",
+    "updatedAt": "2026-09-08T17:35:54"
+  },
+  "documentCallIdsAfterRecovery": [
+    "1f5cad64-6922-45a6-9da4-eefdb739ebe6",
+    "ace62162-16f5-4bf2-a00b-387f17949b98",
+    "9769ceb4-6934-47db-bb55-208b3bc105ee",
+    "f95f87bd-5ace-4054-be48-f203b6780ef8",
+    "14c898ed-2e1f-4106-99ed-2c794cf5701d",
+    "e8041614-f814-461f-8a18-1b1bb9e1834e"
+  ],
+  "noRepeatedDocumentEmbedding": true,
+  "independentDatabaseCheck": {
+    "pipelineStatus": "INDEXED",
+    "lastSuccessfulStage": "INDEXED",
+    "attemptCount": 2,
+    "processingToken": null,
+    "leaseUntil": null,
+    "parentCount": 2,
+    "indexedParents": 2,
+    "childCount": 6,
+    "indexedChildren": 6,
+    "embeddingArtifacts": 6
+  }
+}

@@ -89,4 +89,6 @@ create/status 不调用 LLM；search 调用 embedding；hello/plan 使用真实 
 - 独立 Maven 进程跳过已通过测试、强制重建 JAR 后打包成功，退出码 0；JAR ZIP CRC 检查通过。第一次独立命令因 PowerShell 拆分未加引号的 `-Dmaven.jar.forceCreation=true` 参数失败，正确引用后成功。可运行产物哈希见[检查点打包](../evidence/m3/checkpoint-package-20260909.json)；后续保持构建、测试和应用串行，带点的 Maven 参数加引号。
 - 最终 JAR 启动就绪，真实 hello 返回成功且仅新增一次模型调用，attemptNumber=43、输入 2761/输出 77 token，证明账本未因重启清零；见[检查点启动烟测](../evidence/m3/checkpoint-runtime-20260909.json)。该证据不表示学习状态链路已恢复。
 
-完整学习链路、embedding usage、摘要/工具类别及性能基线仍待补齐。后续不重复消耗模型来碰运气通过旧强制流程；按批准的 M5 对话编排方向修正主链路，并保留现有失败和源码基线。M3/M4 均未完成全部验收。
+后续已补齐 embedding SDK 调用账本：记录 DOCUMENT/QUERY、模型/维度、内容哈希、trace、provider requestId、耗时及 provider usage；不保存明文输入或密钥，usage 缺失保留未知。独立汇总见 [embedding 账本快照](../evidence/m3/embedding-usage-20260909.json)，该快照包含 20 次调用；后续恢复实验另有新增调用。进程中断后缺少终态 usage 的情况已在 M4 实测保留，详见 [M4 实现与证据](m4-ingest-recovery.md)。
+
+完整学习链路、摘要/工具全链 trace 及性能基线仍待补齐。后续不重复消耗模型来碰运气通过旧强制流程；按批准的 M5 对话编排方向修正主链路，并保留现有失败和源码基线。M3/M4 均未完成全部验收。

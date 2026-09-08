@@ -5,8 +5,6 @@ import com.alibaba.otter.canal.client.CanalConnectors;
 import com.alibaba.otter.canal.protocol.CanalEntry;
 import com.alibaba.otter.canal.protocol.Message;
 import com.studyagent.config.CanalProperties;
-import com.studyagent.ingest.pipeline.DocumentPipeline;
-import com.studyagent.identity.IdentityScope;
 import jakarta.annotation.PreDestroy;
 import java.net.InetSocketAddress;
 import java.util.List;
@@ -32,8 +30,7 @@ public class DocumentChunkCanalListener {
     private static final String DOCUMENTS_TABLE = "documents";
 
     private final CanalProperties properties;
-    private final DocumentPipeline documentPipeline;
-    private final IdentityScope identityScope;
+    private final DocumentIndexProducer documentIndexProducer;
     private volatile boolean running;
     private Thread worker;
 
@@ -132,7 +129,7 @@ public class DocumentChunkCanalListener {
     }
 
     /**
-     * 只为进入 PENDING 的文档触发一次 pipeline；FAILED 由 MQ 或显式调用负责重试。
+     * 补偿只重新入队，由同一消费者争取执行权。
      */
     private void handleDocumentRow(CanalEntry.EventType eventType, CanalEntry.RowData rowData) {
         if (eventType != CanalEntry.EventType.INSERT && eventType != CanalEntry.EventType.UPDATE) {
@@ -145,9 +142,7 @@ public class DocumentChunkCanalListener {
         if (documentId == null || userId == null || !"STORED".equals(pipelineStatus)) {
             return;
         }
-        try (IdentityScope.Binding ignored = identityScope.bind(userId)) {
-            documentPipeline.processPending(documentId);
-        }
+        documentIndexProducer.send(documentId, userId);
     }
 
     /**

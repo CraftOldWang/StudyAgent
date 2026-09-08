@@ -42,6 +42,22 @@ public class Document {
     @TableField("chunker_version")
     private String chunkerVersion;
 
+    @TableField("parsed_text_key")
+    private String parsedTextKey;
+    @TableField("parsed_text_hash")
+    private String parsedTextHash;
+    @TableField("last_successful_stage")
+    private String lastSuccessfulStage;
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    @TableField("processing_token")
+    private String processingToken;
+    @TableField("lease_until")
+    private LocalDateTime leaseUntil;
+    @TableField("attempt_count")
+    private Integer attemptCount;
+    @TableField("index_target")
+    private String indexTarget;
+
     @TableField("created_at")
     private LocalDateTime createdAt;
 

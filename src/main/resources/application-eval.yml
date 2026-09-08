@@ -18,9 +18,9 @@ study-agent:
   object-storage:
     bucket: study-agent-eval
   elasticsearch:
-    physical-index: eval-qwen37-1024-baseline-v1
-    read-alias: eval-qwen37-1024-baseline-read
-    write-alias: eval-qwen37-1024-baseline-write
+    physical-index: eval-qwen37-1024-structured-v2-c800-p2400
+    read-alias: eval-qwen37-1024-structured-v2-read
+    write-alias: eval-qwen37-1024-structured-v2-write
   rocketmq:
     document-topic: study-agent-eval-document
     document-consumer-group: study-agent-eval-document-consumer

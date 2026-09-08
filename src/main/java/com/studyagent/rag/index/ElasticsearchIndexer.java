@@ -38,8 +38,15 @@ public class ElasticsearchIndexer {
     }
 
     public void bulkIndex(List<ElasticsearchChunkDocument> documents) {
+        BulkIndexResult result = bulkIndexAcknowledged(documents);
+        if (!result.failures().isEmpty()) {
+            throw new BusinessException("批量写入 Elasticsearch chunk 失败: " + result.failures());
+        }
+    }
+
+    public BulkIndexResult bulkIndexAcknowledged(List<ElasticsearchChunkDocument> documents) {
         if (documents.isEmpty()) {
-            return;
+            return new BulkIndexResult(List.of(), List.of());
         }
         BulkRequest.Builder request = new BulkRequest.Builder();
         for (ElasticsearchChunkDocument document : documents) {
@@ -51,26 +58,43 @@ public class ElasticsearchIndexer {
         }
         try {
             BulkResponse response = client.bulk(request.build());
-            if (response.errors()) {
-                String failures = response.items().stream()
-                        .filter(item -> item.error() != null)
-                        .map(item -> item.id() + ": " + item.error().reason())
-                        .reduce((left, right) -> left + "; " + right)
-                        .orElse("unknown bulk error");
-                throw new BusinessException("批量写入 Elasticsearch chunk 失败: " + failures);
+            if (response.items().size() != documents.size()) {
+                throw new BusinessException("Elasticsearch bulk 确认数量与请求不一致");
             }
+            java.util.ArrayList<String> succeeded = new java.util.ArrayList<>();
+            java.util.ArrayList<String> failures = new java.util.ArrayList<>();
+            for (int index = 0; index < documents.size(); index++) {
+                var item = response.items().get(index);
+                String chunkId = documents.get(index).chunkId();
+                if (!chunkId.equals(item.id())) {
+                    throw new BusinessException("Elasticsearch bulk 确认 ID 与请求不一致");
+                }
+                if (item.error() == null && item.status() >= 200 && item.status() < 300) {
+                    succeeded.add(chunkId);
+                } else {
+                    failures.add(chunkId + ": " + (item.error() == null ? item.status() : item.error().reason()));
+                }
+            }
+            if (response.errors() && failures.isEmpty()) {
+                throw new BusinessException("Elasticsearch bulk 错误标识与逐项结果不一致");
+            }
+            return new BulkIndexResult(List.copyOf(succeeded), List.copyOf(failures));
         } catch (IOException ex) {
             throw new BusinessException("批量写入 Elasticsearch chunk 请求失败: " + ex.getMessage());
         }
     }
 
+    public record BulkIndexResult(List<String> succeededIds, List<String> failures) { }
+
     private void validateDimensions(ElasticsearchChunkDocument document) {
         if (document.userId() == null || document.userId().isBlank()) {
             throw new BusinessException("Elasticsearch chunk 缺少服务端 userId: chunkId=" + document.chunkId());
         }
-        if (document.embedding().length != properties.vectorDimensions()) {
+        if ("PARENT".equals(document.chunkType()) && document.embedding() == null) { return; }
+        if (document.embedding() == null || document.embedding().length != properties.vectorDimensions()) {
             throw new BusinessException("Embedding 维度与 Elasticsearch 配置不一致: actual="
-                    + document.embedding().length + ", expected=" + properties.vectorDimensions());
+                    + (document.embedding() == null ? "null" : document.embedding().length)
+                    + ", expected=" + properties.vectorDimensions());
         }
     }
 }

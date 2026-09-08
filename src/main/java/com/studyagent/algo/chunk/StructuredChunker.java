@@ -30,7 +30,39 @@ public final class StructuredChunker {
     }
 
     public List<ChunkSegment> parentChunks(String parsedText) {
-        return chunk(parsedText, TokenWindowChunker.PARENT_MAX_TOKENS, TokenWindowChunker.PARENT_OVERLAP_TOKENS);
+        return parentChunks(parsedText, TokenWindowChunker.PARENT_MAX_TOKENS);
+    }
+
+    public List<ChunkSegment> parentChunks(String parsedText, int maxTokens) {
+        if (maxTokens <= 0) { throw new IllegalArgumentException("maxTokens must be positive"); }
+        List<ChunkSegment> blocks = chunk(parsedText, Integer.MAX_VALUE, 0);
+        List<ChunkSegment> result = new ArrayList<>();
+        ChunkSegment pending = null;
+        for (ChunkSegment block : blocks) {
+            if (pending == null) {
+                pending = block;
+                continue;
+            }
+            boolean headingOnly = pending.content().lines()
+                    .filter(line -> !line.isBlank()).allMatch(line -> HEADING.matcher(line).matches());
+            boolean sameSection = pending.sourceLocation().headingPath().equals(block.sourceLocation().headingPath());
+            if (sameSection || headingOnly) {
+                int start = pending.sourceLocation().startInclusive();
+                int end = block.sourceLocation().endExclusive();
+                String content = parsedText.substring(start, end);
+                ChunkSegment combined = new ChunkSegment(content, tokenCounter.count(content),
+                        new SourceLocation(start, end, block.sourceLocation().headingPath()));
+                if (combined.tokenCount() <= maxTokens || headingOnly) {
+                    // A title travels with its body; it must not become a stand-alone retrieval unit.
+                    pending = combined;
+                    continue;
+                }
+            }
+            result.addAll(tokenWindowChunker.splitStructured(pending, maxTokens, 0));
+            pending = block;
+        }
+        if (pending != null) { result.addAll(tokenWindowChunker.splitStructured(pending, maxTokens, 0)); }
+        return List.copyOf(result);
     }
 
     public List<ChunkSegment> chunk(String parsedText, int maxTokens, int overlapTokens) {

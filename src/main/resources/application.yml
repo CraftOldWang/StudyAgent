@@ -69,10 +69,11 @@ study-agent:
     vector-dimensions: 1024
   rag:
     top-k: 6
-    chunk-size: 900
-    chunk-overlap: 120
+    chunk-size: 800
+    chunk-overlap: 80
     parent-chunk-size: 2400
-    parent-chunk-overlap: 240
+    parent-chunk-overlap: 0
+    chunk-strategy: STRUCTURED
     bm25-candidate-size: 30
     vector-candidate-size: 30
     rrf-k: 60

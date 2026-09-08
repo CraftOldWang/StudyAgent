@@ -1,7 +1,9 @@
 package com.studyagent.ingest.pipeline;
 
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.studyagent.common.exception.BusinessException;
+import com.studyagent.config.DocumentPipelineProperties;
 import com.studyagent.mapper.DocumentChunkMapper;
 import com.studyagent.mapper.DocumentMapper;
 import com.studyagent.mapper.FileRecordMapper;
@@ -10,6 +12,7 @@ import com.studyagent.model.DocumentChunk;
 import com.studyagent.model.FileRecord;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -18,105 +21,126 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class DocumentPipelinePersistence {
-
+    public static final List<String> ACTIVE_STATUSES = List.of(
+            "PARSING", "PARSED", "CHUNKING", "CHUNKED", "EMBEDDING", "EMBEDDED", "INDEXING");
     private final DocumentMapper documentMapper;
     private final FileRecordMapper fileRecordMapper;
     private final DocumentChunkMapper documentChunkMapper;
+    private final DocumentPipelineProperties properties;
 
     @Transactional
     public Document claim(Long documentId, boolean allowFailedRetry) {
-        var update = Wrappers.<Document>update()
-                .eq("id", documentId)
-                .set("pipeline_status", PipelineStatus.PARSING.name())
-                .set("error_message", null)
-                .set("updated_at", LocalDateTime.now());
-        if (allowFailedRetry) {
-            update.in("pipeline_status", PipelineStatus.STORED.name(), PipelineStatus.FAILED.name());
-        } else {
-            update.eq("pipeline_status", PipelineStatus.STORED.name());
-        }
-        if (documentMapper.update(null, update) != 1) {
-            return null;
-        }
+        LocalDateTime now = LocalDateTime.now();
+        var update = Wrappers.<Document>update().eq("id", documentId)
+                .and(eligible -> {
+                    eligible.eq("pipeline_status", "STORED");
+                    if (allowFailedRetry) { eligible.or().eq("pipeline_status", "FAILED"); }
+                    eligible.or(expired -> expired.in("pipeline_status", ACTIVE_STATUSES)
+                            .and(lease -> lease.isNull("lease_until").or().le("lease_until", now)));
+                })
+                .set("pipeline_status", "PARSING").set("error_message", null)
+                .set("processing_token", UUID.randomUUID().toString())
+                .set("lease_until", now.plus(properties.leaseDuration()))
+                .setSql("attempt_count = attempt_count + 1").set("updated_at", now);
+        if (documentMapper.update(null, update) != 1) { return null; }
         return documentMapper.selectById(documentId);
     }
 
-    public FileRecord loadFile(Long fileRecordId) {
-        return fileRecordMapper.selectById(fileRecordId);
+    public FileRecord loadFile(Long fileRecordId) { return fileRecordMapper.selectById(fileRecordId); }
+
+    public List<DocumentChunk> loadChunks(Long documentId) {
+        return documentChunkMapper.selectList(Wrappers.<DocumentChunk>query()
+                .eq("document_id", documentId).orderByAsc("chunk_type", "chunk_index"));
     }
 
     @Transactional
-    public void markParsed(Long documentId) {
-        advance(documentId, PipelineStatus.PARSING, PipelineStatus.PARSED, update ->
-                update.set("parser_version", DocumentPipeline.PARSER_VERSION));
+    public void startStage(Document document, PipelineStatus stage) {
+        writeOwned(document, update -> update.set("pipeline_status", stage.name()));
     }
 
     @Transactional
-    public void replaceChunks(Long documentId, List<DocumentChunk> chunks) {
-        documentChunkMapper.delete(Wrappers.<DocumentChunk>query()
-                .eq("document_id", documentId));
-        for (DocumentChunk chunk : chunks) {
-            documentChunkMapper.insert(chunk);
+    public void renewLease(Document document) { writeOwned(document, update -> { }); }
+
+    @Transactional
+    public void markParsed(Document document, String key, String hash) {
+        writeOwned(document, update -> update.set("pipeline_status", "PARSED")
+                .set("parser_version", DocumentPipeline.PARSER_VERSION)
+                .set("parsed_text_key", key).set("parsed_text_hash", hash)
+                .set("last_successful_stage", "PARSED"));
+    }
+
+    @Transactional
+    public void replaceChunks(Document document, List<DocumentChunk> chunks, String chunkerVersion) {
+        // Lock and fence the document before changing children, so a lost lease changes nothing.
+        writeOwned(document, update -> update.set("pipeline_status", "CHUNKED")
+                .set("chunker_version", chunkerVersion).set("index_target", null)
+                .set("last_successful_stage", "CHUNKED"));
+        documentChunkMapper.delete(Wrappers.<DocumentChunk>query().eq("document_id", document.getId()));
+        for (DocumentChunk chunk : chunks) { documentChunkMapper.insert(chunk); }
+    }
+
+    @Transactional
+    public void markChunkEmbedded(Document document, DocumentChunk chunk) {
+        writeOwned(document, update -> { });
+        documentChunkMapper.update(null, Wrappers.<DocumentChunk>update()
+                .eq("document_id", document.getId()).eq("chunk_id", chunk.getChunkId())
+                .set("embedding_status", "COMPLETED"));
+        chunk.setEmbeddingStatus("COMPLETED");
+    }
+
+    @Transactional
+    public void markEmbeddingCompleted(Document document) {
+        writeOwned(document, update -> update.set("pipeline_status", "EMBEDDED")
+                .set("last_successful_stage", "EMBEDDED"));
+    }
+
+    @Transactional
+    public void beginIndexing(Document document, List<DocumentChunk> chunks, String target) {
+        writeOwned(document, update -> update.set("pipeline_status", "INDEXING").set("index_target", target));
+        if (!target.equals(document.getIndexTarget())) {
+            documentChunkMapper.update(null, Wrappers.<DocumentChunk>update()
+                    .eq("document_id", document.getId()).set("indexed_at", null));
+            chunks.forEach(chunk -> chunk.setIndexedAt(null));
         }
-        advance(documentId, PipelineStatus.PARSED, PipelineStatus.CHUNKED, update ->
-                update.set("chunker_version", DocumentPipeline.CHUNKER_VERSION));
     }
 
     @Transactional
-    public void markEmbeddingCompleted(Long documentId, List<DocumentChunk> chunks) {
-        for (DocumentChunk chunk : chunks) {
-            chunk.setEmbeddingStatus("COMPLETED");
-            documentChunkMapper.updateById(chunk);
+    public void markIndexed(Document document, List<String> chunkIds) {
+        writeOwned(document, update -> { });
+        if (!chunkIds.isEmpty()) {
+            documentChunkMapper.update(null, Wrappers.<DocumentChunk>update()
+                    .eq("document_id", document.getId()).in("chunk_id", chunkIds)
+                    .set("indexed_at", LocalDateTime.now()));
         }
-        advance(documentId, PipelineStatus.CHUNKED, PipelineStatus.EMBEDDED);
     }
 
     @Transactional
-    public void markCompleted(Long documentId, List<DocumentChunk> chunks) {
-        LocalDateTime indexedAt = LocalDateTime.now();
-        for (DocumentChunk chunk : chunks) {
-            chunk.setIndexedAt(indexedAt);
-            documentChunkMapper.updateById(chunk);
-        }
-        advance(documentId, PipelineStatus.EMBEDDED, PipelineStatus.INDEXED, update ->
-                update.set("error_message", null));
+    public void markCompleted(Document document) {
+        writeOwned(document, update -> update.set("pipeline_status", "INDEXED")
+                .set("last_successful_stage", "INDEXED").set("error_message", null)
+                .set("processing_token", null).set("lease_until", null));
+        Long pending = documentChunkMapper.selectCount(Wrappers.<DocumentChunk>query()
+                .eq("document_id", document.getId()).isNull("indexed_at"));
+        if (pending != 0) { throw new BusinessException("尚有未确认索引成功的 chunk: " + pending); }
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void markFailed(Long documentId, PipelineStatus stage, Throwable failure) {
+    public void markFailed(Document document, PipelineStatus stage, Throwable failure) {
         String detail = failure.getMessage() == null ? failure.getClass().getSimpleName() : failure.getMessage();
-        documentMapper.update(null, Wrappers.<Document>update()
-                .eq("id", documentId)
-                .set("pipeline_status", PipelineStatus.FAILED.name())
-                .set("error_message", stage.name() + ": " + detail)
-                .set("updated_at", LocalDateTime.now()));
+        documentMapper.update(null, Wrappers.<Document>update().eq("id", document.getId())
+                .eq("processing_token", document.getProcessingToken())
+                .set("pipeline_status", "FAILED").set("error_message", stage.name() + ": " + detail)
+                .set("processing_token", null).set("lease_until", null).set("updated_at", LocalDateTime.now()));
     }
 
-    private void advance(
-            Long documentId,
-            PipelineStatus expected,
-            PipelineStatus next
-    ) {
-        advance(documentId, expected, next, update -> {
-        });
-    }
-
-    private void advance(
-            Long documentId,
-            PipelineStatus expected,
-            PipelineStatus next,
-            java.util.function.Consumer<com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<Document>>
-                    customization
-    ) {
-        var update = Wrappers.<Document>update()
-                .eq("id", documentId)
-                .eq("pipeline_status", expected.name())
-                .set("pipeline_status", next.name())
-                .set("updated_at", LocalDateTime.now());
-        customization.accept(update);
+    private void writeOwned(Document document, java.util.function.Consumer<UpdateWrapper<Document>> changes) {
+        LocalDateTime now = LocalDateTime.now();
+        var update = Wrappers.<Document>update().eq("id", document.getId())
+                .eq("processing_token", document.getProcessingToken()).gt("lease_until", now)
+                .set("lease_until", now.plus(properties.leaseDuration())).set("updated_at", now);
+        changes.accept(update);
         if (documentMapper.update(null, update) != 1) {
-            throw new BusinessException("文档 pipeline 状态推进失败: documentId=" + documentId
-                    + ", expected=" + expected + ", next=" + next);
+            throw new BusinessException("文档执行权已过期或被接管: documentId=" + document.getId());
         }
     }
 }

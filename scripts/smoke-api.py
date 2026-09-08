@@ -14,7 +14,7 @@ import requests
 def main():
     sys.stdout.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser()
-    parser.add_argument("stage", choices=["ready", "create", "search", "hello", "upload", "status", "plan",
+    parser.add_argument("stage", choices=["ready", "create", "search", "hello", "upload", "retry", "status", "plan",
                                          "explain", "quiz", "submit", "cards", "session"])
     parser.add_argument("--run-dir", type=Path, required=True)
     parser.add_argument("--base-url", default="http://localhost:8080")
@@ -69,6 +69,9 @@ def main():
             raise RuntimeError("This run already has a knowledge base; reuse the recorded id")
         data = request("POST", "/api/knowledge-bases", json={"name": "M3 smoke " + args.run_dir.name})
         state["knowledgeBaseId"] = data["id"]
+    elif args.stage == "retry":
+        document_id = state["files"][-1]["result"]["documentId"]
+        data = request("POST", f"/api/documents/{document_id}/retry")
     elif args.stage == "hello":
         data = request("POST", "/api/agent/hello")
     elif args.stage in {"explain", "quiz", "submit", "cards", "session"}:

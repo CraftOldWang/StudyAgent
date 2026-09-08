@@ -1,0 +1,15 @@
+{
+  "date": "2026-09-09",
+  "command": "mvn -q -DskipTests -Dmaven.jar.forceCreation=true package",
+  "exitCode": 0,
+  "bytes": 213433869,
+  "sha256": "6d8b93f5d2f76c550c4f00cc46eae2d608dcce41d5c8616b7d7e6c293c76b121",
+  "zipCrcFailure": null,
+  "migrationVerified": [
+    "V8",
+    "V9"
+  ],
+  "profile": "eval",
+  "leaseDuration": "5m",
+  "recoveryInterval": "30s"
+}

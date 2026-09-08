@@ -14,6 +14,8 @@ import com.studyagent.mapper.DocumentMapper;
 import com.studyagent.mapper.FileRecordMapper;
 import com.studyagent.model.Document;
 import com.studyagent.model.DocumentChunk;
+import com.studyagent.config.DocumentPipelineProperties;
+import java.time.Duration;
 import java.lang.reflect.Method;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -45,7 +47,10 @@ class DocumentPipelinePersistenceTest {
         DocumentChunk parent = new DocumentChunk();
         DocumentChunk child = new DocumentChunk();
 
-        persistence.replaceChunks(10L, List.of(parent, child));
+        Document document = new Document();
+        document.setId(10L);
+        document.setProcessingToken("owner-token");
+        persistence.replaceChunks(document, List.of(parent, child), "chunker-test-version");
 
         verify(chunkMapper).delete(any(Wrapper.class));
         verify(chunkMapper, times(2)).insert(any(DocumentChunk.class));
@@ -55,7 +60,7 @@ class DocumentPipelinePersistenceTest {
     @Test
     void markFailedRequiresNewTransaction() throws Exception {
         Method method = DocumentPipelinePersistence.class.getMethod(
-                "markFailed", Long.class, PipelineStatus.class, Throwable.class);
+                "markFailed", Document.class, PipelineStatus.class, Throwable.class);
 
         assertThat(method.getAnnotation(Transactional.class).propagation())
                 .isEqualTo(Propagation.REQUIRES_NEW);
@@ -65,6 +70,24 @@ class DocumentPipelinePersistenceTest {
             DocumentMapper documentMapper,
             DocumentChunkMapper chunkMapper
     ) {
-        return new DocumentPipelinePersistence(documentMapper, mock(FileRecordMapper.class), chunkMapper);
+        return new DocumentPipelinePersistence(documentMapper, mock(FileRecordMapper.class), chunkMapper,
+                new DocumentPipelineProperties(Duration.ofMinutes(5), Duration.ofSeconds(30), 100));
+    }
+
+    @Test
+    void lostExecutionCannotReplaceChunks() {
+        DocumentMapper mapper = mock(DocumentMapper.class);
+        DocumentChunkMapper chunks = mock(DocumentChunkMapper.class);
+        Document document = new Document();
+        document.setId(10L);
+        document.setProcessingToken("stale-owner");
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> persistence(mapper, chunks)
+                .replaceChunks(document, List.of(new DocumentChunk()), "v2"))
+                .hasMessageContaining("执行权已过期");
+        org.mockito.Mockito.verifyNoInteractions(chunks);
+        var update = org.mockito.ArgumentCaptor.forClass(com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper.class);
+        verify(mapper).update(isNull(), update.capture());
+        assertThat(update.getValue().getSqlSegment()).contains("processing_token", "lease_until");
+        assertThat(update.getValue().getParamNameValuePairs()).containsValue("stale-owner");
     }
 }

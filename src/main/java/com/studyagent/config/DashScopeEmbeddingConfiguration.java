@@ -3,8 +3,10 @@ package com.studyagent.config;
 import com.alibaba.dashscope.embeddings.TextEmbedding;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 @Configuration(proxyBeanMethods = false)
+@EnableConfigurationProperties(EmbeddingUsageProperties.class)
 public class DashScopeEmbeddingConfiguration {
 
     @Bean

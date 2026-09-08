@@ -9,10 +9,10 @@ import java.util.Objects;
  */
 public final class TokenWindowChunker {
 
-    public static final int CHILD_MAX_TOKENS = 900;
-    public static final int CHILD_OVERLAP_TOKENS = 120;
+    public static final int CHILD_MAX_TOKENS = 800;
+    public static final int CHILD_OVERLAP_TOKENS = 80;
     public static final int PARENT_MAX_TOKENS = 2400;
-    public static final int PARENT_OVERLAP_TOKENS = 240;
+    public static final int PARENT_OVERLAP_TOKENS = 0;
 
     private final TokenCounter tokenCounter;
 
@@ -29,6 +29,20 @@ public final class TokenWindowChunker {
     }
 
     public List<ChunkSegment> split(ChunkSegment segment, int maxTokens, int overlapTokens) {
+        return split(segment, maxTokens, overlapTokens, false);
+    }
+
+    public List<ChunkSegment> split(String text, int maxTokens, int overlapTokens) {
+        return split(new ChunkSegment(text, tokenCounter.count(text),
+                new SourceLocation(0, text.length(), List.of())), maxTokens, overlapTokens);
+    }
+
+    public List<ChunkSegment> splitStructured(ChunkSegment segment, int maxTokens, int overlapTokens) {
+        return split(segment, maxTokens, overlapTokens, true);
+    }
+
+    private List<ChunkSegment> split(ChunkSegment segment, int maxTokens, int overlapTokens,
+            boolean preferSentenceBoundaries) {
         Objects.requireNonNull(segment, "segment");
         validateWindow(maxTokens, overlapTokens);
         String content = segment.content();
@@ -46,6 +60,9 @@ public final class TokenWindowChunker {
         int startBoundary = 0;
         while (startBoundary < boundaries.length - 1) {
             int endBoundary = findWindowEnd(content, boundaries, startBoundary, maxTokens);
+            if (preferSentenceBoundaries && endBoundary < boundaries.length - 1) {
+                endBoundary = sentenceBoundary(content, boundaries, startBoundary, endBoundary, overlapTokens);
+            }
             int start = boundaries[startBoundary];
             int end = boundaries[endBoundary];
             String window = content.substring(start, end);
@@ -64,6 +81,23 @@ public final class TokenWindowChunker {
             startBoundary = findOverlapStart(content, boundaries, startBoundary, endBoundary, overlapTokens);
         }
         return List.copyOf(chunks);
+    }
+
+    private int sentenceBoundary(String text, int[] boundaries, int start, int end, int overlapTokens) {
+        for (int index = end; index > start; index--) {
+            int offset = boundaries[index];
+            int last = text.codePointBefore(offset);
+            boolean terminator = last == '\n' || last == '。' || last == '！' || last == '？'
+                    || ((last == '.' || last == '!' || last == '?')
+                    && (offset == text.length() || Character.isWhitespace(text.codePointAt(offset))));
+            if (terminator) {
+                String prefix = text.substring(boundaries[start], offset);
+                boolean onlyHeadings = prefix.lines().allMatch(line -> line.isBlank()
+                        || line.stripLeading().matches("#{1,6}\\s+.*"));
+                if (!onlyHeadings && tokenCounter.count(prefix) > overlapTokens) { return index; }
+            }
+        }
+        return end;
     }
 
     private void validateWindow(int maxTokens, int overlapTokens) {

@@ -45,6 +45,13 @@ class IngestModelMappingTest {
                 field("errorMessage", "error_message", String.class),
                 field("parserVersion", "parser_version", String.class),
                 field("chunkerVersion", "chunker_version", String.class),
+                field("parsedTextKey", "parsed_text_key", String.class),
+                field("parsedTextHash", "parsed_text_hash", String.class),
+                field("lastSuccessfulStage", "last_successful_stage", String.class),
+                field("processingToken", "processing_token", String.class),
+                field("leaseUntil", "lease_until", LocalDateTime.class),
+                field("attemptCount", "attempt_count", Integer.class),
+                field("indexTarget", "index_target", String.class),
                 field("createdAt", "created_at", LocalDateTime.class),
                 field("updatedAt", "updated_at", LocalDateTime.class)));
     }

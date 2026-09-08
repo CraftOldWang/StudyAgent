@@ -1,0 +1,66 @@
+{
+  "boundary": "DASHSCOPE_SDK_CALL",
+  "totalCalls": 20,
+  "groups": [
+    {
+      "operation": "POST /api/knowledge-bases/2097359594016399362/search",
+      "purpose": "QUERY",
+      "model": "qwen3.7-text-embedding",
+      "dimensions": 1024,
+      "calls": 1,
+      "statuses": {
+        "SUCCEEDED": 1
+      },
+      "knownTotalTokens": 29,
+      "unknownUsageCalls": 0
+    },
+    {
+      "operation": "INGEST /documents/2097370522948276225",
+      "purpose": "DOCUMENT",
+      "model": "qwen3.7-text-embedding",
+      "dimensions": 1024,
+      "calls": 6,
+      "statuses": {
+        "SUCCEEDED": 6
+      },
+      "knownTotalTokens": 4288,
+      "unknownUsageCalls": 0
+    },
+    {
+      "operation": "INGEST /documents/2097370537775140866",
+      "purpose": "DOCUMENT",
+      "model": "qwen3.7-text-embedding",
+      "dimensions": 1024,
+      "calls": 11,
+      "statuses": {
+        "SUCCEEDED": 11
+      },
+      "knownTotalTokens": 6470,
+      "unknownUsageCalls": 0
+    },
+    {
+      "operation": "POST /api/knowledge-bases/2097370518867218434/search",
+      "purpose": "QUERY",
+      "model": "qwen3.7-text-embedding",
+      "dimensions": 1024,
+      "calls": 1,
+      "statuses": {
+        "SUCCEEDED": 1
+      },
+      "knownTotalTokens": 20,
+      "unknownUsageCalls": 0
+    },
+    {
+      "operation": "POST /api/knowledge-bases/2097370535669600258/search",
+      "purpose": "QUERY",
+      "model": "qwen3.7-text-embedding",
+      "dimensions": 1024,
+      "calls": 1,
+      "statuses": {
+        "SUCCEEDED": 1
+      },
+      "knownTotalTokens": 29,
+      "unknownUsageCalls": 0
+    }
+  ]
+}

@@ -17,7 +17,7 @@ class KnowledgeRetrievalServiceTest {
     void usesQueryEmbeddingAndParentHybridRetrievalWithinServerScope() {
         EmbeddingService embeddingService = mock(EmbeddingService.class);
         RetrievalService retrievalService = mock(RetrievalService.class);
-        RagProperties properties = new RagProperties(2, 900, 120, 2400, 240, 30, 20, 60);
+        RagProperties properties = new RagProperties(2, 800, 80, 2400, 0, 30, 20, 60, RagProperties.ChunkStrategy.STRUCTURED);
         float[] queryVector = {0.1f, 0.2f};
         RetrievalHit.Provenance provenance =
                 new RetrievalHit.Provenance("document-1", "Java 基础", "{\"page\":1}");
@@ -48,7 +48,7 @@ class KnowledgeRetrievalServiceTest {
     void returnsExplicitNoEvidenceMessageWithoutInventingHits() {
         EmbeddingService embeddingService = mock(EmbeddingService.class);
         RetrievalService retrievalService = mock(RetrievalService.class);
-        RagProperties properties = new RagProperties(2, 900, 120, 2400, 240, 6, 6, 60);
+        RagProperties properties = new RagProperties(2, 800, 80, 2400, 0, 6, 6, 60, RagProperties.ChunkStrategy.STRUCTURED);
         float[] queryVector = {0.1f};
         when(embeddingService.embed("不存在的主题", EmbeddingPurpose.QUERY)).thenReturn(queryVector);
         when(retrievalService.retrieve(

@@ -80,4 +80,23 @@ class TokenWindowChunkerTest {
         assertThatThrownBy(() -> chunker.split(source, 10, 10)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> chunker.split(source, 10, -1)).isInstanceOf(IllegalArgumentException.class);
     }
+
+    @Test
+    void structuredWindowsPreferSentenceEndsAndHaveBoundedOverlap() {
+        String text = "First sentence has useful words. Second sentence has other useful words. Third sentence ends here.";
+        var source = new ChunkSegment(text, tokenCounter.count(text), new SourceLocation(0, text.length(), List.of()));
+        var windows = chunker.splitStructured(source, 12, 2);
+        assertThat(windows).hasSizeGreaterThan(1);
+        assertThat(windows.getFirst().content()).endsWith(".");
+        assertThat(windows).allSatisfy(window -> {
+            assertThat(window.tokenCount()).isLessThanOrEqualTo(12);
+            assertThat(window.content()).isEqualTo(text.substring(window.sourceLocation().startInclusive(), window.sourceLocation().endExclusive()));
+        });
+        for (int i = 1; i < windows.size(); i++) {
+            int start = windows.get(i).sourceLocation().startInclusive();
+            int end = windows.get(i - 1).sourceLocation().endExclusive();
+            assertThat(start).isGreaterThan(windows.get(i - 1).sourceLocation().startInclusive());
+            assertThat(tokenCounter.count(text.substring(start, end))).isLessThanOrEqualTo(2);
+        }
+    }
 }

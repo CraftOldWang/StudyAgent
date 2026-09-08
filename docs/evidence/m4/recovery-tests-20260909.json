@@ -1,0 +1,510 @@
+{
+  "fullCommandExitCode": 1,
+  "fullCommandReason": "176 tests; old IngestModelMappingTest field list failed once after V9 additions",
+  "mappingRetestExitCode": 0,
+  "mappingRetestTests": 4,
+  "latestReportTotals": {
+    "tests": 176,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 3
+  },
+  "suites": [
+    {
+      "suite": "com.studyagent.agent.governance.KnowledgeSearchRetryExecutorTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888538.1512341
+    },
+    {
+      "suite": "com.studyagent.agent.governance.ToolGovernanceInterceptorTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888539.1876197
+    },
+    {
+      "suite": "com.studyagent.agent.integration.AgentHelloServiceTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888543.7838213
+    },
+    {
+      "suite": "com.studyagent.agent.integration.AgentInvocationScopeFactoryTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888544.8202124
+    },
+    {
+      "suite": "com.studyagent.agent.integration.KnowledgeSearchAgentServiceTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888545.2359698
+    },
+    {
+      "suite": "com.studyagent.agent.integration.KnowledgeSearchToolTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888547.4926524
+    },
+    {
+      "suite": "com.studyagent.agent.integration.LearningContextCompactorTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888549.857694
+    },
+    {
+      "suite": "com.studyagent.agent.integration.ObservedModelTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888550.103831
+    },
+    {
+      "suite": "com.studyagent.agent.integration.ReviewCardWriteToolTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888550.348641
+    },
+    {
+      "suite": "com.studyagent.agent.skill.LearningSkillTemplateTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888550.8496864
+    },
+    {
+      "suite": "com.studyagent.agent.web.AgentHelloControllerTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888562.1884289
+    },
+    {
+      "suite": "com.studyagent.algo.chunk.JtokkitTokenCounterTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888562.9531462
+    },
+    {
+      "suite": "com.studyagent.algo.chunk.StructuredChunkerTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888563.2130609
+    },
+    {
+      "suite": "com.studyagent.algo.chunk.TextChunkerTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888563.4422688
+    },
+    {
+      "suite": "com.studyagent.algo.chunk.TokenWindowChunkerTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888563.6714792
+    },
+    {
+      "suite": "com.studyagent.algo.fsrs.FsrsSchedulerTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888563.8881671
+    },
+    {
+      "suite": "com.studyagent.algo.metric.RecallMetricCalculatorTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888564.115486
+    },
+    {
+      "suite": "com.studyagent.algo.rrf.RrfRankerTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888564.3674867
+    },
+    {
+      "suite": "com.studyagent.config.AgentScopeAgentConfigurationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888564.5810106
+    },
+    {
+      "suite": "com.studyagent.config.AgentScopeCompactionTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888564.814852
+    },
+    {
+      "suite": "com.studyagent.config.AgentScopeModelConfigurationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888565.0298665
+    },
+    {
+      "suite": "com.studyagent.config.AgentScopeModelWireContractTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888565.2573743
+    },
+    {
+      "suite": "com.studyagent.config.AgentScopeToolConfigurationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888565.485363
+    },
+    {
+      "suite": "com.studyagent.config.AgentScopeWorkspaceConfigurationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888565.7012632
+    },
+    {
+      "suite": "com.studyagent.config.ChunkingConfigurationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888565.9161277
+    },
+    {
+      "suite": "com.studyagent.config.DashScopeEmbeddingConfigurationTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888566.138471
+    },
+    {
+      "suite": "com.studyagent.config.DataIsolationInterceptorTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888566.3821719
+    },
+    {
+      "suite": "com.studyagent.config.ElasticsearchConfigurationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888567.345367
+    },
+    {
+      "suite": "com.studyagent.config.KnowledgeSearchAgentConfigurationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888567.5639808
+    },
+    {
+      "suite": "com.studyagent.config.LearningRuntimeToolChoiceTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888568.3288615
+    },
+    {
+      "suite": "com.studyagent.config.S3ConfigTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888571.2487314
+    },
+    {
+      "suite": "com.studyagent.identity.IdentityResolverTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888571.4789283
+    },
+    {
+      "suite": "com.studyagent.ingest.parse.TikaDocumentTextParserTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888574.4084556
+    },
+    {
+      "suite": "com.studyagent.ingest.pipeline.DocumentEmbeddingArtifactsTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888574.7855268
+    },
+    {
+      "suite": "com.studyagent.ingest.pipeline.DocumentPipelinePersistenceTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888575.012727
+    },
+    {
+      "suite": "com.studyagent.ingest.pipeline.DocumentPipelineTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888575.474412
+    },
+    {
+      "suite": "com.studyagent.ingest.pipeline.DocumentRetryServiceTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888575.702885
+    },
+    {
+      "suite": "com.studyagent.ingest.upload.FileUploadServiceTest",
+      "tests": 14,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888577.29209
+    },
+    {
+      "suite": "com.studyagent.learning.KnowledgePointLifecycleTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888577.5223224
+    },
+    {
+      "suite": "com.studyagent.learning.LearningFlowServiceTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888577.9821403
+    },
+    {
+      "suite": "com.studyagent.learning.LearningModelGatewayTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888578.243853
+    },
+    {
+      "suite": "com.studyagent.learning.LearningPersistenceServiceTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888578.476546
+    },
+    {
+      "suite": "com.studyagent.learning.LearningPlanServiceTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888578.715613
+    },
+    {
+      "suite": "com.studyagent.learning.LearningStateTransitionToolTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888578.9487984
+    },
+    {
+      "suite": "com.studyagent.learning.LearningTraceServiceTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888579.180909
+    },
+    {
+      "suite": "com.studyagent.learning.LearningTransitionToolChoiceHookTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888579.4216535
+    },
+    {
+      "suite": "com.studyagent.learning.web.LearningResponseAssemblerTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888579.644691
+    },
+    {
+      "suite": "com.studyagent.learning.web.LearningRestContractTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888579.8729894
+    },
+    {
+      "suite": "com.studyagent.migration.IngestSchemaMigrationIntegrationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "mtime": 1788888580.115955
+    },
+    {
+      "suite": "com.studyagent.migration.ReviewLearningSchemaMigrationIntegrationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "mtime": 1788888580.3389199
+    },
+    {
+      "suite": "com.studyagent.migration.UserSchemaMigrationIntegrationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "mtime": 1788888580.5535522
+    },
+    {
+      "suite": "com.studyagent.model.IngestModelMappingTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888727.1671078
+    },
+    {
+      "suite": "com.studyagent.model.ReviewLearningModelMappingTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888581.0456746
+    },
+    {
+      "suite": "com.studyagent.rag.embedding.DashScopeEmbeddingServiceTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888581.2738185
+    },
+    {
+      "suite": "com.studyagent.rag.index.ElasticsearchIndexerTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888581.5100062
+    },
+    {
+      "suite": "com.studyagent.rag.index.ElasticsearchIndexInitializerTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888581.715408
+    },
+    {
+      "suite": "com.studyagent.rag.retrieval.BM25RetrieverTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888581.9211984
+    },
+    {
+      "suite": "com.studyagent.rag.retrieval.KnowledgeRetrievalServiceTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888582.139108
+    },
+    {
+      "suite": "com.studyagent.rag.retrieval.ParentAggregatorTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888582.3639698
+    },
+    {
+      "suite": "com.studyagent.rag.retrieval.RetrievalServiceTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888582.587702
+    },
+    {
+      "suite": "com.studyagent.rag.retrieval.VectorRetrieverTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888582.804655
+    },
+    {
+      "suite": "com.studyagent.review.ReviewCardServiceTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788888583.0285878
+    }
+  ]
+}

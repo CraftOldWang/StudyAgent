@@ -73,6 +73,37 @@ class StructuredChunkerTest {
         assertThat(chunker.parentChunks(" \r\n\t")).isEmpty();
     }
 
+    @Test
+    void packsShortBlocksWithTitlesWithoutCrossingSections() {
+        String text = "# Course\n\nIntro.\n\n- first\n- second\n\n## Next\n\nDefinition.\n\nExample.\n";
+        List<ChunkSegment> parents = chunker.parentChunks(text, 80);
+        assertThat(parents).hasSize(2);
+        assertThat(parents.getFirst().content()).contains("# Course", "Intro.", "- second").doesNotContain("## Next");
+        assertThat(parents.getLast().content()).contains("## Next", "Definition.", "Example.");
+        assertThat(parents.getLast().sourceLocation().headingPath()).containsExactly("Course", "Next");
+        assertSegmentsPointToOriginalText(text, parents);
+    }
+
+    @Test
+    void longBodyRetainsItsTitleAndAllTextWithinTokenLimit() {
+        String text = "# Topic\n\n" + "longword ".repeat(100) + "结尾😀";
+        List<ChunkSegment> parents = chunker.parentChunks(text, 20);
+        assertThat(parents).hasSizeGreaterThan(1);
+        assertThat(parents.getFirst().content()).contains("# Topic", "longword");
+        assertThat(parents).allSatisfy(parent -> assertThat(parent.tokenCount()).isLessThanOrEqualTo(20));
+        assertThat(parents.stream().map(ChunkSegment::content).collect(java.util.stream.Collectors.joining()))
+                .isEqualTo(text);
+        assertSegmentsPointToOriginalText(text, parents);
+    }
+
+    @Test
+    void preservesSmallCodeAndTableBlocksWhilePackingParagraphs() {
+        String text = "# Lesson\n\nIntro.\n\n```java\nint a = 1;\n```\n\n| A | B |\n|---|---|\n| 1 | 2 |\n";
+        List<ChunkSegment> parents = chunker.parentChunks(text, 100);
+        assertThat(parents).hasSize(1);
+        assertThat(parents.getFirst().content()).isEqualTo(text);
+    }
+
     private void assertSegmentsPointToOriginalText(String source, List<ChunkSegment> segments) {
         for (ChunkSegment segment : segments) {
             SourceLocation location = segment.sourceLocation();

@@ -1,0 +1,20 @@
+[
+  {
+    "userId": 1,
+    "status": 400,
+    "traceId": "fe96e737-bf14-4274-9681-1e788e150de1",
+    "response": {
+      "code": 400,
+      "message": "仅失败的文档可以请求重试"
+    }
+  },
+  {
+    "userId": 2,
+    "status": 400,
+    "traceId": "91f734bf-678b-4f94-888a-d72119eaa5f8",
+    "response": {
+      "code": 400,
+      "message": "文档不存在或无访问权限"
+    }
+  }
+]
