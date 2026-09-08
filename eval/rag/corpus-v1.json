@@ -1,0 +1,277 @@
+{
+  "version": "corpus-v1",
+  "sourceRoot": "D:\\Download\\BDNetdisk_DL",
+  "selectionPolicy": "Six readable documents per course selected by topic coverage before retrieval evaluation. Compiler is held out from tuning.",
+  "files": [
+    {
+      "id": "algorithms-01",
+      "course": "algorithms",
+      "courseRole": "development-courses",
+      "relativePath": "算法设计和分析/课件/Chap01.pdf",
+      "sha256": "1491584332013087542d91cfc5ebb30da4599f51f63b40331733797dabe31d47",
+      "bytes": 1253887,
+      "format": "pdf",
+      "inspection": {
+        "units": 46,
+        "nonemptyTextUnits": 46,
+        "textChars": 10899,
+        "extractor": "pypdf"
+      }
+    },
+    {
+      "id": "algorithms-02",
+      "course": "algorithms",
+      "courseRole": "development-courses",
+      "relativePath": "算法设计和分析/课件/Chap02.pdf",
+      "sha256": "6f3c628aa6ca0b9403c7744d86bc779dc9c20d7165e90bc522edf17f5d09d3cb",
+      "bytes": 1261577,
+      "format": "pdf",
+      "inspection": {
+        "units": 34,
+        "nonemptyTextUnits": 34,
+        "textChars": 9558,
+        "extractor": "pypdf"
+      }
+    },
+    {
+      "id": "algorithms-03",
+      "course": "algorithms",
+      "courseRole": "development-courses",
+      "relativePath": "算法设计和分析/课件/Chap03.pdf",
+      "sha256": "4f16097068f7439fcc5fcd4167d8e14f1653c47de27578450491e0abfde77d37",
+      "bytes": 2362791,
+      "format": "pdf",
+      "inspection": {
+        "units": 61,
+        "nonemptyTextUnits": 61,
+        "textChars": 14330,
+        "extractor": "pypdf"
+      }
+    },
+    {
+      "id": "algorithms-04",
+      "course": "algorithms",
+      "courseRole": "development-courses",
+      "relativePath": "算法设计和分析/课件/Chap04-1.pdf",
+      "sha256": "5f19ef67af0a6f73b872ad06f27ca61d838ae60cabb872246ea2f270d7e02e5a",
+      "bytes": 1498778,
+      "format": "pdf",
+      "inspection": {
+        "units": 67,
+        "nonemptyTextUnits": 67,
+        "textChars": 16567,
+        "extractor": "pypdf"
+      }
+    },
+    {
+      "id": "algorithms-05",
+      "course": "algorithms",
+      "courseRole": "development-courses",
+      "relativePath": "算法设计和分析/课件/Chap05.pdf",
+      "sha256": "94062bf81685239b4967ce67e7146b001afb152801ad58f63d814ac7417c2b76",
+      "bytes": 1502874,
+      "format": "pdf",
+      "inspection": {
+        "units": 44,
+        "nonemptyTextUnits": 43,
+        "textChars": 8805,
+        "extractor": "pypdf"
+      }
+    },
+    {
+      "id": "algorithms-06",
+      "course": "algorithms",
+      "courseRole": "development-courses",
+      "relativePath": "算法设计和分析/课件/Chapter-6 动态规划.pdf",
+      "sha256": "3f44d30538dd42bcfc47bd0abf32456f4038b2d15a41e30418eadc9cd1a7aaa5",
+      "bytes": 3790782,
+      "format": "pdf",
+      "inspection": {
+        "units": 44,
+        "nonemptyTextUnits": 43,
+        "textChars": 14566,
+        "extractor": "pypdf"
+      }
+    },
+    {
+      "id": "os-01",
+      "course": "os",
+      "courseRole": "development-courses",
+      "relativePath": "操作系统/课件/3.1.OS_ProcessManagement-进程的上下文切换-2024.pptx",
+      "sha256": "5e56817373f6baef5fdab28cb28f4ec9cc620400d293274103cd8963dcf64206",
+      "bytes": 6414439,
+      "format": "pptx",
+      "inspection": {
+        "units": 87,
+        "nonemptyTextUnits": 87,
+        "textChars": 13880,
+        "extractor": "pptx-ooxml-text"
+      }
+    },
+    {
+      "id": "os-02",
+      "course": "os",
+      "courseRole": "development-courses",
+      "relativePath": "操作系统/课件/3.2.OS_ProcessManagement-进程的调度策略-2024.pptx",
+      "sha256": "40489b84538e0b3d46b5d7708302938d424ab19fb69bad1c283d670418036dc3",
+      "bytes": 6903864,
+      "format": "pptx",
+      "inspection": {
+        "units": 69,
+        "nonemptyTextUnits": 69,
+        "textChars": 15507,
+        "extractor": "pptx-ooxml-text"
+      }
+    },
+    {
+      "id": "os-03",
+      "course": "os",
+      "courseRole": "development-courses",
+      "relativePath": "操作系统/课件/4.2OS_MemoryManagement-分页机制-2024.pptx",
+      "sha256": "92dc6df61a741a7c5d04db1ebc57719291fd423d2779ad933dbb5c69f2dcca1f",
+      "bytes": 3087564,
+      "format": "pptx",
+      "inspection": {
+        "units": 70,
+        "nonemptyTextUnits": 70,
+        "textChars": 14226,
+        "extractor": "pptx-ooxml-text"
+      }
+    },
+    {
+      "id": "os-04",
+      "course": "os",
+      "courseRole": "development-courses",
+      "relativePath": "操作系统/课件/5.3OS_IPCandConcurrency-并发控制的方法-2024.pptx",
+      "sha256": "f647b80fc9334e04ef6793dad728a08537d51fbd2275a2f0dd398648a5b120fb",
+      "bytes": 998057,
+      "format": "pptx",
+      "inspection": {
+        "units": 58,
+        "nonemptyTextUnits": 58,
+        "textChars": 13980,
+        "extractor": "pptx-ooxml-text"
+      }
+    },
+    {
+      "id": "os-05",
+      "course": "os",
+      "courseRole": "development-courses",
+      "relativePath": "操作系统/课件/5.4OS_IPCandConcurrency-并发控制的典型问题-2024.pptx",
+      "sha256": "355eed7c252ef8f034bfc67ede866b96a63131a8eab677e0b1e6c6b92e21888c",
+      "bytes": 1086807,
+      "format": "pptx",
+      "inspection": {
+        "units": 64,
+        "nonemptyTextUnits": 64,
+        "textChars": 18041,
+        "extractor": "pptx-ooxml-text"
+      }
+    },
+    {
+      "id": "os-06",
+      "course": "os",
+      "courseRole": "development-courses",
+      "relativePath": "操作系统/课件/9.OS_Deadlock-死锁-2024.pptx",
+      "sha256": "42fe04f6c93aac45a705e261683da6d9bf02f676af06fc88135e23bc568dd972",
+      "bytes": 2257819,
+      "format": "pptx",
+      "inspection": {
+        "units": 30,
+        "nonemptyTextUnits": 29,
+        "textChars": 7112,
+        "extractor": "pptx-ooxml-text"
+      }
+    },
+    {
+      "id": "compiler-01",
+      "course": "compiler",
+      "courseRole": "held-out-course",
+      "relativePath": "编译原理/课件/第1章/2-编译器结构.pptx",
+      "sha256": "402d29639db83d62fcb2d6b38556b40bb2fc05b61abc942b3a80fb66dcca9663",
+      "bytes": 35865536,
+      "format": "pptx",
+      "inspection": {
+        "units": 9,
+        "nonemptyTextUnits": 9,
+        "textChars": 1100,
+        "extractor": "pptx-ooxml-text"
+      }
+    },
+    {
+      "id": "compiler-02",
+      "course": "compiler",
+      "courseRole": "held-out-course",
+      "relativePath": "编译原理/课件/第2章/1-CFG.pptx",
+      "sha256": "9c6911ae7c1b9593b412d5356630f44f914b55e7d5e73a0043856e168174b657",
+      "bytes": 59190915,
+      "format": "pptx",
+      "inspection": {
+        "units": 13,
+        "nonemptyTextUnits": 13,
+        "textChars": 1670,
+        "extractor": "pptx-ooxml-text"
+      }
+    },
+    {
+      "id": "compiler-03",
+      "course": "compiler",
+      "courseRole": "held-out-course",
+      "relativePath": "编译原理/课件/第3章/3-正则表达式.pptx",
+      "sha256": "f73cbc3367b0cadb487662373c0698f01798e857e4198bab3247f67d45476978",
+      "bytes": 25704826,
+      "format": "pptx",
+      "inspection": {
+        "units": 14,
+        "nonemptyTextUnits": 14,
+        "textChars": 2101,
+        "extractor": "pptx-ooxml-text"
+      }
+    },
+    {
+      "id": "compiler-04",
+      "course": "compiler",
+      "courseRole": "held-out-course",
+      "relativePath": "编译原理/课件/第4章/11-LR分析.pptx",
+      "sha256": "e9588d0404f98369d9281208065cb04844c1fa8c6867f8f99f376f36f7532532",
+      "bytes": 32161692,
+      "format": "pptx",
+      "inspection": {
+        "units": 15,
+        "nonemptyTextUnits": 15,
+        "textChars": 3660,
+        "extractor": "pptx-ooxml-text"
+      }
+    },
+    {
+      "id": "compiler-05",
+      "course": "compiler",
+      "courseRole": "held-out-course",
+      "relativePath": "编译原理/课件/第8章/1-三地址码.pptx",
+      "sha256": "e3d9dbc622365be278b2fa915abe6609d494fab1b141144db949f92c20090000",
+      "bytes": 31217809,
+      "format": "pptx",
+      "inspection": {
+        "units": 13,
+        "nonemptyTextUnits": 13,
+        "textChars": 2279,
+        "extractor": "pptx-ooxml-text"
+      }
+    },
+    {
+      "id": "compiler-06",
+      "course": "compiler",
+      "courseRole": "held-out-course",
+      "relativePath": "编译原理/课件/第9章/3-基本块.pptx",
+      "sha256": "e3ac826835a07aa1ff1a41a75f21b77ea50850915049f541704a0b7c260f6af7",
+      "bytes": 65480,
+      "format": "pptx",
+      "inspection": {
+        "units": 9,
+        "nonemptyTextUnits": 9,
+        "textChars": 1278,
+        "extractor": "pptx-ooxml-text"
+      }
+    }
+  ]
+}

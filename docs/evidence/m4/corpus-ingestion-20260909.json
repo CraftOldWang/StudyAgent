@@ -1,0 +1,370 @@
+{
+  "corpusVersion": "corpus-v1",
+  "files": 18,
+  "courses": {
+    "algorithms": {
+      "documents": 6,
+      "sourceBytes": 11670689
+    },
+    "os": {
+      "documents": 6,
+      "sourceBytes": 20748550
+    },
+    "compiler": {
+      "documents": 6,
+      "sourceBytes": 184206258
+    }
+  },
+  "allIndexed": true,
+  "sourceInspection": "pypdf / direct OOXML inspection; some PDF cross-reference warnings occurred, production Tika ingestion succeeded for every file",
+  "productionTextExport": "Parent content in chunk_index order; whitespace-normalized evidence matching avoids separator changes",
+  "documents": {
+    "algorithms-01": {
+      "documentId": "2097387505975386114",
+      "fileRecordId": "2097387505946025986",
+      "sourceSha256": "1491584332013087542d91cfc5ebb30da4599f51f63b40331733797dabe31d47",
+      "knowledgeBaseId": "2097387503521718274",
+      "lastStatus": {
+        "id": "2097387505975386114",
+        "knowledgeBaseId": "2097387503521718274",
+        "fileRecordId": "2097387505946025986",
+        "title": "Chap01.pdf",
+        "contentType": "application/pdf",
+        "pipelineStatus": "INDEXED",
+        "createdAt": "2026-09-08T18:12:04",
+        "updatedAt": "2026-09-08T18:12:07"
+      },
+      "exportedTextSha256": "45f832be5060b61ac755f305988ea07dc0b73c7a48214e5a9c6aa770818d84ab",
+      "parentCount": 2,
+      "exportedCharacters": 11281
+    },
+    "algorithms-02": {
+      "documentId": "2097387524052836354",
+      "fileRecordId": "2097387524036059138",
+      "sourceSha256": "6f3c628aa6ca0b9403c7744d86bc779dc9c20d7165e90bc522edf17f5d09d3cb",
+      "knowledgeBaseId": "2097387503521718274",
+      "lastStatus": {
+        "id": "2097387524052836354",
+        "knowledgeBaseId": "2097387503521718274",
+        "fileRecordId": "2097387524036059138",
+        "title": "Chap02.pdf",
+        "contentType": "application/pdf",
+        "pipelineStatus": "INDEXED",
+        "createdAt": "2026-09-08T18:12:08",
+        "updatedAt": "2026-09-08T18:12:11"
+      },
+      "exportedTextSha256": "3f3593b58f21f51a342afee18088eaaeb335c48874ed235d726026e70b26bcd2",
+      "parentCount": 2,
+      "exportedCharacters": 9855
+    },
+    "algorithms-03": {
+      "documentId": "2097387537675935745",
+      "fileRecordId": "2097387537663352834",
+      "sourceSha256": "4f16097068f7439fcc5fcd4167d8e14f1653c47de27578450491e0abfde77d37",
+      "knowledgeBaseId": "2097387503521718274",
+      "lastStatus": {
+        "id": "2097387537675935745",
+        "knowledgeBaseId": "2097387503521718274",
+        "fileRecordId": "2097387537663352834",
+        "title": "Chap03.pdf",
+        "contentType": "application/pdf",
+        "pipelineStatus": "INDEXED",
+        "createdAt": "2026-09-08T18:12:11",
+        "updatedAt": "2026-09-08T18:12:14"
+      },
+      "exportedTextSha256": "6c2d9067a12bc7e7b41add88a7da114a7ba905c8c0e53dda9b009846e965fbed",
+      "parentCount": 3,
+      "exportedCharacters": 14846
+    },
+    "algorithms-04": {
+      "documentId": "2097387551101902849",
+      "fileRecordId": "2097387551089319938",
+      "sourceSha256": "5f19ef67af0a6f73b872ad06f27ca61d838ae60cabb872246ea2f270d7e02e5a",
+      "knowledgeBaseId": "2097387503521718274",
+      "lastStatus": {
+        "id": "2097387551101902849",
+        "knowledgeBaseId": "2097387503521718274",
+        "fileRecordId": "2097387551089319938",
+        "title": "Chap04-1.pdf",
+        "contentType": "application/pdf",
+        "pipelineStatus": "INDEXED",
+        "createdAt": "2026-09-08T18:12:14",
+        "updatedAt": "2026-09-08T18:12:18"
+      },
+      "exportedTextSha256": "038813074eaaea89a53c8847f839f13dde09f0cfd9314e717548069c28256374",
+      "parentCount": 3,
+      "exportedCharacters": 17062
+    },
+    "algorithms-05": {
+      "documentId": "2097387568936083458",
+      "fileRecordId": "2097387568889946113",
+      "sourceSha256": "94062bf81685239b4967ce67e7146b001afb152801ad58f63d814ac7417c2b76",
+      "knowledgeBaseId": "2097387503521718274",
+      "lastStatus": {
+        "id": "2097387568936083458",
+        "knowledgeBaseId": "2097387503521718274",
+        "fileRecordId": "2097387568889946113",
+        "title": "Chap05.pdf",
+        "contentType": "application/pdf",
+        "pipelineStatus": "INDEXED",
+        "createdAt": "2026-09-08T18:12:19",
+        "updatedAt": "2026-09-08T18:12:21"
+      },
+      "exportedTextSha256": "eb69288f711373622233069543863e68391e1eba34d1c85be9295b39ba079ebf",
+      "parentCount": 2,
+      "exportedCharacters": 9131
+    },
+    "algorithms-06": {
+      "documentId": "2097387582705983490",
+      "fileRecordId": "2097387582680817665",
+      "sourceSha256": "3f44d30538dd42bcfc47bd0abf32456f4038b2d15a41e30418eadc9cd1a7aaa5",
+      "knowledgeBaseId": "2097387503521718274",
+      "lastStatus": {
+        "id": "2097387582705983490",
+        "knowledgeBaseId": "2097387503521718274",
+        "fileRecordId": "2097387582680817665",
+        "title": "Chapter-6 动态规划.pdf",
+        "contentType": "application/pdf",
+        "pipelineStatus": "INDEXED",
+        "createdAt": "2026-09-08T18:12:22",
+        "updatedAt": "2026-09-08T18:12:27"
+      },
+      "exportedTextSha256": "3ded23cfeb5eebe95ec993d1fef79814f7cc86c569621001e49a604c4366d25a",
+      "parentCount": 5,
+      "exportedCharacters": 15974
+    },
+    "os-01": {
+      "documentId": "2097387609885073409",
+      "fileRecordId": "2097387609864101890",
+      "sourceSha256": "5e56817373f6baef5fdab28cb28f4ec9cc620400d293274103cd8963dcf64206",
+      "knowledgeBaseId": "2097387608484175874",
+      "lastStatus": {
+        "id": "2097387609885073409",
+        "knowledgeBaseId": "2097387608484175874",
+        "fileRecordId": "2097387609864101890",
+        "title": "3.1.OS_ProcessManagement-进程的上下文切换-2024.pptx",
+        "contentType": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "pipelineStatus": "INDEXED",
+        "createdAt": "2026-09-08T18:12:28",
+        "updatedAt": "2026-09-08T18:12:39"
+      },
+      "exportedTextSha256": "21cabd3e0caf36bf366bb24a1b491fdf08f104fc3be04f4f8f5239bfd4c801ab",
+      "parentCount": 5,
+      "exportedCharacters": 18783
+    },
+    "os-02": {
+      "documentId": "2097387659554021378",
+      "fileRecordId": "2097387659465940993",
+      "sourceSha256": "40489b84538e0b3d46b5d7708302938d424ab19fb69bad1c283d670418036dc3",
+      "knowledgeBaseId": "2097387608484175874",
+      "lastStatus": {
+        "id": "2097387659554021378",
+        "knowledgeBaseId": "2097387608484175874",
+        "fileRecordId": "2097387659465940993",
+        "title": "3.2.OS_ProcessManagement-进程的调度策略-2024.pptx",
+        "contentType": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "pipelineStatus": "INDEXED",
+        "createdAt": "2026-09-08T18:12:40",
+        "updatedAt": "2026-09-08T18:12:46"
+      },
+      "exportedTextSha256": "98f3f1532d7a33f53e2046305b820243e71b1dd8194364921ec79527e82a4ad1",
+      "parentCount": 5,
+      "exportedCharacters": 17319
+    },
+    "os-03": {
+      "documentId": "2097387686745694209",
+      "fileRecordId": "2097387686678585345",
+      "sourceSha256": "92dc6df61a741a7c5d04db1ebc57719291fd423d2779ad933dbb5c69f2dcca1f",
+      "knowledgeBaseId": "2097387608484175874",
+      "lastStatus": {
+        "id": "2097387686745694209",
+        "knowledgeBaseId": "2097387608484175874",
+        "fileRecordId": "2097387686678585345",
+        "title": "4.2OS_MemoryManagement-分页机制-2024.pptx",
+        "contentType": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "pipelineStatus": "INDEXED",
+        "createdAt": "2026-09-08T18:12:47",
+        "updatedAt": "2026-09-08T18:12:53"
+      },
+      "exportedTextSha256": "a2be9bb0a7c4ddd98455ae0de0e4d103a0bd1359f441e75f9986a87a17af5848",
+      "parentCount": 4,
+      "exportedCharacters": 16363
+    },
+    "os-04": {
+      "documentId": "2097387717611577345",
+      "fileRecordId": "2097387717578022913",
+      "sourceSha256": "f647b80fc9334e04ef6793dad728a08537d51fbd2275a2f0dd398648a5b120fb",
+      "knowledgeBaseId": "2097387608484175874",
+      "lastStatus": {
+        "id": "2097387717611577345",
+        "knowledgeBaseId": "2097387608484175874",
+        "fileRecordId": "2097387717578022913",
+        "title": "5.3OS_IPCandConcurrency-并发控制的方法-2024.pptx",
+        "contentType": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "pipelineStatus": "INDEXED",
+        "createdAt": "2026-09-08T18:12:54",
+        "updatedAt": "2026-09-08T18:12:55"
+      },
+      "exportedTextSha256": "efd8f2a6b2ce03c42b414006741009baff28cd25001505f77cd82808cfdb0ce8",
+      "parentCount": 3,
+      "exportedCharacters": 15094
+    },
+    "os-05": {
+      "documentId": "2097387729267548161",
+      "fileRecordId": "2097387729166884866",
+      "sourceSha256": "355eed7c252ef8f034bfc67ede866b96a63131a8eab677e0b1e6c6b92e21888c",
+      "knowledgeBaseId": "2097387608484175874",
+      "lastStatus": {
+        "id": "2097387729267548161",
+        "knowledgeBaseId": "2097387608484175874",
+        "fileRecordId": "2097387729166884866",
+        "title": "5.4OS_IPCandConcurrency-并发控制的典型问题-2024.pptx",
+        "contentType": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "pipelineStatus": "INDEXED",
+        "createdAt": "2026-09-08T18:12:57",
+        "updatedAt": "2026-09-08T18:13:02"
+      },
+      "exportedTextSha256": "a093dd83ae92d231fa2968e5c6b562e288a81c978d5e8731d3ede02af7dac6b5",
+      "parentCount": 4,
+      "exportedCharacters": 18993
+    },
+    "os-06": {
+      "documentId": "2097387753724534786",
+      "fileRecordId": "2097387753716146178",
+      "sourceSha256": "42fe04f6c93aac45a705e261683da6d9bf02f676af06fc88135e23bc568dd972",
+      "knowledgeBaseId": "2097387608484175874",
+      "lastStatus": {
+        "id": "2097387753724534786",
+        "knowledgeBaseId": "2097387608484175874",
+        "fileRecordId": "2097387753716146178",
+        "title": "9.OS_Deadlock-死锁-2024.pptx",
+        "contentType": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "pipelineStatus": "INDEXED",
+        "createdAt": "2026-09-08T18:13:03",
+        "updatedAt": "2026-09-08T18:13:05"
+      },
+      "exportedTextSha256": "be19e1c4fed7507ba442b8d51234e85d4e84995cf778ad962d264a891760ac53",
+      "parentCount": 2,
+      "exportedCharacters": 8528
+    },
+    "compiler-01": {
+      "documentId": "2097387767939031042",
+      "fileRecordId": "2097387767888699393",
+      "sourceSha256": "402d29639db83d62fcb2d6b38556b40bb2fc05b61abc942b3a80fb66dcca9663",
+      "knowledgeBaseId": "2097387762654208001",
+      "lastStatus": {
+        "id": "2097387767939031042",
+        "knowledgeBaseId": "2097387762654208001",
+        "fileRecordId": "2097387767888699393",
+        "title": "2-编译器结构.pptx",
+        "contentType": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "pipelineStatus": "INDEXED",
+        "createdAt": "2026-09-08T18:13:06",
+        "updatedAt": "2026-09-08T18:13:08"
+      },
+      "exportedTextSha256": "bf5aefd517fed4d88a42a1d26248617027c2b58f1564cd8857126aa1aeafcd0e",
+      "parentCount": 1,
+      "exportedCharacters": 1418
+    },
+    "compiler-02": {
+      "documentId": "2097387790277894145",
+      "fileRecordId": "2097387790219173889",
+      "sourceSha256": "9c6911ae7c1b9593b412d5356630f44f914b55e7d5e73a0043856e168174b657",
+      "knowledgeBaseId": "2097387762654208001",
+      "lastStatus": {
+        "id": "2097387790277894145",
+        "knowledgeBaseId": "2097387762654208001",
+        "fileRecordId": "2097387790219173889",
+        "title": "1-CFG.pptx",
+        "contentType": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "pipelineStatus": "INDEXED",
+        "createdAt": "2026-09-08T18:13:11",
+        "updatedAt": "2026-09-08T18:13:14"
+      },
+      "exportedTextSha256": "1924a38d507c61713e4763fa2614525d3b23a06e4c5c7aef9afb6e4e04c7b966",
+      "parentCount": 1,
+      "exportedCharacters": 2151
+    },
+    "compiler-03": {
+      "documentId": "2097387808149823489",
+      "fileRecordId": "2097387808128851969",
+      "sourceSha256": "f73cbc3367b0cadb487662373c0698f01798e857e4198bab3247f67d45476978",
+      "knowledgeBaseId": "2097387762654208001",
+      "lastStatus": {
+        "id": "2097387808149823489",
+        "knowledgeBaseId": "2097387762654208001",
+        "fileRecordId": "2097387808128851969",
+        "title": "3-正则表达式.pptx",
+        "contentType": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "pipelineStatus": "INDEXED",
+        "createdAt": "2026-09-08T18:13:16",
+        "updatedAt": "2026-09-08T18:13:17"
+      },
+      "exportedTextSha256": "1909615a7e3dee833cc9bbb1cdf53addcd5e14b0c73692e5ea0be5c7f0717cab",
+      "parentCount": 1,
+      "exportedCharacters": 2380
+    },
+    "compiler-04": {
+      "documentId": "2097387822385291266",
+      "fileRecordId": "2097387822234296321",
+      "sourceSha256": "e9588d0404f98369d9281208065cb04844c1fa8c6867f8f99f376f36f7532532",
+      "knowledgeBaseId": "2097387762654208001",
+      "lastStatus": {
+        "id": "2097387822385291266",
+        "knowledgeBaseId": "2097387762654208001",
+        "fileRecordId": "2097387822234296321",
+        "title": "11-LR分析.pptx",
+        "contentType": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "pipelineStatus": "INDEXED",
+        "createdAt": "2026-09-08T18:13:19",
+        "updatedAt": "2026-09-08T18:13:21"
+      },
+      "exportedTextSha256": "1af51c2e0c75e8a4bdb6fab9f4ce10423b678343ef96eb98bddaf1f34e386b82",
+      "parentCount": 1,
+      "exportedCharacters": 3566
+    },
+    "compiler-05": {
+      "documentId": "2097387840127197186",
+      "fileRecordId": "2097387840043311105",
+      "sourceSha256": "e3d9dbc622365be278b2fa915abe6609d494fab1b141144db949f92c20090000",
+      "knowledgeBaseId": "2097387762654208001",
+      "lastStatus": {
+        "id": "2097387840127197186",
+        "knowledgeBaseId": "2097387762654208001",
+        "fileRecordId": "2097387840043311105",
+        "title": "1-三地址码.pptx",
+        "contentType": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "pipelineStatus": "INDEXED",
+        "createdAt": "2026-09-08T18:13:23",
+        "updatedAt": "2026-09-08T18:13:26"
+      },
+      "exportedTextSha256": "a45a4313cb35b5be1c5e4cb8d01f9704a947c36c428591faac7437b2b15c7303",
+      "parentCount": 1,
+      "exportedCharacters": 2452
+    },
+    "compiler-06": {
+      "documentId": "2097387855037947906",
+      "fileRecordId": "2097387854966644737",
+      "sourceSha256": "e3ac826835a07aa1ff1a41a75f21b77ea50850915049f541704a0b7c260f6af7",
+      "knowledgeBaseId": "2097387762654208001",
+      "lastStatus": {
+        "id": "2097387855037947906",
+        "knowledgeBaseId": "2097387762654208001",
+        "fileRecordId": "2097387854966644737",
+        "title": "3-基本块.pptx",
+        "contentType": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "pipelineStatus": "INDEXED",
+        "createdAt": "2026-09-08T18:13:27",
+        "updatedAt": "2026-09-08T18:13:28"
+      },
+      "exportedTextSha256": "717edce98e3d8d610d1552ffad71596c0c32a447852241549e1b0538bb5cb8be",
+      "parentCount": 1,
+      "exportedCharacters": 1238
+    }
+  },
+  "knowledgeBases": {
+    "algorithms": "2097387503521718274",
+    "os": "2097387608484175874",
+    "compiler": "2097387762654208001"
+  }
+}

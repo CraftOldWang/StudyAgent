@@ -1,0 +1,834 @@
+[
+  {
+    "id": "algorithms-01-q2",
+    "reason": "Scope the theorem to the lecture model, not all matching variants.",
+    "before": {
+      "id": "algorithms-01-q2",
+      "course": "algorithms",
+      "sourceId": "algorithms-01",
+      "question": "Gale-Shapley算法在什么条件下保证找到稳定匹配？",
+      "expectedAnswer": "Gale-Shapley算法保证对任何问题实例都能找到稳定匹配。",
+      "quote": "Theorem.  The Gale–Shapley algorithm guarantees to find a stable matching for any problem instance. [Gale– Shapley 1962]",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "paraphrase"
+    },
+    "after": {
+      "id": "algorithms-01-q2",
+      "course": "algorithms",
+      "sourceId": "algorithms-01",
+      "question": "在课件定义的稳定匹配模型下，Gale-Shapley算法对所有实例有什么保证？",
+      "expectedAnswer": "在该模型下，对所有问题实例都能找到稳定匹配。",
+      "quote": "Theorem.  The Gale–Shapley algorithm guarantees to find a stable matching for any problem instance. [Gale– Shapley 1962]",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "paraphrase"
+    }
+  },
+  {
+    "id": "algorithms-02-q4",
+    "reason": "Remove a quiz option and unrelated examples from the evidence.",
+    "before": {
+      "id": "algorithms-02-q4",
+      "course": "algorithms",
+      "sourceId": "algorithms-02",
+      "question": "Θ(g(n)) 的定义是什么？它与 O 和 Ω 有什么关系？",
+      "expectedAnswer": "f(n) 是 Θ(g(n)) 如果存在常数 c1 > 0, c2 > 0 和 n0 ≥ 0，使得对于所有 n ≥ n0，有 0 ≤ c1·g(n) ≤ f(n) ≤ c2·g(n)。等价地，f(n) 是 Θ(g(n)) 当且仅当 f(n) 既是 O(g(n)) 又是 Ω(g(n))。",
+      "quote": "​Tight bounds. 𝑓(𝑛) is Θ(𝑔(𝑛)) if there exist constants 𝑐1 > 0, 𝑐2 > 0, and 𝑛0 ≥ 0 such that 0 ≤ 𝑐1 · 𝑔(𝑛) ≤ 𝑓(𝑛) ≤ 𝑐2 · 𝑔(𝑛) for all 𝑛 ≥ 𝑛0. • 𝑔(𝑛) is asymptotically tight bound for 𝑓(𝑛). ​E.g. 𝑓(𝑛) = 32𝑛2 + 17𝑛 + 1 • 𝑓(𝑛) is Θ 𝑛2 . • 𝑓(𝑛) is neither Θ 𝑛 nor Θ 𝑛3 . ​Practical Usage • Mergesort makes Θ(𝑛 log 𝑛) compares to sort 𝑛 elements. Quiz 2-3 ​Which is an equivalent definition of tight bound? ​A. 𝑓(𝑛) is Θ(𝑔(𝑛)) iff 𝑓(𝑛) is both 𝑂(𝑔(𝑛)) and Ω(𝑔(𝑛)).",
+      "answerable": true,
+      "type": "definition",
+      "wording": "paraphrase"
+    },
+    "after": {
+      "id": "algorithms-02-q4",
+      "course": "algorithms",
+      "sourceId": "algorithms-02",
+      "question": "渐近紧确界 Θ(g(n)) 的形式化定义是什么？",
+      "expectedAnswer": "存在常数 c1>0、c2>0 和 n0≥0，使所有 n≥n0 满足 0≤c1·g(n)≤f(n)≤c2·g(n)。",
+      "quote": "​Tight bounds. 𝑓(𝑛) is Θ(𝑔(𝑛)) if there exist constants 𝑐1 > 0, 𝑐2 > 0, and 𝑛0 ≥ 0 such that 0 ≤ 𝑐1 · 𝑔(𝑛) ≤ 𝑓(𝑛) ≤ 𝑐2 · 𝑔(𝑛) for all 𝑛 ≥ 𝑛0.",
+      "answerable": true,
+      "type": "definition",
+      "wording": "paraphrase"
+    }
+  },
+  {
+    "id": "algorithms-04-q4",
+    "reason": "Replace an unmarked quiz option with the explicit optimality theorem.",
+    "before": {
+      "id": "algorithms-04-q4",
+      "course": "algorithms",
+      "sourceId": "algorithms-04",
+      "question": "在最小化最大延迟（Minimizing Maximum Lateness）问题中，哪种贪心顺序是最优的？",
+      "expectedAnswer": "按截止时间递增的顺序（最早截止时间优先，Earliest-Deadline-First）是最优的。",
+      "quote": "​B. [earliest deadline first] Ascending order of deadline 𝑑𝑗.",
+      "answerable": true,
+      "type": "definition",
+      "wording": "lexical"
+    },
+    "after": {
+      "id": "algorithms-04-q4",
+      "course": "algorithms",
+      "sourceId": "algorithms-04",
+      "question": "课件在最小化最大延迟的调度问题中，证明哪种截止时间排序策略是最优的？",
+      "expectedAnswer": "最早截止时间优先（earliest-deadline-first）调度。",
+      "quote": "Theorem. The earliest-deadline-first schedule 𝑆 is optimal.",
+      "answerable": true,
+      "type": "definition",
+      "wording": "lexical"
+    }
+  },
+  {
+    "id": "algorithms-06-q1",
+    "reason": "Remove loosely stated ratios and use the readable sequence definition.",
+    "before": {
+      "id": "algorithms-06-q1",
+      "course": "algorithms",
+      "sourceId": "algorithms-06",
+      "question": "费氏数列的定义是什么？它有哪些特性？",
+      "expectedAnswer": "费氏数列由0和1开始，之后的每一项等于前两项之和。特性包括：前两个数相加等于第三个数；前一个数除以后一个数越往后越接近0.618（黄金分割）；相邻两个比率一个小于0.618一个大于0.618；后一个数除以前一个数越往后越接近1.618。",
+      "quote": "• 费氏数列是由0，1开始，之后的每一项等于前两项之和： 0，1，1，2，3，5，8，13，21，34，55，89，144......。 • 这个数列有如下一些特性： – 前2个数相加等于第3个数 – 前1个数除以后一个数越往后越无限接近于0.618 (黄金分割) – 相邻的两个比率必是一个小于0.618一个大于0.618 – 后1个数除以前一个数越往后越无限接近于1.618 – …",
+      "answerable": true,
+      "type": "definition",
+      "wording": "paraphrase"
+    },
+    "after": {
+      "id": "algorithms-06-q1",
+      "course": "algorithms",
+      "sourceId": "algorithms-06",
+      "question": "课件引例中的费氏数列从哪两个数开始，后续项怎样产生？",
+      "expectedAnswer": "从0、1开始，之后每项等于前两项之和。",
+      "quote": "费氏数列是由0，1开始，之后的每一项等于前两项之和： 0，1，1，2，3，5，8，13，21，34，55，89，144......。",
+      "answerable": true,
+      "type": "definition",
+      "wording": "paraphrase"
+    }
+  },
+  {
+    "id": "algorithms-06-q3",
+    "reason": "Replace a damaged formula with a readable problem definition.",
+    "before": {
+      "id": "algorithms-06-q3",
+      "course": "algorithms",
+      "sourceId": "algorithms-06",
+      "question": "矩阵链相乘问题中，C[i,j]的定义是什么？其递归关系式如何表示？",
+      "expectedAnswer": "C[i,j]表示计算子链M_i...M_j所需的最小乘法次数。递归关系为：C[i,j] = min_{i<k≤j} { C[i,k-1] + C[k,j] + r_i × r_k × r_{j+1} }，其中r表示矩阵的维度。",
+      "quote": "[ , ]C i j ：计算 ,i jM 所需的最小乘法次数。 1,i j n= = 时，原问题得解。  ( ) ( ), 1 1 1 1i j i i k k k j jM M M M M M M M+ - + -= × × × ×    1[ , ] [ , 1] [ , ] i k jC i j C i k C k j r r r += - + + × × k 1[ , ] min{ [ , 1] [ , ] }i k ji k j C i j C i k C k j r r r +< £ = - + + × ×",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "lexical"
+    },
+    "after": {
+      "id": "algorithms-06-q3",
+      "course": "algorithms",
+      "sourceId": "algorithms-06",
+      "question": "矩阵链相乘问题的最优值和最优解分别指什么？",
+      "expectedAnswer": "最优值是所需的最小乘法次数；最优解是达到该次数的矩阵相乘结合方式。",
+      "quote": "给定n个连乘的矩阵M1˙M2 …Mn-1 ˙Mn，问：所需要的 最小乘法次数(最优值)是多少次？对应此最小乘法次 数，矩阵是按照什么结合方式相乘(最优解)的？",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "lexical"
+    }
+  },
+  {
+    "id": "algorithms-06-q4",
+    "reason": "Replace a damaged recurrence with readable constraints and objective.",
+    "before": {
+      "id": "algorithms-06-q4",
+      "course": "algorithms",
+      "sourceId": "algorithms-06",
+      "question": "0-1背包问题中，V[i,j]表示什么？其递归关系如何？",
+      "expectedAnswer": "V[i,j]表示从前i个物品中选取装入承重量为j的背包所能取得的最大价值。递归关系为：若i=0或j=0则V[i,j]=0；若j<w_i则V[i,j]=V[i-1,j]；否则V[i,j]=max{V[i-1,j], V[i-1,j-w_i]+v_i}。",
+      "quote": "设V[i,j]表示从前i个物品{u1,u2,…,ui}中取出一部分装入承重量为j的背包所能 取得的最大价值。那么，当i=n,j=C时， V[n,C] 就是原问题的解。 … u1 u2 ui-1 ui j ? w1 w2 wi-1 wi v1 v2 vi-1 vi 0 0 0 [ , ] [ 1, ] max{ ,[ 1, ] [ 1, ] } 0 i i iiV i if i or j V i j V i j if j w ifj V i i and jj v ww = =ì ï= - <í ï + > ³- -î -",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "lexical"
+    },
+    "after": {
+      "id": "algorithms-06-q4",
+      "course": "algorithms",
+      "sourceId": "algorithms-06",
+      "question": "0-1背包问题要在什么约束下优化什么目标，为什么叫0-1？",
+      "expectedAnswer": "总重量不超过背包容量，选择物品使总价值最大；每件物品只有装入和不装入两种选择。",
+      "quote": "给定n个物品{u1,u2,…,un}和一个背包，物品i的重量为 wi，价值为vi，已知背包的承重量为C。问：在不撑破 背包的条件下，选择哪些物品装入背包，得到的总价 值最大？ • 之所以称为0-1 背包问题，是因为一个物品要么装入、 要么不装入，这两种状态分别用1 和0 表示。",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "lexical"
+    }
+  },
+  {
+    "id": "algorithms-06-q5",
+    "reason": "Replace a damaged recurrence with the readable LCS objective.",
+    "before": {
+      "id": "algorithms-06-q5",
+      "course": "algorithms",
+      "sourceId": "algorithms-06",
+      "question": "最长公共子序列问题中，C[i,j]的递归定义是什么？",
+      "expectedAnswer": "C[i,j]表示A的前i个字符和B的前j个字符的最长公共子序列长度。若i=0或j=0则C[i,j]=0；若a_i=b_j则C[i,j]=C[i-1,j-1]+1；否则C[i,j]=max{C[i,j-1], C[i-1,j]}。",
+      "quote": "最长公共子序列的长度值 0 ==0 or ==0 [ , ] [ 1, 1] 1 >0&& >0&& max{ [ , 1], [ 1, ]} >0&& >0&& i j i j if i j C i j C i j if i j a b C i j C i j if i j a b ì ï = - - + ==í ï - - ¹î",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "lexical"
+    },
+    "after": {
+      "id": "algorithms-06-q5",
+      "course": "algorithms",
+      "sourceId": "algorithms-06",
+      "question": "最长公共子序列问题要求返回的最优值和最优解分别是什么？",
+      "expectedAnswer": "最优值是两个字符串最长公共子序列的长度，最优解是对应的子序列。",
+      "quote": "给定两个定义在字符集∑上的字符串A和B，长度分别 为n和m，现在要求它们的最长公共子序列的长度值 (最优值)，以及对应的子序列(最优解) 。",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "lexical"
+    }
+  },
+  {
+    "id": "os-01-q1",
+    "reason": "The lecture uses the single-processor concurrency model; qualify that scope.",
+    "before": {
+      "id": "os-01-q1",
+      "course": "os",
+      "sourceId": "os-01",
+      "question": "什么是并发（Concurrent）和并行（Parallel）？它们的主要区别是什么？",
+      "expectedAnswer": "并行是多个任务在同一时间同时运行，通常需要多份硬件支持；并发是微观层面同一时刻只有一个任务在运行，宏观层面多个任务在差不多相同的时间推进。",
+      "quote": "并行 多个任务在同一时间同时运行 通常需要多份硬件支持，例如多处理器、多核、多机集群等 并发 微观层面，同一时刻只有一个任务在运行 宏观层面，多个任务在差不多相同的时间推进",
+      "answerable": true,
+      "type": "definition",
+      "wording": "lexical"
+    },
+    "after": {
+      "id": "os-01-q1",
+      "course": "os",
+      "sourceId": "os-01",
+      "question": "按课件的单处理器并发模型，并发与多任务并行在微观和宏观执行上有什么区别？",
+      "expectedAnswer": "并行是多个任务在同一时间同时运行，通常需要多份硬件支持；并发是微观层面同一时刻只有一个任务在运行，宏观层面多个任务在差不多相同的时间推进。",
+      "quote": "并行 多个任务在同一时间同时运行 通常需要多份硬件支持，例如多处理器、多核、多机集群等 并发 微观层面，同一时刻只有一个任务在运行 宏观层面，多个任务在差不多相同的时间推进",
+      "answerable": true,
+      "type": "definition",
+      "wording": "lexical"
+    }
+  },
+  {
+    "id": "os-01-q2",
+    "reason": "Remove the near-verbatim numeric answer clues from the question.",
+    "before": {
+      "id": "os-01-q2",
+      "course": "os",
+      "sourceId": "os-01",
+      "question": "在顺序执行模式下，两个作业的总耗时为80，CPU效率为50%，设备1效率为18.75%，设备2效率为31.25%；在并发模式下，总耗时为45，CPU效率为89%，设备1效率为33%，设备2效率为55.6%。这说明并发的意义是什么？",
+      "expectedAnswer": "并发提高了CPU和设备（DEV1、DEV2）的利用率，从而提升了计算机的整体效率。",
+      "quote": "Efficiency under sequential mode Time consuming for 2 jobs: 80 Efficiency of CPU: 40/80 = 50% Efficiency of DEV1: 15 / 80 ＝ 18.75% Efficiency of DEV2: 25 / 80 = 31.25% Efficiency under cocurrent mode Time consuming for 2 jobs:45 Efficiency of CPU: 40 / 45 = 89% Efficiency of DEV1: 15 / 45 = 33% Efficiency of DEV2: 25 / 45 ＝ 55.6%",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "paraphrase"
+    },
+    "after": {
+      "id": "os-01-q2",
+      "course": "os",
+      "sourceId": "os-01",
+      "question": "课件用两个作业的顺序执行与并发执行对比，说明并发对CPU和设备利用率有什么意义？",
+      "expectedAnswer": "并发提高了CPU和设备（DEV1、DEV2）的利用率，从而提升了计算机的整体效率。",
+      "quote": "Efficiency under sequential mode Time consuming for 2 jobs: 80 Efficiency of CPU: 40/80 = 50% Efficiency of DEV1: 15 / 80 ＝ 18.75% Efficiency of DEV2: 25 / 80 = 31.25% Efficiency under cocurrent mode Time consuming for 2 jobs:45 Efficiency of CPU: 40 / 45 = 89% Efficiency of DEV1: 15 / 45 = 33% Efficiency of DEV2: 25 / 45 ＝ 55.6%",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "paraphrase"
+    }
+  },
+  {
+    "id": "os-01-q3",
+    "reason": "Keep only the necessary PCB definition and ownership evidence.",
+    "before": {
+      "id": "os-01-q3",
+      "course": "os",
+      "sourceId": "os-01",
+      "question": "进程控制块（PCB）是什么？它由谁维护？用户能否直接修改？",
+      "expectedAnswer": "PCB是为进程设计的数据结构，由操作系统内核维护，用户不能直接修改。",
+      "quote": "Process Control Block (PCB) Data structure designed for process Maintained by OS kernel, user can’t modify it directly Other names: process descriptor, process attribute PCB Table or PCB List PCBs of all processes are managed and stored in specified memory region, name PCB table/list The size of PCB table determines concurrency degree Processes with different states are stored in different PCB tables",
+      "answerable": true,
+      "type": "definition",
+      "wording": "lexical"
+    },
+    "after": {
+      "id": "os-01-q3",
+      "course": "os",
+      "sourceId": "os-01",
+      "question": "进程控制块（PCB）是什么？它由谁维护？用户能否直接修改？",
+      "expectedAnswer": "PCB是为进程设计的数据结构，由操作系统内核维护，用户不能直接修改。",
+      "quote": "Process Control Block (PCB) Data structure designed for process Maintained by OS kernel, user can’t modify it directly",
+      "answerable": true,
+      "type": "definition",
+      "wording": "lexical"
+    }
+  },
+  {
+    "id": "os-02-q1",
+    "reason": "Replace a task_struct question duplicated in os-01.",
+    "before": {
+      "id": "os-02-q1",
+      "course": "os",
+      "sourceId": "os-02",
+      "question": "在Linux内核中，进程和线程统称为什么？由哪个数据结构进行管理？",
+      "expectedAnswer": "在Linux内核中，进程和线程都叫做任务（Task），由统一的数据结构task_struct进行管理。",
+      "quote": "在 Linux 内核中，无论是进程还是线程，到了内核里面，都叫做任务（Task），由统一的数据结构 task_struct 进行管理。task_struct 是 Linux 中的进程描述符，是感知进程存在的唯一实体。Linux 内核中通过一个双向循环链表将所有的 task_struct 串了起来。",
+      "answerable": true,
+      "type": "definition",
+      "wording": "lexical"
+    },
+    "after": {
+      "id": "os-02-q1",
+      "course": "os",
+      "sourceId": "os-02",
+      "question": "进程切换时，对当前进程和下一进程的执行上下文分别做什么操作？",
+      "expectedAnswer": "保存当前进程在PCB中的执行上下文（CPU状态），恢复下一个进程的执行上下文。",
+      "quote": "保存当前进程在PCB中的执行上下文(CPU状态) 恢复下一个进程的执行上下文",
+      "answerable": true,
+      "type": "definition",
+      "wording": "lexical"
+    }
+  },
+  {
+    "id": "os-03-q1",
+    "reason": "Buddy powers lost superscript structure; replace with readable paging arithmetic.",
+    "before": {
+      "id": "os-03-q1",
+      "course": "os",
+      "sourceId": "os-03",
+      "question": "在伙伴系统中，释放一个块时需要满足哪些条件才能与相邻块合并？",
+      "expectedAnswer": "释放的块需要满足：大小相同（2^i），地址相邻，且低地址空闲块起始地址为2^(i+1)的倍数。",
+      "quote": "■ 释放过程 把释放的块放入空闲块数组 合并满足合并条件的空闲块 ■ 合并条件 大小相同2i http://en.wikipedia.org/wiki/Buddy_memory_allocation 128K 1M 512K 64K 256K C=64K 256K 64K 256K D=256K A=128K 地址相邻 低地址空闲块起始地址为2i＋1的倍数 章节4：内存管理 伙伴系统的实现",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "paraphrase"
+    },
+    "after": {
+      "id": "os-03-q1",
+      "course": "os",
+      "sourceId": "os-03",
+      "question": "分页后，如何根据逻辑地址address和页面大小page_size计算页号与页内偏移？",
+      "expectedAnswer": "页号为address除以page_size的整数商，页内偏移为address % page_size。",
+      "quote": "分页后进程的逻辑地址由两部分构成： 页号：address / page_size 页地地址：address % page_size",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "paraphrase"
+    }
+  },
+  {
+    "id": "os-03-q4",
+    "reason": "Remove a second broad claim and diagram noise from a mapping question.",
+    "before": {
+      "id": "os-03-q4",
+      "course": "os",
+      "sourceId": "os-03",
+      "question": "在分页机制中，页表的作用是什么？",
+      "expectedAnswer": "页表完成逻辑页号到物理帧号的转换，将不连续的物理地址变成连续的逻辑地址。",
+      "quote": "(f,o) 物理地 址空间 页表完成逻辑页号到物理帧号的转换 章节4：内存管理 分页机制中的地址转换 主存中页框（物理块） 0 1 2 3 4 5 6 0 1 2 3 4 5 6 Logical Space Frame Page Number Page Table . . . . . . . 章节4：内存管理 页表将不连续的物理地址变成了连续的逻辑地址",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "lexical"
+    },
+    "after": {
+      "id": "os-03-q4",
+      "course": "os",
+      "sourceId": "os-03",
+      "question": "分页地址转换中，页表把哪一种编号转换成哪一种编号？",
+      "expectedAnswer": "将逻辑页号转换为物理帧号。",
+      "quote": "页表完成逻辑页号到物理帧号的转换",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "lexical"
+    }
+  },
+  {
+    "id": "os-03-q5",
+    "reason": "Do not generalize a particular file-backed page-fault illustration to all faults.",
+    "before": {
+      "id": "os-03-q5",
+      "course": "os",
+      "sourceId": "os-03",
+      "question": "在缺页异常处理流程中，操作系统如何找到页数据在外存中的位置？",
+      "expectedAnswer": "操作系统通过maps（虚拟内存区域）查找该页数据在外存中的位置。",
+      "quote": "3 通过maps查找该页数据在外存中的位置 1 页表项引用 2 异常",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "paraphrase"
+    },
+    "after": {
+      "id": "os-03-q5",
+      "course": "os",
+      "sourceId": "os-03",
+      "question": "课件的缺页处理示意中，第3步通过什么查找该页数据在外存中的位置？",
+      "expectedAnswer": "通过maps查找。",
+      "quote": "通过maps查找该页数据在外存中的位置",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "paraphrase"
+    }
+  },
+  {
+    "id": "os-04-q1",
+    "reason": "A critical section does not itself contain entry/exit/remainder sections.",
+    "before": {
+      "id": "os-04-q1",
+      "course": "os",
+      "sourceId": "os-04",
+      "question": "什么是临界区（critical section）？它由哪几个部分组成？",
+      "expectedAnswer": "临界区是进程中访问临界资源的一段需要互斥执行的代码，由进入区（entry section）、临界区、退出区（exit section）和剩余区（remainder section）组成。",
+      "quote": "临界区(Critical Section) ■ 临界区(critical section) entry section critical section exit section remainder section ■ 进入区(entry section) ■ 退出区(exit section) ■ 剩余区(remainder section) 进程中访问临界资源的一段需要互斥执行的代码 检查可否进入临界区的一段代码 如可进入，设置相应\"正在访问临界区\"标志 清除“正在访问临界区”标志 代码中的其余部分 critical section entry section exit section remainder section",
+      "answerable": true,
+      "type": "definition",
+      "wording": "lexical"
+    },
+    "after": {
+      "id": "os-04-q1",
+      "course": "os",
+      "sourceId": "os-04",
+      "question": "临界区（critical section）的定义是什么？",
+      "expectedAnswer": "进程中访问临界资源的一段需要互斥执行的代码。",
+      "quote": "进程中访问临界资源的一段需要互斥执行的代码",
+      "answerable": true,
+      "type": "definition",
+      "wording": "lexical"
+    }
+  },
+  {
+    "id": "os-04-q2",
+    "reason": "Exclude repeated slides; retain the initial complete list.",
+    "before": {
+      "id": "os-04-q2",
+      "course": "os",
+      "sourceId": "os-04",
+      "question": "临界区的访问规则有哪些？",
+      "expectedAnswer": "临界区的访问规则包括：忙则等待、有限等待、让权等待（可选）和空闲则入。",
+      "quote": "临界区的访问规则 ■ 忙则等待 ■ 有限等待 ■ 让权等待（可选） ■ 空闲则入 章节5：进程间通信与并发控制 18 临界区的访问规则 ■ 忙则等待 ■ 有限等待 ■ 让权等待（可选） 没有进程在临界区时，任何进程可进入 ■ 空闲则入 章节5：进程间通信与并发控制 19 临界区的访问规则 ■ 忙则等待 ■ 有限等待 ■ 让权等待（可选） 有进程在临界区时，其他进程均不能进入临界区 ■ 空闲则入 章节5：进程间通信与并发控制 20 临界区的访问规则 ■ 忙则等待 ■ 有限等待 ■ 让权等待（可选） 等待进入临界区的进程不能无限期等待 ■ 空闲则入 章节5：进程间通信与并发控制 21 临界区的访问规则 ■ 忙则等待 ■ 有限等待 ■ 让权等待（可选） 不能进入临界区的进程，应释放CPU（如转换到阻塞状态） ■ 空闲则入",
+      "answerable": true,
+      "type": "definition",
+      "wording": "lexical"
+    },
+    "after": {
+      "id": "os-04-q2",
+      "course": "os",
+      "sourceId": "os-04",
+      "question": "课件列出了哪些临界区访问规则，并把哪一项标为可选？",
+      "expectedAnswer": "忙则等待、有限等待、空闲则入，以及标为可选的让权等待。",
+      "quote": "临界区的访问规则 ■ 忙则等待 ■ 有限等待 ■ 让权等待（可选） ■ 空闲则入",
+      "answerable": true,
+      "type": "definition",
+      "wording": "lexical"
+    }
+  },
+  {
+    "id": "os-04-q5",
+    "reason": "Qualify the signed semaphore implementation shown in the lecture.",
+    "before": {
+      "id": "os-04-q5",
+      "course": "os",
+      "sourceId": "os-04",
+      "question": "信号量（semaphore）的P()和V()操作分别如何改变信号量的值？",
+      "expectedAnswer": "P()操作将信号量sem减1，如果sem<0则阻塞当前进程；V()操作将sem加1，如果sem≤0则唤醒一个等待进程。",
+      "quote": "sem减1 如sem<0, 进入等待, 否则继续 sem加1 如sem≤0,唤醒一个等待进程",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "paraphrase"
+    },
+    "after": {
+      "id": "os-04-q5",
+      "course": "os",
+      "sourceId": "os-04",
+      "question": "在课件给出的有符号计数信号量实现中，P和V怎样修改sem，何时等待或唤醒？",
+      "expectedAnswer": "P()操作将信号量sem减1，如果sem<0则阻塞当前进程；V()操作将sem加1，如果sem≤0则唤醒一个等待进程。",
+      "quote": "sem减1 如sem<0, 进入等待, 否则继续 sem加1 如sem≤0,唤醒一个等待进程",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "paraphrase"
+    }
+  },
+  {
+    "id": "os-05-q1",
+    "reason": "Answer only roles explicitly stated by the selected span.",
+    "before": {
+      "id": "os-05-q1",
+      "course": "os",
+      "sourceId": "os-05",
+      "question": "在生产者-消费者问题中，使用信号量解决时，需要哪三个信号量？它们各自的作用是什么？",
+      "expectedAnswer": "需要二进制信号量mutex用于互斥访问缓冲区，资源信号量fullBuffers和emptyBuffers用于条件同步，分别表示缓冲区中满和空的槽位数。",
+      "quote": "二进制信号量mutex 用信号量描述每个约束 ■ 资源信号量fullBuffers 资源信号量emptyBuffers （互斥访问） （条件同步） （条件同步） （互斥访问） （条件同步） （条件同步）",
+      "answerable": true,
+      "type": "definition",
+      "wording": "lexical"
+    },
+    "after": {
+      "id": "os-05-q1",
+      "course": "os",
+      "sourceId": "os-05",
+      "question": "在生产者-消费者问题中，使用信号量解决时，需要哪三个信号量？它们各自的作用是什么？",
+      "expectedAnswer": "mutex用于互斥访问；fullBuffers和emptyBuffers用于条件同步。",
+      "quote": "二进制信号量mutex 用信号量描述每个约束 ■ 资源信号量fullBuffers 资源信号量emptyBuffers （互斥访问） （条件同步） （条件同步） （互斥访问） （条件同步） （条件同步）",
+      "answerable": true,
+      "type": "definition",
+      "wording": "lexical"
+    }
+  },
+  {
+    "id": "os-05-q2",
+    "reason": "Keep only the reversed-order program; answer is a supported execution inference.",
+    "before": {
+      "id": "os-05-q2",
+      "course": "os",
+      "sourceId": "os-05",
+      "question": "在信号量解决生产者-消费者问题的代码中，如果将P操作的顺序颠倒（先执行mutex->P()再执行emptyBuffers->P()），会有什么问题？",
+      "expectedAnswer": "如果先执行mutex->P()再执行emptyBuffers->P()，当缓冲区满时，生产者会持有mutex并阻塞在emptyBuffers上，导致消费者无法进入缓冲区取数据，从而造成死锁。",
+      "quote": "用信号量解决生产者-消费者问题 Class BoundedBuffer { mutex = new Semaphore(1); fullBuffers = new Semaphore(0); emptyBuffers = new Semaphore(n); } BoundedBuffer::Deposit(c) { emptyBuffers->P(); mutex->P(); Add c to the buffer; mutex->V(); fullBuffers->V(); } BoundedBuffer::Remove(c) { fullBuffers->P(); mutex->P(); Remove c from buffer; mutex->V(); emptyBuffers->V(); } P、V操作的顺序有影响吗？ ■ 章节5：进程间通信与并发控制 用信号量解决生产者-消费者问题 Class BoundedBuffer { mutex = new Semaphore(1); fullBuffers = new Semaphore(0); emptyBuffers = new Semaphore(n); } BoundedBuffer::Deposit(c) { mutex->P(); emptyBuffers->P(); Add c to the buffer; fullBuffers->V(); mutex->V(); } BoundedBuffer::Remove(c) { mutex->P(); fullBuffers->P(); Remove c from buffer; emptyBuffers->V(); mutex->V(); } 这个解决方案有什么问题吗？ ■",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "paraphrase"
+    },
+    "after": {
+      "id": "os-05-q2",
+      "course": "os",
+      "sourceId": "os-05",
+      "question": "在信号量解决生产者-消费者问题的代码中，如果将P操作的顺序颠倒（先执行mutex->P()再执行emptyBuffers->P()），会有什么问题？",
+      "expectedAnswer": "如果先执行mutex->P()再执行emptyBuffers->P()，当缓冲区满时，生产者会持有mutex并阻塞在emptyBuffers上，导致消费者无法进入缓冲区取数据，从而造成死锁。",
+      "quote": "用信号量解决生产者-消费者问题 Class BoundedBuffer { mutex = new Semaphore(1); fullBuffers = new Semaphore(0); emptyBuffers = new Semaphore(n); } BoundedBuffer::Deposit(c) { mutex->P(); emptyBuffers->P(); Add c to the buffer; fullBuffers->V(); mutex->V(); } BoundedBuffer::Remove(c) { mutex->P(); fullBuffers->P(); Remove c from buffer; emptyBuffers->V(); mutex->V(); } 这个解决方案有什么问题吗？ ■",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "paraphrase"
+    }
+  },
+  {
+    "id": "os-05-q4",
+    "reason": "Avoid entrenching an ambiguous Hansen/Mesa label in the source; compare stated behaviors.",
+    "before": {
+      "id": "os-05-q4",
+      "course": "os",
+      "sourceId": "os-05",
+      "question": "Hansen管程和Hoare管程在条件变量释放处理方式上有什么不同？",
+      "expectedAnswer": "Hansen管程中条件变量释放仅是一个提示，需要重新检查条件，效率高；Hoare管程中条件变量释放同时表示放弃管程访问，释放后条件变量的状态可用，但效率低。",
+      "quote": "Hansen管程 ■ 条件变量释放仅是一个提示 需要重新检查条件 特点 ■ 高效 Hoare管程 ■ 条件变量释放同时表示放弃管程访问 释放后条件变量的状态可用 特点 ■ 低效",
+      "answerable": true,
+      "type": "comparison",
+      "wording": "lexical"
+    },
+    "after": {
+      "id": "os-05-q4",
+      "course": "os",
+      "sourceId": "os-05",
+      "question": "课件比较了哪两种条件变量通知语义，它们是否需要重新检查条件？",
+      "expectedAnswer": "一种通知只是提示，唤醒后需重新检查条件；另一种通知同时让出管程，使被唤醒者能在条件成立时继续。",
+      "quote": "Hansen管程 ■ 条件变量释放仅是一个提示 需要重新检查条件 特点 ■ 高效 Hoare管程 ■ 条件变量释放同时表示放弃管程访问 释放后条件变量的状态可用 特点 ■ 低效",
+      "answerable": true,
+      "type": "comparison",
+      "wording": "lexical"
+    }
+  },
+  {
+    "id": "os-05-q5",
+    "reason": "Ask about a concrete possible deadlock, not an unsupported additional starvation claim.",
+    "before": {
+      "id": "os-05-q5",
+      "course": "os",
+      "sourceId": "os-05",
+      "question": "在哲学家就餐问题中，常见的错误解法可能导致什么后果？",
+      "expectedAnswer": "常见的错误解法中，每个哲学家先拿起左边的叉子再拿右边的叉子，可能导致所有哲学家都拿到一只叉子而等待另一只，从而发生死锁和饥饿。",
+      "quote": "30 常见错误解法 #define N 5 /* 哲学家的数目 */ void philosopher(int i) /* i:哲学家编号,从0到4*/ { while (TRUE) { think(); /* 哲学家在思考 */ take_chopstick (i); /* 拿起左边的叉子 */ take_chopstick((i+1) % N); /* 拿起边上的叉子, %是模运算 */ eat(); /* 进餐 */ put_chopstick(i); /* 放下左边的叉子*/ put_chopstick((i+1) % N); /* 放下右边的叉子*/ } }",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "paraphrase"
+    },
+    "after": {
+      "id": "os-05-q5",
+      "course": "os",
+      "sourceId": "os-05",
+      "question": "哲学家都先拿左叉再拿右叉的代码中，若所有人同时拿到左叉，会出现什么等待局面？",
+      "expectedAnswer": "每人都持有左叉并等待被邻居持有的右叉，形成循环等待，可能发生死锁。",
+      "quote": "30 常见错误解法 #define N 5 /* 哲学家的数目 */ void philosopher(int i) /* i:哲学家编号,从0到4*/ { while (TRUE) { think(); /* 哲学家在思考 */ take_chopstick (i); /* 拿起左边的叉子 */ take_chopstick((i+1) % N); /* 拿起边上的叉子, %是模运算 */ eat(); /* 进餐 */ put_chopstick(i); /* 放下左边的叉子*/ put_chopstick((i+1) % N); /* 放下右边的叉子*/ } }",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "paraphrase"
+    }
+  },
+  {
+    "id": "os-06-q2",
+    "reason": "Separate the four necessary conditions and avoid conflating mutual exclusion with no preemption.",
+    "before": {
+      "id": "os-06-q2",
+      "course": "os",
+      "sourceId": "os-06",
+      "question": "产生死锁需要满足哪些条件？",
+      "expectedAnswer": "死锁的条件包括：资源互斥分配（资源不能被多个进程共享，且不可抢占）；进程持有资源并等待其他资源，在请求满足前被阻塞；持有的资源不能被操作系统剥夺，只能由拥有者释放；存在循环等待序列，序列中每个进程都在等待其邻居释放资源，且序列是环形的。",
+      "quote": "Conditions of dead lock Mutually exclusive resource allocation: the resource can’t be shared by multiple processes.(nonpreemptable) Process holding some resource and waiting for some resource, it is blocked until the request is satisfied. The holden resource can’t be bereft by OS, only its master can release it. Circular waiting sequence: each process in this sequence is waiting its neighbor to release some resource, and the sequence is circular.",
+      "answerable": true,
+      "type": "definition",
+      "wording": "paraphrase"
+    },
+    "after": {
+      "id": "os-06-q2",
+      "course": "os",
+      "sourceId": "os-06",
+      "question": "产生死锁需要满足哪些条件？",
+      "expectedAnswer": "互斥、持有并等待、不可抢占、循环等待；发生死锁必须同时具备这些条件。",
+      "quote": "Conditions of dead lock Mutually exclusive resource allocation: the resource can’t be shared by multiple processes.(nonpreemptable) Process holding some resource and waiting for some resource, it is blocked until the request is satisfied. The holden resource can’t be bereft by OS, only its master can release it. Circular waiting sequence: each process in this sequence is waiting its neighbor to release some resource, and the sequence is circular.",
+      "answerable": true,
+      "type": "definition",
+      "wording": "paraphrase"
+    }
+  },
+  {
+    "id": "os-06-q3",
+    "reason": "Prevention need only break at least one necessary condition.",
+    "before": {
+      "id": "os-06-q3",
+      "course": "os",
+      "sourceId": "os-06",
+      "question": "死锁预防（deadlock prevention）的基本思想是什么？",
+      "expectedAnswer": "死锁预防的基本思想是：操作系统定义一些约束规则，限制进程的资源请求和分配，这些规则会破坏死锁的四个条件，从而避免死锁发生。",
+      "quote": "How to resolve dead lock problem Dead lock prevention OS defines some constraint rules and restrict resource request and allocation of process. The constraint rules will destroy the conditions of dead lock Dead lock avoidance OS analyzes current status of resource allocation and try to allocate resource in a safe way Dead lock detection and system recovery A special process is in charge of dead lock detection The dead lock process will be killed and the holden resource will be released.",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "lexical"
+    },
+    "after": {
+      "id": "os-06-q3",
+      "course": "os",
+      "sourceId": "os-06",
+      "question": "死锁预防（deadlock prevention）的基本思想是什么？",
+      "expectedAnswer": "对资源请求和分配施加限制，破坏至少一个死锁必要条件，从而防止死锁。",
+      "quote": "Dead lock prevention OS defines some constraint rules and restrict resource request and allocation of process. The constraint rules will destroy the conditions of dead lock",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "lexical"
+    }
+  },
+  {
+    "id": "os-06-q4",
+    "reason": "Use the common comparison slide and remove value judgments and excessive detail.",
+    "before": {
+      "id": "os-06-q4",
+      "course": "os",
+      "sourceId": "os-06",
+      "question": "死锁避免（deadlock avoidance）与死锁预防有何不同？",
+      "expectedAnswer": "死锁避免认为死锁预防不合理且对用户不友好，它通过分析资源分配状态，确保系统处于安全状态；当进程请求资源时，操作系统检查该状态是否安全，只在安全状态下分配资源，不安全则不分配。",
+      "quote": "Dead lock avoidance Idea of this method Dead lock preventing is unreasonable and not friendly for user. OS analyzes the resource allocation status and assures the system to be safe and stable. Status of resource allocation Safe status: a reasonable resource allocation sequence is existed to make all process run to end properly. Unsafe status: can’t find a safe resource allocation sequence to avoid dead lock. Mechanism of dead lock avoidance When process request some resource, OS will check whether the status is safe, the resource will be allocated under safe status and won’t be allocated under unsafe status Operating System CITS, NanKai University 9",
+      "answerable": true,
+      "type": "comparison",
+      "wording": "paraphrase"
+    },
+    "after": {
+      "id": "os-06-q4",
+      "course": "os",
+      "sourceId": "os-06",
+      "question": "死锁避免（deadlock avoidance）与死锁预防有何不同？",
+      "expectedAnswer": "预防事先约束资源请求和分配，破坏死锁必要条件；避免分析当前资源分配状态，只进行安全的分配。",
+      "quote": "Dead lock prevention OS defines some constraint rules and restrict resource request and allocation of process. The constraint rules will destroy the conditions of dead lock Dead lock avoidance OS analyzes current status of resource allocation and try to allocate resource in a safe way",
+      "answerable": true,
+      "type": "comparison",
+      "wording": "paraphrase"
+    }
+  },
+  {
+    "id": "os-06-q5",
+    "reason": "Remove unsupported request-matrix details; the quote supports the safety-sequence criterion.",
+    "before": {
+      "id": "os-06-q5",
+      "course": "os",
+      "sourceId": "os-06",
+      "question": "银行家算法（Banker's algorithm）中，如何判断一个资源请求是否安全？",
+      "expectedAnswer": "银行家算法通过模拟分配资源并检查所有进程是否能正常结束来判断：如果找到安全分配序列，则资源可以分配；否则不能分配。具体步骤包括：检查请求矩阵中是否有行小于可用资源A，若有则分配并标记该进程结束，释放其资源更新A，循环直到所有进程标记为结束；若所有进程都能标记为结束，则请求安全，否则不安全。",
+      "quote": "Banker algorithm: simple condition Record the max-requirement of resource and current allocation status of all process. Simulation: allocate the resource to a process and check whether all process can run to end properly. If the safe allocation sequence is found, the resource can be allocated to this process, otherwise the resource can’t be allocated to this process. Operating System CITS, NanKai University 11",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "lexical"
+    },
+    "after": {
+      "id": "os-06-q5",
+      "course": "os",
+      "sourceId": "os-06",
+      "question": "银行家算法（Banker's algorithm）中，如何判断一个资源请求是否安全？",
+      "expectedAnswer": "记录最大资源需求和当前分配，模拟分配后检查是否存在让所有进程正常结束的安全序列；存在才允许分配。",
+      "quote": "Banker algorithm: simple condition Record the max-requirement of resource and current allocation status of all process. Simulation: allocate the resource to a process and check whether all process can run to end properly. If the safe allocation sequence is found, the resource can be allocated to this process, otherwise the resource can’t be allocated to this process. Operating System CITS, NanKai University 11",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "lexical"
+    }
+  },
+  {
+    "id": "compiler-01-q4",
+    "reason": "Keep the source's particular grammar-based compression application scope.",
+    "before": {
+      "id": "compiler-01-q4",
+      "course": "compiler",
+      "sourceId": "compiler-01",
+      "question": "数据压缩中如何使用上下文无关文法？",
+      "expectedAnswer": "压缩时，初始数据被转换为上下文无关文法，形成压缩文法；解压时，从压缩文法推导出唯一串，恢复初始数据。",
+      "quote": "其它应用 排版软件 普通文本，命令格式、图表、公式 LATEX，TROFF 硅编译器 源程序电路设计，变量——逻辑信号 文本/图形模式 数据库查询 数据查询语言 输入—数据查询语句底层数据库访问操作 数据压缩 压缩：初始数据上下文无关文法压缩文法 解压：解压文法文法推导出唯一串初始数据 滑铁卢大学杨恩辉教授，已应用于黑莓手机",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "paraphrase"
+    },
+    "after": {
+      "id": "compiler-01-q4",
+      "course": "compiler",
+      "sourceId": "compiler-01",
+      "question": "课件举出的基于文法的数据压缩方案，压缩和解压分别做什么？",
+      "expectedAnswer": "压缩时，初始数据被转换为上下文无关文法，形成压缩文法；解压时，从压缩文法推导出唯一串，恢复初始数据。",
+      "quote": "数据压缩 压缩：初始数据上下文无关文法压缩文法 解压：解压文法文法推导出唯一串初始数据",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "paraphrase"
+    }
+  },
+  {
+    "id": "compiler-02-q3",
+    "reason": "Replace the duplicated four-component grammar question.",
+    "before": {
+      "id": "compiler-02-q3",
+      "course": "compiler",
+      "sourceId": "compiler-02",
+      "question": "在上下文无关文法的形式化定义中，四元式 (VT, VN, S, P) 分别代表什么？",
+      "expectedAnswer": "VT是非空有限集，终结符号集合；VN是非空有限集，非终结符号集合；S是开始符号；P是产生式集合（有限集）。",
+      "quote": "四元式定义上下文无法文法 (VT, VN, S, P) VT：非空有限集，终结符号集合 VN：非空有限集，非终结符号集合 S：开始符号 P ：产生式集合（有限集） 每个产生式形式Aa，其中",
+      "answerable": true,
+      "type": "definition",
+      "wording": "lexical"
+    },
+    "after": {
+      "id": "compiler-02-q3",
+      "course": "compiler",
+      "sourceId": "compiler-02",
+      "question": "设计CFG时，一个语法概念及其组成模式分别放在产生式哪一边？",
+      "expectedAnswer": "语法概念放在产生式左部，它的组成模式放在右部，并用名字表示语法概念和单词。",
+      "quote": "将语法概念放在产生式左部 “模样”放在产生式右部 都是用名字替换掉语法概念和单词——",
+      "answerable": true,
+      "type": "definition",
+      "wording": "lexical"
+    }
+  },
+  {
+    "id": "compiler-03-q1",
+    "reason": "Restrict to readable combination rules instead of a damaged epsilon glyph.",
+    "before": {
+      "id": "compiler-03-q1",
+      "course": "compiler",
+      "sourceId": "compiler-03",
+      "question": "正则表达式（regular expression）的定义中，字母表Σ上的正规式r如何递归地构成？请列出基本规则和组合规则。",
+      "expectedAnswer": "基本规则：ε是正规式，表示语言{ε}；若a∈Σ，则a是正规式，表示语言{a}。组合规则：若r和s是正规式，则(r)|(s)、(r)(s)、(r)*和(r)都是正规式，分别表示L(r)∪L(s)、L(r)L(s)、(L(r))*和L(r)。",
+      "quote": "正规式定义规则 字母表Σ上的正规式r的定义规则，以及r所表示的语言L(r)定义如下： e是正规式，表示语言{e} 若a∈Σ，则a是正规式，表示语言{a} 正规式定义规则（续） r, s为正规式，表示语言L(r)和L(s)，则 (r) | (s)是正规式，表示语言L(r)  L(s) (r)(s)是正规式，表示语言L(r)L(s) (r)*是正规式，表示语言(L(r))* (r) 是正规式，表示语言L(r)",
+      "answerable": true,
+      "type": "definition",
+      "wording": "lexical"
+    },
+    "after": {
+      "id": "compiler-03-q1",
+      "course": "compiler",
+      "sourceId": "compiler-03",
+      "question": "已知正规式r和s，(r)|(s)、(r)(s)和(r)*分别表示哪种语言运算？",
+      "expectedAnswer": "分别表示语言的并、连接和Kleene闭包（零次或多次连接）。",
+      "quote": "正规式定义规则 字母表Σ上的正规式r的定义规则，以及r所表示的语言L(r)定义如下： e是正规式，表示语言{e} 若a∈Σ，则a是正规式，表示语言{a} 正规式定义规则（续） r, s为正规式，表示语言L(r)和L(s)，则 (r) | (s)是正规式，表示语言L(r)  L(s) (r)(s)是正规式，表示语言L(r)L(s) (r)*是正规式，表示语言(L(r))* (r) 是正规式，表示语言L(r)",
+      "answerable": true,
+      "type": "definition",
+      "wording": "lexical"
+    }
+  },
+  {
+    "id": "compiler-03-q3",
+    "reason": "Use the explicit repetition wording rather than uncertain glyph restoration.",
+    "before": {
+      "id": "compiler-03-q3",
+      "course": "compiler",
+      "sourceId": "compiler-03",
+      "question": "正则表达式中的符号简写+和?分别表示什么？请给出它们的等价形式。",
+      "expectedAnswer": "+表示一个或多个实例，r+ = rr*，表示语言(L(r))+；?表示0个或一个实例，r? = r | ε，表示语言L(r)∪{ε}。",
+      "quote": "3.3.5 符号简写 ＋：一个或多个实例（一次或多次连接） r+ = rr*，表示语言(L(r))+ r* = r+ | e ?：0个或一个实例，r?=r | eL(r)∪{e} optional_fraction  (. digits )? optional_exponent  ( E ( + | - )? digits )?",
+      "answerable": true,
+      "type": "definition",
+      "wording": "lexical"
+    },
+    "after": {
+      "id": "compiler-03-q3",
+      "course": "compiler",
+      "sourceId": "compiler-03",
+      "question": "正则表达式中的+和?分别允许子表达式出现多少次？",
+      "expectedAnswer": "+允许一次或多次，?允许零次或一次。",
+      "quote": "3.3.5 符号简写 ＋：一个或多个实例（一次或多次连接） r+ = rr*，表示语言(L(r))+ r* = r+ | e ?：0个或一个实例，r?=r | eL(r)∪{e} optional_fraction  (. digits )? optional_exponent  ( E ( + | - )? digits )?",
+      "answerable": true,
+      "type": "definition",
+      "wording": "lexical"
+    }
+  },
+  {
+    "id": "compiler-04-q1",
+    "reason": "Remove examples whose grammar is absent from the selected evidence.",
+    "before": {
+      "id": "compiler-04-q1",
+      "course": "compiler",
+      "sourceId": "compiler-04",
+      "question": "在LR分析中，活前缀（viable prefix）的定义是什么？请举例说明哪些符号串是活前缀，哪些不是。",
+      "expectedAnswer": "活前缀是最右句型的前缀，且不超过唯一句柄。例如对于文法S→aABe, A→Abc|b, B→d，最右句型的前缀中，a, aA, aAd, aAbc, ab, aAb是活前缀，而aAde, Abc, aAA不是活前缀。",
+      "quote": "活前缀 最右句型的前缀，不超过唯一句柄 a, aA, aAd, aAbc, ab, aAb aAde, Abc, aAA不是",
+      "answerable": true,
+      "type": "definition",
+      "wording": "lexical"
+    },
+    "after": {
+      "id": "compiler-04-q1",
+      "course": "compiler",
+      "sourceId": "compiler-04",
+      "question": "LR分析中活前缀（viable prefix）的定义是什么？",
+      "expectedAnswer": "最右句型的前缀，且不越过其句柄的右端。",
+      "quote": "活前缀 最右句型的前缀，不超过唯一句柄",
+      "answerable": true,
+      "type": "definition",
+      "wording": "lexical"
+    }
+  },
+  {
+    "id": "compiler-04-q3",
+    "reason": "Remove unquoted table-example states; retain the explicit algorithm.",
+    "before": {
+      "id": "compiler-04-q3",
+      "course": "compiler",
+      "sourceId": "compiler-04",
+      "question": "在LR分析中，如何根据action表决定移进或归约？请结合例子说明。",
+      "expectedAnswer": "根据栈顶状态和当前输入符号查action表：若表项为移进s'，则移进；若为归约A→b，则归约。例如在例4.33中，状态0遇到id时action为s5，所以移进；状态5遇到$时action为r6（归约F→id），所以归约。",
+      "quote": "算法4.7 LR分析算法 输入：一个输入串w和一个文法G的LR分析表 输出：若w∈L(G)，输出w的一个自底向上分析；否则，输出错误 方法：初始，栈中只含初始状态s0，输入缓冲区为w$，分析器按如下算法运行 将ip设置为w$的第一个符号; repeat forever begin 令s为栈顶状态，a为ip指向符号; if (action[s, a] = 移进s’) { 将a，s’依次压栈; 算法4.7 LR分析算法（续） ip指向下一个输入符号; } else if (action[s, a]=归约Ab) { 从栈中弹出2*|b|个符号; 令s’为当前栈顶状态; 将A和状态goto[s’, A]依次压栈; 输出Ab; } else if (action[s, a] = 接受) return; else error(); }",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "paraphrase"
+    },
+    "after": {
+      "id": "compiler-04-q3",
+      "course": "compiler",
+      "sourceId": "compiler-04",
+      "question": "LR分析算法根据什么查action表，移进和归约时分别怎样更新栈？",
+      "expectedAnswer": "用栈顶状态s和当前输入符号a查action[s,a]。移进时压入a和目标状态并前移输入；归约A→b时弹出2|b|个栈符号，再压入A和goto[新栈顶状态,A]。",
+      "quote": "算法4.7 LR分析算法 输入：一个输入串w和一个文法G的LR分析表 输出：若w∈L(G)，输出w的一个自底向上分析；否则，输出错误 方法：初始，栈中只含初始状态s0，输入缓冲区为w$，分析器按如下算法运行 将ip设置为w$的第一个符号; repeat forever begin 令s为栈顶状态，a为ip指向符号; if (action[s, a] = 移进s’) { 将a，s’依次压栈; 算法4.7 LR分析算法（续） ip指向下一个输入符号; } else if (action[s, a]=归约Ab) { 从栈中弹出2*|b|个符号; 令s’为当前栈顶状态; 将A和状态goto[s’, A]依次压栈; 输出Ab; } else if (action[s, a] = 接受) return; else error(); }",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "paraphrase"
+    }
+  },
+  {
+    "id": "compiler-06-q3",
+    "reason": "Correct the generated algebraic explanation: reuse unchanged operands, not a=b+c implying a-d=b.",
+    "before": {
+      "id": "compiler-06-q3",
+      "course": "compiler",
+      "sourceId": "compiler-06",
+      "question": "在保结构变换中，公共子表达式删除的例子中，为什么 d := a – d 可以变换为 d := b？",
+      "expectedAnswer": "因为 a := b + c 后，a 的值等于 b + c，所以 a – d 与 b 相同，因此 d := a – d 可改为 d := b。",
+      "quote": "9.4.3 保结构变换 公共子表达式删除 a := b + c b := a – d c := b + c d := a – d  a := b + c b := a – d c := b + c d := b d与b相同 c与a不同！",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "paraphrase"
+    },
+    "after": {
+      "id": "compiler-06-q3",
+      "course": "compiler",
+      "sourceId": "compiler-06",
+      "question": "在课件代码 a:=b+c; b:=a-d; c:=b+c; d:=a-d 中，最后一句为什么可替换为d:=b？",
+      "expectedAnswer": "第二句已将a-d的值存入b，此后到最后一句前a和d均未改变，因此可复用b保存的同一表达式结果。",
+      "quote": "9.4.3 保结构变换 公共子表达式删除 a := b + c b := a – d c := b + c d := a – d  a := b + c b := a – d c := b + c d := b d与b相同 c与a不同！",
+      "answerable": true,
+      "type": "mechanism",
+      "wording": "paraphrase"
+    }
+  }
+]

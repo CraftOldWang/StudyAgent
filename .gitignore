@@ -22,6 +22,11 @@ scripts/*
 !scripts/verify-ingest-recovery.py
 !scripts/verify-ingest-lease-recovery.py
 !scripts/probe-rag-modes.py
+!scripts/ingest-eval-corpus.py
+!scripts/draft-rag-gold.py
+!scripts/freeze-rag-gold.py
+!scripts/run-rag-evaluation.py
+!scripts/test-rag-evaluation.py
 !scripts/smoke-api.py
 !scripts/requirements-eval.txt
 .agentscope/workspace/state/
