@@ -19,7 +19,8 @@ public record RagProperties(
         int bm25CandidateSize,
         int vectorCandidateSize,
         int rrfK,
-        @DefaultValue("STRUCTURED") ChunkStrategy chunkStrategy
+        @DefaultValue("STRUCTURED") ChunkStrategy chunkStrategy,
+        @DefaultValue("4096") int contextMaxTokens
 ) {
     public enum ChunkStrategy { STRUCTURED, FIXED }
 
@@ -30,6 +31,10 @@ public record RagProperties(
         }
         if (chunkStrategy == null || (chunkStrategy == ChunkStrategy.STRUCTURED && parentChunkOverlap != 0)) {
             throw new IllegalArgumentException("Structured parents require zero overlap");
+        }
+        if (topK <= 0 || topK > 20 || bm25CandidateSize <= 0 || vectorCandidateSize <= 0 || rrfK <= 0
+                || contextMaxTokens < parentChunkSize) {
+            throw new IllegalArgumentException("Invalid retrieval limits or context budget smaller than one parent");
         }
     }
 }

@@ -103,6 +103,25 @@ class KnowledgeSearchToolTest {
                 List.of(new KnowledgeSearchResponse.Result(chunkId, "content", null, 1.0)));
     }
 
+    @Test
+    void modelReceivesBudgetedContextsWithoutDuplicateRawEvaluationText() {
+        var parent = new KnowledgeSearchResponse.Result("parent", "unique-source-text", null, 1);
+        var child = new com.studyagent.rag.retrieval.RetrievalHit("child", "parent", "unique-source-text", null, 1,
+                com.studyagent.rag.retrieval.RetrievalStrategy.RRF);
+        var match = new KnowledgeSearchResponse.ContextMatch("parent", List.of(
+                new KnowledgeSearchResponse.ChildEvidence("child", null, 1)));
+        var response = new KnowledgeSearchResponse("query", null, List.of(parent), List.of(child), List.of(match), 3,
+                com.studyagent.rag.retrieval.RetrievalMode.PARENT);
+        when(knowledgeRetrievalService.search(11L, 22L, "query")).thenReturn(response);
+        RuntimeContext context = scopedContext();
+        var result = tool.callAsync(call(Map.of("query", "query"), context)).block();
+        String text = ((TextBlock) result.getOutput().getFirst()).getText();
+        assertThat(text).doesNotContain("rankedChildren");
+        assertThat(text.indexOf("unique-source-text")).isEqualTo(text.lastIndexOf("unique-source-text"));
+        assertThat(context.get(KnowledgeSearchExecution.class).retrievedChunkIds())
+                .containsExactlyInAnyOrder("parent", "child");
+    }
+
     private ToolCallParam call(Map<String, Object> input) {
         return call(input, scopedContext());
     }

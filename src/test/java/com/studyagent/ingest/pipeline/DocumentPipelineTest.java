@@ -98,7 +98,7 @@ class DocumentPipelineTest {
     }
 
     private Fixture fixture() {
-        return fixture(new RagProperties(6, 800, 80, 2400, 0, 30, 30, 60, RagProperties.ChunkStrategy.STRUCTURED));
+        return fixture(new RagProperties(6, 800, 80, 2400, 0, 30, 30, 60, RagProperties.ChunkStrategy.STRUCTURED, 4096));
     }
 
     private Fixture fixture(RagProperties ragProperties) {
@@ -134,7 +134,7 @@ class DocumentPipelineTest {
 
     @Test
     void configuredWindowsControlActualChunksAndVersionedIds() {
-        Fixture fixture = fixture(new RagProperties(6, 6, 1, 12, 0, 30, 30, 60, RagProperties.ChunkStrategy.FIXED));
+        Fixture fixture = fixture(new RagProperties(6, 6, 1, 12, 0, 30, 30, 60, RagProperties.ChunkStrategy.FIXED, 4096));
         when(fixture.persistence().claim(10L, true)).thenReturn(document());
         when(fixture.persistence().loadFile(20L)).thenReturn(file());
         when(fixture.objectStorage().getObject("files/demo.md")).thenReturn(new ByteArrayInputStream(new byte[]{1}));

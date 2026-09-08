@@ -77,6 +77,7 @@ study-agent:
     bm25-candidate-size: 30
     vector-candidate-size: 30
     rrf-k: 60
+    context-max-tokens: 4096
   ai:
     embedding:
       provider: dashscope

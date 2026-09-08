@@ -5,6 +5,8 @@ import com.studyagent.config.RagProperties;
 import com.studyagent.rag.embedding.EmbeddingPurpose;
 import com.studyagent.rag.embedding.EmbeddingService;
 import java.util.List;
+import java.util.ArrayList;
+import com.studyagent.algo.chunk.TokenCounter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,8 +20,14 @@ public class KnowledgeRetrievalService {
     private final EmbeddingService embeddingService;
     private final RetrievalService retrievalService;
     private final RagProperties ragProperties;
+    private final ParentAggregator parentAggregator;
+    private final TokenCounter tokenCounter;
 
     public KnowledgeSearchResponse search(Long userId, Long knowledgeBaseId, String query) {
+        return search(userId, knowledgeBaseId, query, RetrievalMode.PARENT, ragProperties.topK());
+    }
+
+    public KnowledgeSearchResponse search(Long userId, Long knowledgeBaseId, String query, RetrievalMode mode, Integer topK) {
         if (userId == null || knowledgeBaseId == null) {
             throw new BusinessException("检索 scope 不能为空");
         }
@@ -27,23 +35,39 @@ public class KnowledgeRetrievalService {
             throw new BusinessException("检索问题不能为空");
         }
         String normalizedQuery = query.trim();
-        float[] queryVector = embeddingService.embed(normalizedQuery, EmbeddingPurpose.QUERY);
-        int candidateLimit = Math.max(
-                ragProperties.bm25CandidateSize(), ragProperties.vectorCandidateSize());
-        List<KnowledgeSearchResponse.Result> results = retrievalService.retrieve(
-                        RetrievalMode.PARENT,
+        RetrievalMode effectiveMode = mode == null ? RetrievalMode.PARENT : mode;
+        int limit = topK == null ? ragProperties.topK() : topK;
+        if (limit <= 0 || limit > 20) { throw new BusinessException("topK 必须在 1 到 20 之间"); }
+        float[] queryVector = effectiveMode == RetrievalMode.BM25 ? null
+                : embeddingService.embed(normalizedQuery, EmbeddingPurpose.QUERY);
+        List<RetrievalHit> rankedChildren = retrievalService.retrieve(
+                        effectiveMode,
                         userId.toString(),
                         knowledgeBaseId.toString(),
                         normalizedQuery,
                         queryVector,
-                        candidateLimit,
-                        ragProperties.topK()).stream()
-                .map(hit -> new KnowledgeSearchResponse.Result(
-                        hit.chunkId(), hit.content(), hit.provenance(), hit.score()))
-                .toList();
+                        ragProperties.bm25CandidateSize(), ragProperties.vectorCandidateSize(), limit, ragProperties.rrfK());
+        List<KnowledgeSearchResponse.Result> candidates = effectiveMode == RetrievalMode.PARENT
+                ? parentAggregator.aggregate(userId.toString(), knowledgeBaseId.toString(), rankedChildren)
+                : rankedChildren.stream().map(hit -> new KnowledgeSearchResponse.Result(
+                        hit.chunkId(), hit.content(), hit.provenance(), hit.score())).toList();
+        List<KnowledgeSearchResponse.Result> results = new ArrayList<>();
+        List<KnowledgeSearchResponse.ContextMatch> matches = new ArrayList<>();
+        int contextTokens = 0;
+        for (var context : candidates) {
+            int size = tokenCounter.count(context.content());
+            // Preserve complete source chunks; later smaller contexts may still fit the same text budget.
+            if (contextTokens + size > ragProperties.contextMaxTokens()) { continue; }
+            results.add(context);
+            contextTokens += size;
+            var evidence = rankedChildren.stream().filter(child -> context.chunkId().equals(child.chunkId())
+                            || (effectiveMode == RetrievalMode.PARENT && context.chunkId().equals(child.parentChunkId())))
+                    .map(child -> new KnowledgeSearchResponse.ChildEvidence(child.chunkId(), child.provenance(), child.score())).toList();
+            matches.add(new KnowledgeSearchResponse.ContextMatch(context.chunkId(), evidence));
+        }
         return new KnowledgeSearchResponse(
                 normalizedQuery,
                 results.isEmpty() ? KnowledgeSearchResponse.NO_EVIDENCE_MESSAGE : null,
-                results);
+                List.copyOf(results), rankedChildren, List.copyOf(matches), contextTokens, effectiveMode);
     }
 }

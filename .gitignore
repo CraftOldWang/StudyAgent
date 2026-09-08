@@ -21,6 +21,7 @@ scripts/*
 !scripts/summarize-embedding-usage.py
 !scripts/verify-ingest-recovery.py
 !scripts/verify-ingest-lease-recovery.py
+!scripts/probe-rag-modes.py
 !scripts/smoke-api.py
 !scripts/requirements-eval.txt
 .agentscope/workspace/state/

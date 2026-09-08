@@ -1,0 +1,67 @@
+{
+  "commandExitCode": 0,
+  "totals": {
+    "tests": 30,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "suites": [
+    {
+      "suite": "com.studyagent.rag.retrieval.RetrievalServiceTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788890189.5772023
+    },
+    {
+      "suite": "com.studyagent.rag.retrieval.ParentAggregatorTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788890189.3750093
+    },
+    {
+      "suite": "com.studyagent.rag.retrieval.KnowledgeRetrievalServiceTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788890188.3888533
+    },
+    {
+      "suite": "com.studyagent.agent.integration.KnowledgeSearchToolTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788890186.3384137
+    },
+    {
+      "suite": "com.studyagent.agent.integration.KnowledgeSearchAgentServiceTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788890183.8332188
+    },
+    {
+      "suite": "com.studyagent.learning.LearningModelGatewayTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788890188.1217268
+    },
+    {
+      "suite": "com.studyagent.ingest.pipeline.DocumentPipelineTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "mtime": 1788890187.594505
+    }
+  ]
+}

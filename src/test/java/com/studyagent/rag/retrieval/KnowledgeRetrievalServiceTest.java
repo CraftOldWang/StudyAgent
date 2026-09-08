@@ -1,10 +1,8 @@
 package com.studyagent.rag.retrieval;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 import com.studyagent.config.RagProperties;
 import com.studyagent.rag.embedding.EmbeddingPurpose;
 import com.studyagent.rag.embedding.EmbeddingService;
@@ -12,54 +10,64 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class KnowledgeRetrievalServiceTest {
+    private final EmbeddingService embedding = mock(EmbeddingService.class);
+    private final RetrievalService retrieval = mock(RetrievalService.class);
+    private final ParentAggregator parents = mock(ParentAggregator.class);
+    private final RagProperties properties = new RagProperties(2, 800, 80, 2400, 0, 30, 20, 60,
+            RagProperties.ChunkStrategy.STRUCTURED, 2400);
+    private final KnowledgeRetrievalService service = new KnowledgeRetrievalService(
+            embedding, retrieval, properties, parents, String::length);
 
     @Test
-    void usesQueryEmbeddingAndParentHybridRetrievalWithinServerScope() {
-        EmbeddingService embeddingService = mock(EmbeddingService.class);
-        RetrievalService retrievalService = mock(RetrievalService.class);
-        RagProperties properties = new RagProperties(2, 800, 80, 2400, 0, 30, 20, 60, RagProperties.ChunkStrategy.STRUCTURED);
-        float[] queryVector = {0.1f, 0.2f};
-        RetrievalHit.Provenance provenance =
-                new RetrievalHit.Provenance("document-1", "Java 基础", "{\"page\":1}");
-        when(embeddingService.embed("Java 多态", EmbeddingPurpose.QUERY)).thenReturn(queryVector);
-        when(retrievalService.retrieve(
-                        RetrievalMode.PARENT, "11", "22", "Java 多态", queryVector, 30, 2))
-                .thenReturn(List.of(new RetrievalHit(
-                        "chunk-1", "parent-1", "父块内容", provenance, 0.9, RetrievalStrategy.RRF)));
-        KnowledgeRetrievalService service =
-                new KnowledgeRetrievalService(embeddingService, retrievalService, properties);
-
-        KnowledgeSearchResponse response = service.search(11L, 22L, "  Java 多态  ");
-
-        verify(embeddingService).embed("Java 多态", EmbeddingPurpose.QUERY);
-        verify(retrievalService).retrieve(
-                RetrievalMode.PARENT, "11", "22", "Java 多态", queryVector, 30, 2);
-        assertThat(response.query()).isEqualTo("Java 多态");
-        assertThat(response.message()).isNull();
-        assertThat(response.hits()).singleElement()
-                .satisfies(hit -> {
-                    assertThat(hit.chunkId()).isEqualTo("chunk-1");
-                    assertThat(hit.content()).isEqualTo("父块内容");
-                    assertThat(hit.provenance()).isEqualTo(provenance);
-                });
+    void keepsOriginalChildRankAndUsesParentSourceCoordinates() {
+        float[] vector = {0.1f, 0.2f};
+        var childSource = new RetrievalHit.Provenance("doc", "Java", "child-location");
+        var parentSource = new RetrievalHit.Provenance("doc", "Java", "parent-location");
+        var child = new RetrievalHit("child", "parent", "child body", childSource, 0.9, RetrievalStrategy.RRF);
+        when(embedding.embed("Java", EmbeddingPurpose.QUERY)).thenReturn(vector);
+        when(retrieval.retrieve(RetrievalMode.PARENT, "11", "22", "Java", vector, 30, 20, 2, 60))
+                .thenReturn(List.of(child));
+        when(parents.aggregate("11", "22", List.of(child))).thenReturn(List.of(
+                new KnowledgeSearchResponse.Result("parent", "parent body", parentSource, 0.9)));
+        var response = service.search(11L, 22L, "  Java  ");
+        assertThat(response.query()).isEqualTo("Java");
+        assertThat(response.rankedChildren()).containsExactly(child);
+        assertThat(response.hits()).singleElement().satisfies(hit -> {
+            assertThat(hit.chunkId()).isEqualTo("parent");
+            assertThat(hit.provenance()).isEqualTo(parentSource);
+        });
+        assertThat(response.contextMatches().getFirst().matchedChildren()).singleElement()
+                .satisfies(evidence -> assertThat(evidence.provenance()).isEqualTo(childSource));
+        assertThat(response.contextTokens()).isEqualTo("parent body".length());
+        verify(retrieval).retrieve(RetrievalMode.PARENT, "11", "22", "Java", vector, 30, 20, 2, 60);
     }
 
     @Test
-    void returnsExplicitNoEvidenceMessageWithoutInventingHits() {
-        EmbeddingService embeddingService = mock(EmbeddingService.class);
-        RetrievalService retrievalService = mock(RetrievalService.class);
-        RagProperties properties = new RagProperties(2, 800, 80, 2400, 0, 6, 6, 60, RagProperties.ChunkStrategy.STRUCTURED);
-        float[] queryVector = {0.1f};
-        when(embeddingService.embed("不存在的主题", EmbeddingPurpose.QUERY)).thenReturn(queryVector);
-        when(retrievalService.retrieve(
-                        RetrievalMode.PARENT, "11", "22", "不存在的主题", queryVector, 6, 2))
-                .thenReturn(List.of());
-        KnowledgeRetrievalService service =
-                new KnowledgeRetrievalService(embeddingService, retrievalService, properties);
+    void bm25SkipsEmbeddingAndBudgetDoesNotChangeRecordedRanking() {
+        var first = new RetrievalHit("a", "pa", "a".repeat(1600), null, 3, RetrievalStrategy.BM25);
+        var second = new RetrievalHit("b", "pb", "b".repeat(1200), null, 2, RetrievalStrategy.BM25);
+        var third = new RetrievalHit("c", "pc", "c".repeat(500), null, 1, RetrievalStrategy.BM25);
+        when(retrieval.retrieve(RetrievalMode.BM25, "11", "22", "query", null, 30, 20, 3, 60))
+                .thenReturn(List.of(first, second, third));
+        var response = service.search(11L, 22L, "query", RetrievalMode.BM25, 3);
+        assertThat(response.rankedChildren()).containsExactly(first, second, third);
+        assertThat(response.hits()).extracting(KnowledgeSearchResponse.Result::chunkId).containsExactly("a", "c");
+        assertThat(response.contextTokens()).isEqualTo(2100);
+        verifyNoInteractions(embedding, parents);
+    }
 
-        KnowledgeSearchResponse response = service.search(11L, 22L, "不存在的主题");
-
+    @Test
+    void emptyEvidenceRemainsExplicit() {
+        when(parents.aggregate(eq("11"), eq("22"), anyList())).thenReturn(List.of());
+        var response = service.search(11L, 22L, "query");
         assertThat(response.message()).isEqualTo(KnowledgeSearchResponse.NO_EVIDENCE_MESSAGE);
         assertThat(response.hits()).isEmpty();
+    }
+
+    @Test
+    void invalidTopKIsRejectedBeforeProviderUsage() {
+        assertThatThrownBy(() -> service.search(11L, 22L, "query", RetrievalMode.RRF, 21))
+                .hasMessageContaining("topK");
+        verifyNoInteractions(embedding, retrieval, parents);
     }
 }

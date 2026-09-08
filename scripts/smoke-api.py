@@ -20,6 +20,8 @@ def main():
     parser.add_argument("--base-url", default="http://localhost:8080")
     parser.add_argument("--file", type=Path)
     parser.add_argument("--query", default="什么是稳定匹配？")
+    parser.add_argument("--mode", choices=["BM25", "VECTOR", "RRF", "PARENT"])
+    parser.add_argument("--top-k", type=int)
     parser.add_argument("--answers", nargs=5)
     parser.add_argument("--compact", action="store_true")
     args = parser.parse_args()
@@ -91,7 +93,12 @@ def main():
     else:
         kb = state["knowledgeBaseId"]
         if args.stage == "search":
-            data = request("POST", f"/api/knowledge-bases/{kb}/search", json={"query": args.query})
+            payload = {"query": args.query}
+            if args.mode is not None:
+                payload["mode"] = args.mode
+            if args.top_k is not None:
+                payload["topK"] = args.top_k
+            data = request("POST", f"/api/knowledge-bases/{kb}/search", json=payload)
         elif args.stage == "status":
             data = request("GET", f"/api/knowledge-bases/{kb}/documents")
         elif args.stage == "plan":

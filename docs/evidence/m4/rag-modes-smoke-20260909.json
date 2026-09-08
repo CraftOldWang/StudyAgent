@@ -1,0 +1,93 @@
+{
+  "status": "PASSED",
+  "qualityBenchmark": false,
+  "checks": [
+    {
+      "caseId": "algorithms-stable-matching",
+      "sameRrfParentChildRanks": true,
+      "bm25EmbeddingCalls": 0,
+      "modes": {
+        "BM25": {
+          "rankedChildren": 0,
+          "contexts": 0,
+          "contextTokens": 0,
+          "traceId": "9045b29c-df85-48e5-8dd8-2c5df332e397"
+        },
+        "VECTOR": {
+          "rankedChildren": 6,
+          "contexts": 5,
+          "contextTokens": 3388,
+          "traceId": "ae9e988b-f036-4b13-ab72-4318ae149ed0"
+        },
+        "RRF": {
+          "rankedChildren": 6,
+          "contexts": 5,
+          "contextTokens": 3388,
+          "traceId": "9b756163-a1d4-4325-af6c-f3d23a204cfa"
+        },
+        "PARENT": {
+          "rankedChildren": 6,
+          "contexts": 2,
+          "contextTokens": 3868,
+          "traceId": "90507e35-f668-418a-b199-af6ae1ca01c0"
+        }
+      }
+    },
+    {
+      "caseId": "os-semaphore",
+      "sameRrfParentChildRanks": true,
+      "bm25EmbeddingCalls": 0,
+      "modes": {
+        "BM25": {
+          "rankedChildren": 10,
+          "contexts": 5,
+          "contextTokens": 3989,
+          "traceId": "b8fcf70f-88f3-43c0-a92d-35cc571e0841"
+        },
+        "VECTOR": {
+          "rankedChildren": 10,
+          "contexts": 6,
+          "contextTokens": 4004,
+          "traceId": "abf0268b-a49b-41ce-8706-cdaef7a0b84a"
+        },
+        "RRF": {
+          "rankedChildren": 10,
+          "contexts": 6,
+          "contextTokens": 4004,
+          "traceId": "ef2f613c-cd30-4501-9bc3-ae2963b5f956"
+        },
+        "PARENT": {
+          "rankedChildren": 10,
+          "contexts": 1,
+          "contextTokens": 2012,
+          "traceId": "80de5a9d-1ece-431f-9494-09f49cf09422"
+        }
+      }
+    }
+  ],
+  "manifest": {
+    "casesSha256": "87564437b560afe793014e1d6d1ca46925bdf56861c6ed4a2425fc0f56153881",
+    "gitSha": "e3c9ac08b60754821981a0e0c9d48c2320881919",
+    "topK": 10,
+    "expectedContextTextBudget": 4096,
+    "label": "API_PROBE_ONLY",
+    "modes": [
+      "BM25",
+      "VECTOR",
+      "RRF",
+      "PARENT"
+    ],
+    "jarSha256": "a5339a9091490807285236f2fe107369c7620dd1562050283e8032a29b38c113",
+    "trackedChangesPresent": true,
+    "metadataSupplement": "JAR hash and dirty-tree status added after probe; tested JAR has not changed.",
+    "zipCrcFailure": null,
+    "packageExitCode": 0
+  },
+  "rawResponsesSha256": "713e736e3d0c9268f7cabfdd971b42e18a76964a8c8e5d4553aa47accc91b094",
+  "rawResponseLocalPath": "D:\\1Learningoutput\\javabackend\\StudyAgent\\.eval\\runs\\m4-rag-modes\\responses.jsonl",
+  "limitations": [
+    "Two smoke questions, not a quality or latency benchmark",
+    "Whole-context admission may leave unused token budget",
+    "Chinese query against English course text gives no BM25 hit in the stable-matching probe"
+  ]
+}

@@ -26,7 +26,7 @@ public class ParentAggregator {
     private final ElasticsearchClient client;
     private final ElasticsearchProperties properties;
 
-    public List<RetrievalHit> aggregate(
+    public List<KnowledgeSearchResponse.Result> aggregate(
             String userId,
             String knowledgeBaseId,
             List<RetrievalHit> childHits
@@ -42,17 +42,29 @@ public class ParentAggregator {
                 .distinct()
                 .toList();
         if (parentChunkIds.isEmpty()) {
-            return List.copyOf(childHits);
+            return childHits.stream().map(this::childResult).toList();
         }
 
         SearchRequest request = parentSearchRequest(userId, knowledgeBaseId, parentChunkIds);
         try {
             SearchResponse<ElasticsearchChunkDocument> response =
                     client.search(request, ElasticsearchChunkDocument.class);
-            Map<String, String> parentContent = parentContent(response.hits().hits());
-            return childHits.stream()
-                    .map(child -> withParentContent(child, parentContent.get(child.parentChunkId())))
-                    .toList();
+            Map<String, ElasticsearchChunkDocument> parents = parentContent(response.hits().hits());
+            Map<String, KnowledgeSearchResponse.Result> contexts = new LinkedHashMap<>();
+            for (RetrievalHit child : childHits) {
+                if (child.parentChunkId() == null || child.parentChunkId().isBlank()) {
+                    contexts.putIfAbsent(child.chunkId(), childResult(child));
+                    continue;
+                }
+                ElasticsearchChunkDocument parent = parents.get(child.parentChunkId());
+                if (parent == null) {
+                    throw new BusinessException("命中子块对应的 parent 缺失: " + child.parentChunkId());
+                }
+                contexts.putIfAbsent(parent.chunkId(), new KnowledgeSearchResponse.Result(
+                        parent.chunkId(), parent.content(), new RetrievalHit.Provenance(
+                                parent.documentId(), parent.documentTitle(), parent.sourceLocation()), child.score()));
+            }
+            return List.copyOf(contexts.values());
         } catch (IOException ex) {
             throw new BusinessException("Elasticsearch parent chunk 检索失败: " + ex.getMessage());
         }
@@ -82,30 +94,20 @@ public class ParentAggregator {
                                 .terms(values -> values.value(parentIds)))))));
     }
 
-    private Map<String, String> parentContent(List<Hit<ElasticsearchChunkDocument>> parentHits) {
-        Map<String, String> contentById = new LinkedHashMap<>();
+    private Map<String, ElasticsearchChunkDocument> parentContent(List<Hit<ElasticsearchChunkDocument>> parentHits) {
+        Map<String, ElasticsearchChunkDocument> contentById = new LinkedHashMap<>();
         for (Hit<ElasticsearchChunkDocument> parentHit : parentHits) {
             ElasticsearchChunkDocument source = parentHit.source();
             if (source == null) {
                 throw new BusinessException("Elasticsearch parent 命中缺少 _source: id=" + parentHit.id());
             }
-            contentById.put(source.chunkId(), source.content());
+            contentById.put(source.chunkId(), source);
         }
         return contentById;
     }
 
-    private RetrievalHit withParentContent(RetrievalHit child, String parentContent) {
-        if (parentContent == null) {
-            return child;
-        }
-        return new RetrievalHit(
-                child.chunkId(),
-                child.parentChunkId(),
-                parentContent,
-                child.provenance(),
-                child.score(),
-                child.strategy()
-        );
+    private KnowledgeSearchResponse.Result childResult(RetrievalHit child) {
+        return new KnowledgeSearchResponse.Result(child.chunkId(), child.content(), child.provenance(), child.score());
     }
 
     private void validateScope(String userId, String knowledgeBaseId) {

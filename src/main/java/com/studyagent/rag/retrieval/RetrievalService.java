@@ -15,11 +15,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class RetrievalService {
 
-    private static final int RRF_RANK_CONSTANT = 60;
-
     private final BM25Retriever bm25Retriever;
     private final VectorRetriever vectorRetriever;
-    private final ParentAggregator parentAggregator;
 
     public List<RetrievalHit> retrieve(
             RetrievalMode mode,
@@ -27,19 +24,17 @@ public class RetrievalService {
             String knowledgeBaseId,
             String query,
             float[] queryVector,
-            int candidateLimit,
-            int topK
+            int bm25Limit,
+            int vectorLimit,
+            int topK,
+            int rankConstant
     ) {
-        validateRequest(mode, userId, knowledgeBaseId, candidateLimit, topK);
+        validateRequest(mode, userId, knowledgeBaseId, Math.min(bm25Limit, vectorLimit), topK);
+        if (rankConstant <= 0) { throw new BusinessException("RRF rank constant 必须大于 0"); }
         List<RetrievalHit> hits = switch (mode) {
-            case BM25 -> bm25Retriever.retrieve(userId, knowledgeBaseId, query, candidateLimit);
-            case VECTOR -> vectorRetriever.retrieve(userId, knowledgeBaseId, queryVector, candidateLimit);
-            case RRF -> fusedHits(userId, knowledgeBaseId, query, queryVector, candidateLimit);
-            case PARENT -> parentAggregator.aggregate(
-                    userId,
-                    knowledgeBaseId,
-                    fusedHits(userId, knowledgeBaseId, query, queryVector, candidateLimit)
-            );
+            case BM25 -> bm25Retriever.retrieve(userId, knowledgeBaseId, query, bm25Limit);
+            case VECTOR -> vectorRetriever.retrieve(userId, knowledgeBaseId, queryVector, vectorLimit);
+            case RRF, PARENT -> fusedHits(userId, knowledgeBaseId, query, queryVector, bm25Limit, vectorLimit, rankConstant);
         };
         return hits.stream().limit(topK).toList();
     }
@@ -49,19 +44,21 @@ public class RetrievalService {
             String knowledgeBaseId,
             String query,
             float[] queryVector,
-            int candidateLimit
+            int bm25Limit,
+            int vectorLimit,
+            int rankConstant
     ) {
         List<RetrievalHit> bm25Hits =
-                bm25Retriever.retrieve(userId, knowledgeBaseId, query, candidateLimit);
+                bm25Retriever.retrieve(userId, knowledgeBaseId, query, bm25Limit);
         List<RetrievalHit> vectorHits =
-                vectorRetriever.retrieve(userId, knowledgeBaseId, queryVector, candidateLimit);
+                vectorRetriever.retrieve(userId, knowledgeBaseId, queryVector, vectorLimit);
 
         Map<String, Long> surrogateIdByChunkId = new LinkedHashMap<>();
         Map<Long, RetrievalHit> hitBySurrogateId = new LinkedHashMap<>();
         registerHits(bm25Hits, surrogateIdByChunkId, hitBySurrogateId);
         registerHits(vectorHits, surrogateIdByChunkId, hitBySurrogateId);
 
-        RrfRanker ranker = new RrfRanker(RRF_RANK_CONSTANT);
+        RrfRanker ranker = new RrfRanker(rankConstant);
         return ranker.rank(List.of(
                         candidates(bm25Hits, surrogateIdByChunkId),
                         candidates(vectorHits, surrogateIdByChunkId)

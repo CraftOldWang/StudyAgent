@@ -5,6 +5,7 @@ import com.studyagent.agent.integration.KnowledgeSearchAgentService;
 import com.studyagent.identity.CurrentUserContext;
 import com.studyagent.rag.retrieval.KnowledgeRetrievalService;
 import com.studyagent.rag.retrieval.KnowledgeSearchResponse;
+import com.studyagent.rag.retrieval.RetrievalMode;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +32,7 @@ public class KnowledgeSearchController {
     ) {
         Long userId = currentUserContext.userId();
         knowledgeBaseService.requireOwned(userId, knowledgeBaseId);
-        return ApiResponse.ok(knowledgeRetrievalService.search(userId, knowledgeBaseId, request.query()));
+        return ApiResponse.ok(knowledgeRetrievalService.search(userId, knowledgeBaseId, request.query(), request.mode(), request.topK()));
     }
 
     @PostMapping("/agent-search")
@@ -44,6 +45,7 @@ public class KnowledgeSearchController {
         return ApiResponse.ok(knowledgeSearchAgentService.answer(userId, knowledgeBaseId, request.query()));
     }
 
-    public record SearchRequest(@NotBlank String query) {
+    public record SearchRequest(@NotBlank String query, RetrievalMode mode,
+                                @jakarta.validation.constraints.Min(1) @jakarta.validation.constraints.Max(20) Integer topK) {
     }
 }

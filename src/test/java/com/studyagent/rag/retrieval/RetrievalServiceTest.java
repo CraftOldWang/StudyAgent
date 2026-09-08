@@ -16,15 +16,13 @@ class RetrievalServiceTest {
 
     private BM25Retriever bm25Retriever;
     private VectorRetriever vectorRetriever;
-    private ParentAggregator parentAggregator;
     private RetrievalService service;
 
     @BeforeEach
     void setUp() {
         bm25Retriever = mock(BM25Retriever.class);
         vectorRetriever = mock(VectorRetriever.class);
-        parentAggregator = mock(ParentAggregator.class);
-        service = new RetrievalService(bm25Retriever, vectorRetriever, parentAggregator);
+        service = new RetrievalService(bm25Retriever, vectorRetriever);
     }
 
     @Test
@@ -34,7 +32,7 @@ class RetrievalServiceTest {
         when(bm25Retriever.retrieve("user-4", "kb-7", "多态", 6)).thenReturn(candidates);
 
         List<RetrievalHit> result = service.retrieve(
-                RetrievalMode.BM25, "user-4", "kb-7", "多态", null, 6, 2);
+                RetrievalMode.BM25, "user-4", "kb-7", "多态", null, 6, 6, 2, 60);
 
         assertThat(result).containsExactly(candidates.get(0), candidates.get(1));
         verify(vectorRetriever, never()).retrieve("user-4", "kb-7", null, 6);
@@ -48,7 +46,7 @@ class RetrievalServiceTest {
         when(vectorRetriever.retrieve("user-4", "kb-7", vector, 5)).thenReturn(candidates);
 
         List<RetrievalHit> result = service.retrieve(
-                RetrievalMode.VECTOR, "user-4", "kb-7", null, vector, 5, 1);
+                RetrievalMode.VECTOR, "user-4", "kb-7", null, vector, 6, 5, 1, 60);
 
         assertThat(result).containsExactly(candidates.getFirst());
         verify(bm25Retriever, never()).retrieve("user-4", "kb-7", null, 5);
@@ -67,7 +65,7 @@ class RetrievalServiceTest {
         ));
 
         List<RetrievalHit> result = service.retrieve(
-                RetrievalMode.RRF, "user-4", "kb-7", "多态", vector, 6, 3);
+                RetrievalMode.RRF, "user-4", "kb-7", "多态", vector, 6, 6, 3, 60);
 
         assertThat(result).extracting(RetrievalHit::chunkId).containsExactly("b", "a", "c");
         assertThat(result).extracting(RetrievalHit::strategy)
@@ -76,31 +74,17 @@ class RetrievalServiceTest {
     }
 
     @Test
-    void parentModeAggregatesAllFusedCandidatesBeforeTopK() {
+    void parentModeKeepsExactlyTheSameTopKChildRanksAsRrf() {
         float[] vector = {0.1f, 0.2f, 0.3f};
-        when(bm25Retriever.retrieve("user-4", "kb-7", "多态", 6))
+        when(bm25Retriever.retrieve("user-4", "kb-7", "query", 6))
                 .thenReturn(List.of(hit("a", RetrievalStrategy.BM25, 2.0)));
-        when(vectorRetriever.retrieve("user-4", "kb-7", vector, 6))
+        when(vectorRetriever.retrieve("user-4", "kb-7", vector, 9))
                 .thenReturn(List.of(hit("b", RetrievalStrategy.VECTOR, 0.8)));
-        List<RetrievalHit> parents = List.of(
-                new RetrievalHit("a", "pa", "parent a", null, 0.1, RetrievalStrategy.RRF),
-                new RetrievalHit("b", "pb", "parent b", null, 0.09, RetrievalStrategy.RRF)
-        );
-        when(parentAggregator.aggregate(org.mockito.ArgumentMatchers.eq("user-4"),
-                org.mockito.ArgumentMatchers.eq("kb-7"), anyList())).thenReturn(parents);
-
-        List<RetrievalHit> result = service.retrieve(
-                RetrievalMode.PARENT, "user-4", "kb-7", "多态", vector, 6, 1);
-
-        @SuppressWarnings("unchecked")
-        ArgumentCaptor<List<RetrievalHit>> hitsCaptor = ArgumentCaptor.forClass(List.class);
-        verify(parentAggregator).aggregate(
-                org.mockito.ArgumentMatchers.eq("user-4"),
-                org.mockito.ArgumentMatchers.eq("kb-7"),
-                hitsCaptor.capture()
-        );
-        assertThat(hitsCaptor.getValue()).hasSize(2);
-        assertThat(result).containsExactly(parents.getFirst());
+        var parent = service.retrieve(RetrievalMode.PARENT, "user-4", "kb-7", "query", vector, 6, 9, 1, 10);
+        var rrf = service.retrieve(RetrievalMode.RRF, "user-4", "kb-7", "query", vector, 6, 9, 1, 10);
+        assertThat(parent).containsExactlyElementsOf(rrf).hasSize(1);
+        assertThat(parent.getFirst().score()).isEqualTo(1.0 / 11.0);
+        assertThat(parent.getFirst().content()).startsWith("content ");
     }
 
     private RetrievalHit hit(String chunkId, RetrievalStrategy strategy, double score) {

@@ -96,7 +96,7 @@ public final class KnowledgeSearchTool implements AgentTool {
             String query,
             KnowledgeSearchResponse response
     ) {
-        String json = toJson(response);
+        String json = toJson(response.modelView());
         return ToolResultBlock.of(
                 toolCallId(param),
                 TOOL_NAME,

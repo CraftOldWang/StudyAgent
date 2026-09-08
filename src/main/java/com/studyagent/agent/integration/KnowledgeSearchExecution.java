@@ -45,6 +45,9 @@ public final class KnowledgeSearchExecution {
         hits().stream()
                 .map(KnowledgeSearchResponse.Result::chunkId)
                 .forEach(chunkIds::add);
+        responses.stream().flatMap(response -> response.contextMatches().stream())
+                .flatMap(match -> match.matchedChildren().stream())
+                .map(KnowledgeSearchResponse.ChildEvidence::chunkId).forEach(chunkIds::add);
         return Set.copyOf(chunkIds);
     }
 }
