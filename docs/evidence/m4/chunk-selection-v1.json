@@ -1,0 +1,734 @@
+{
+  "status": "FROZEN_BEFORE_VALIDATION",
+  "frozenAt": "2026-09-08T18:59:07.758396+00:00",
+  "selected": "structured-800-0",
+  "uniqueConfigurations": 6,
+  "developmentQuestions": 20,
+  "heldOutExaminedForSelection": false,
+  "criterion": [
+    "worstCourseHitAt5 desc",
+    "macroMrrAt10 desc",
+    "logicalDocumentTokens asc"
+  ],
+  "candidates": [
+    {
+      "id": "fixed-800-80",
+      "metrics": {
+        "byCourse": {
+          "algorithms": {
+            "n": 10,
+            "hitAt5": 0.9,
+            "mrrAt10": 0.7533333333333333,
+            "contextEvidenceHit": 0.9,
+            "meanContextTokens": 3898.2,
+            "medianSearchMillis": 448.16030000220053
+          },
+          "os": {
+            "n": 10,
+            "hitAt5": 0.9,
+            "mrrAt10": 0.7583333333333333,
+            "contextEvidenceHit": 0.9,
+            "meanContextTokens": 3756.8,
+            "medianSearchMillis": 419.74479999771575
+          }
+        },
+        "worstCourseHitAt5": 0.9,
+        "macroHitAt5": 0.9,
+        "macroMrrAt10": 0.7558333333333334
+      },
+      "corpusStats": {
+        "documents": 12,
+        "chunks": {
+          "PARENT": 40,
+          "CHILD": 139
+        },
+        "logicalDocumentTokens": 81307,
+        "uniqueContentDocumentTokens": 81307,
+        "tokenNote": "Logical per-child provider tokens, including cached artifacts; not incremental billed usage"
+      },
+      "profile": {
+        "config": "fixed-800-80",
+        "tokenizer": "jtokkit 1.1.0 CL100K_BASE countTokensOrdinary",
+        "tokenizerJarSha256": "1501ce0259ab897c6746ccfafa1d208acd404fb17e1ac62e157172f2678b1183",
+        "lengths": {
+          "CHILD": {
+            "count": 139,
+            "min": 135,
+            "median": 800,
+            "p95NearestRank": 800,
+            "max": 800,
+            "total": 91032
+          },
+          "PARENT": {
+            "count": 40,
+            "min": 336,
+            "median": 2400.0,
+            "p95NearestRank": 2400,
+            "max": 2400,
+            "total": 83121
+          }
+        },
+        "equalParentChildParents": 3,
+        "equalParentChildParentRatio": 0.075,
+        "identicalChildDuplicates": 0,
+        "overlappingSourceUtf16Units": 15599,
+        "sourceOverlapRatio": 0.0817711937262796,
+        "primaryIndexStoreBytes": 3399295,
+        "storeNote": "Actual primary-store snapshot; Lucene segment layout is not controlled or force-merged",
+        "minimumRawVectorBytes": 569344
+      },
+      "spanCoverage": {
+        "split": "dev",
+        "config": "fixed-800-80",
+        "questions": 20,
+        "childPossible": 19,
+        "parentPossible": 19,
+        "note": "All-index oracle for full annotated span presence, not retrieval or semantic answer quality"
+      },
+      "runManifest": {
+        "goldSha256": "0397306190815195eeeb5e53baf15df369a5481db6f867e2e816b5c34552d71c",
+        "ingestStateSha256": "8122df3976579947a4c90b72fc5b892ae032076c9fdb7159f46e17a5cfa7622d",
+        "config": {
+          "id": "fixed-800-80",
+          "physicalIndex": "eval-chunks-fixed-800-80",
+          "readAlias": "eval-chunks-fixed-800-80-read",
+          "writeAlias": "eval-chunks-fixed-800-80-write",
+          "chunkerVersion": "v2-jtokkit1.1.0-cl100k-fixed-c800o80-p2400o0",
+          "strategy": "FIXED",
+          "childTokens": 800,
+          "childOverlap": 80,
+          "parentTokens": 2400,
+          "parentOverlap": 0,
+          "embeddingModel": "qwen3.7-text-embedding",
+          "dimensions": 1024,
+          "bm25CandidateSize": 30,
+          "vectorCandidateSize": 30,
+          "rrfK": 60,
+          "contextMaxTokens": 4096
+        },
+        "split": "dev",
+        "modes": [
+          "RRF"
+        ],
+        "topK": 10,
+        "jarSha256": "07ce719769e14059397f7ae29a31171d900f5f81de22b91fd8472d41dc8d57fb",
+        "gitSha": "4b4bf5026c9171484750f685f4815875019fd4c2",
+        "runnerSha256": "fb824a19c8af4a65145b9e71514e2bfc9d3cfec94ac46a7493f2011a49fdf1b3",
+        "corpusStats": {
+          "documents": 12,
+          "chunks": {
+            "PARENT": 40,
+            "CHILD": 139
+          },
+          "logicalDocumentTokens": 81307,
+          "uniqueContentDocumentTokens": 81307,
+          "tokenNote": "Logical per-child provider tokens, including cached artifacts; not incremental billed usage"
+        },
+        "metric": "Full annotated span within one retrieved chunk after NFKC/whitespace/case normalization"
+      },
+      "rawResponsesSha256": "4e8f880bc3038901e86db04df114d0d24ca0490808a453f66178ecf63d3673d5",
+      "attemptedRequests": 63,
+      "rawRun": ".eval\\runs\\dev-fixed-800-80"
+    },
+    {
+      "id": "structured-400-40",
+      "metrics": {
+        "byCourse": {
+          "algorithms": {
+            "n": 10,
+            "hitAt5": 0.8,
+            "mrrAt10": 0.6166666666666667,
+            "contextEvidenceHit": 0.9,
+            "meanContextTokens": 3811.2,
+            "medianSearchMillis": 558.5929000008036
+          },
+          "os": {
+            "n": 10,
+            "hitAt5": 0.6,
+            "mrrAt10": 0.51,
+            "contextEvidenceHit": 0.7,
+            "meanContextTokens": 3787.2,
+            "medianSearchMillis": 496.55029999121325
+          }
+        },
+        "worstCourseHitAt5": 0.6,
+        "macroHitAt5": 0.7,
+        "macroMrrAt10": 0.5633333333333334
+      },
+      "corpusStats": {
+        "documents": 12,
+        "chunks": {
+          "PARENT": 40,
+          "CHILD": 249
+        },
+        "logicalDocumentTokens": 83566,
+        "uniqueContentDocumentTokens": 83566,
+        "tokenNote": "Logical per-child provider tokens, including cached artifacts; not incremental billed usage"
+      },
+      "profile": {
+        "config": "structured-400-40",
+        "tokenizer": "jtokkit 1.1.0 CL100K_BASE countTokensOrdinary",
+        "tokenizerJarSha256": "1501ce0259ab897c6746ccfafa1d208acd404fb17e1ac62e157172f2678b1183",
+        "lengths": {
+          "CHILD": {
+            "count": 249,
+            "min": 68,
+            "median": 394,
+            "p95NearestRank": 400,
+            "max": 400,
+            "total": 91444
+          },
+          "PARENT": {
+            "count": 40,
+            "min": 346,
+            "median": 2372.5,
+            "p95NearestRank": 2395,
+            "max": 2398,
+            "total": 83110
+          }
+        },
+        "equalParentChildParents": 1,
+        "equalParentChildParentRatio": 0.025,
+        "identicalChildDuplicates": 0,
+        "overlappingSourceUtf16Units": 17526,
+        "sourceOverlapRatio": 0.09099830215423917,
+        "primaryIndexStoreBytes": 5012800,
+        "storeNote": "Actual primary-store snapshot; Lucene segment layout is not controlled or force-merged",
+        "minimumRawVectorBytes": 1019904
+      },
+      "spanCoverage": {
+        "split": "dev",
+        "config": "structured-400-40",
+        "questions": 20,
+        "childPossible": 17,
+        "parentPossible": 20,
+        "note": "All-index oracle for full annotated span presence, not retrieval or semantic answer quality"
+      },
+      "runManifest": {
+        "goldSha256": "0397306190815195eeeb5e53baf15df369a5481db6f867e2e816b5c34552d71c",
+        "ingestStateSha256": "0cdfcb57eca9638c3787a44faae2c8ad114ed8bec8b5ba813ca2867d4eee7141",
+        "config": {
+          "id": "structured-400-40",
+          "physicalIndex": "eval-chunks-structured-400-40",
+          "readAlias": "eval-chunks-structured-400-40-read",
+          "writeAlias": "eval-chunks-structured-400-40-write",
+          "chunkerVersion": "v2-jtokkit1.1.0-cl100k-structured-c400o40-p2400o0",
+          "strategy": "STRUCTURED",
+          "childTokens": 400,
+          "childOverlap": 40,
+          "parentTokens": 2400,
+          "parentOverlap": 0,
+          "embeddingModel": "qwen3.7-text-embedding",
+          "dimensions": 1024,
+          "bm25CandidateSize": 30,
+          "vectorCandidateSize": 30,
+          "rrfK": 60,
+          "contextMaxTokens": 4096
+        },
+        "split": "dev",
+        "modes": [
+          "RRF"
+        ],
+        "topK": 10,
+        "jarSha256": "07ce719769e14059397f7ae29a31171d900f5f81de22b91fd8472d41dc8d57fb",
+        "gitSha": "4b4bf5026c9171484750f685f4815875019fd4c2",
+        "runnerSha256": "fb824a19c8af4a65145b9e71514e2bfc9d3cfec94ac46a7493f2011a49fdf1b3",
+        "corpusStats": {
+          "documents": 12,
+          "chunks": {
+            "PARENT": 40,
+            "CHILD": 249
+          },
+          "logicalDocumentTokens": 83566,
+          "uniqueContentDocumentTokens": 83566,
+          "tokenNote": "Logical per-child provider tokens, including cached artifacts; not incremental billed usage"
+        },
+        "metric": "Full annotated span within one retrieved chunk after NFKC/whitespace/case normalization"
+      },
+      "rawResponsesSha256": "684bf8a3be4d005ee400cacdced2c222b27f0fdfcb5ae517f43908eb9c30edbb",
+      "attemptedRequests": 56,
+      "rawRun": ".eval\\runs\\dev-structured-400-40"
+    },
+    {
+      "id": "structured-800-80",
+      "metrics": {
+        "byCourse": {
+          "algorithms": {
+            "n": 10,
+            "hitAt5": 0.9,
+            "mrrAt10": 0.7033333333333334,
+            "contextEvidenceHit": 0.9,
+            "meanContextTokens": 3820.8,
+            "medianSearchMillis": 430.92315000103554
+          },
+          "os": {
+            "n": 10,
+            "hitAt5": 1,
+            "mrrAt10": 0.875,
+            "contextEvidenceHit": 1,
+            "meanContextTokens": 3803.2,
+            "medianSearchMillis": 520.4176499973983
+          }
+        },
+        "worstCourseHitAt5": 0.9,
+        "macroHitAt5": 0.95,
+        "macroMrrAt10": 0.7891666666666667
+      },
+      "corpusStats": {
+        "documents": 12,
+        "chunks": {
+          "PARENT": 40,
+          "CHILD": 140
+        },
+        "logicalDocumentTokens": 81389,
+        "uniqueContentDocumentTokens": 81389,
+        "tokenNote": "Logical per-child provider tokens, including cached artifacts; not incremental billed usage"
+      },
+      "profile": {
+        "config": "structured-800-80",
+        "tokenizer": "jtokkit 1.1.0 CL100K_BASE countTokensOrdinary",
+        "tokenizerJarSha256": "1501ce0259ab897c6746ccfafa1d208acd404fb17e1ac62e157172f2678b1183",
+        "lengths": {
+          "CHILD": {
+            "count": 140,
+            "min": 129,
+            "median": 790.0,
+            "p95NearestRank": 800,
+            "max": 800,
+            "total": 91096
+          },
+          "PARENT": {
+            "count": 40,
+            "min": 346,
+            "median": 2372.5,
+            "p95NearestRank": 2395,
+            "max": 2398,
+            "total": 83110
+          }
+        },
+        "equalParentChildParents": 1,
+        "equalParentChildParentRatio": 0.025,
+        "identicalChildDuplicates": 0,
+        "overlappingSourceUtf16Units": 16025,
+        "sourceOverlapRatio": 0.08385837484824381,
+        "primaryIndexStoreBytes": 3479129,
+        "storeNote": "Actual primary-store snapshot; Lucene segment layout is not controlled or force-merged",
+        "minimumRawVectorBytes": 573440
+      },
+      "spanCoverage": {
+        "split": "dev",
+        "config": "structured-800-80",
+        "questions": 20,
+        "childPossible": 20,
+        "parentPossible": 20,
+        "note": "All-index oracle for full annotated span presence, not retrieval or semantic answer quality"
+      },
+      "runManifest": {
+        "goldSha256": "0397306190815195eeeb5e53baf15df369a5481db6f867e2e816b5c34552d71c",
+        "ingestStateSha256": "8ab2d4580723d26b80fe9e5a9cedb707db46ab52e16b7a6857219e83cb9ba983",
+        "config": {
+          "id": "structured-800-80",
+          "physicalIndex": "eval-chunks-structured-800-80",
+          "readAlias": "eval-chunks-structured-800-80-read",
+          "writeAlias": "eval-chunks-structured-800-80-write",
+          "chunkerVersion": "v2-jtokkit1.1.0-cl100k-structured-c800o80-p2400o0",
+          "strategy": "STRUCTURED",
+          "childTokens": 800,
+          "childOverlap": 80,
+          "parentTokens": 2400,
+          "parentOverlap": 0,
+          "embeddingModel": "qwen3.7-text-embedding",
+          "dimensions": 1024,
+          "bm25CandidateSize": 30,
+          "vectorCandidateSize": 30,
+          "rrfK": 60,
+          "contextMaxTokens": 4096
+        },
+        "split": "dev",
+        "modes": [
+          "RRF"
+        ],
+        "topK": 10,
+        "jarSha256": "07ce719769e14059397f7ae29a31171d900f5f81de22b91fd8472d41dc8d57fb",
+        "gitSha": "4b4bf5026c9171484750f685f4815875019fd4c2",
+        "runnerSha256": "d82650f0b1e0f752f7f08329e6fdef39ae80f017fc279e7cf00ee57263868f2d",
+        "corpusStats": {
+          "documents": 12,
+          "chunks": {
+            "PARENT": 40,
+            "CHILD": 140
+          },
+          "logicalDocumentTokens": 81389,
+          "uniqueContentDocumentTokens": 81389,
+          "tokenNote": "Logical per-child provider tokens, including cached artifacts; not incremental billed usage"
+        },
+        "indexPopulationChecked": true,
+        "primaryShards": 1,
+        "metric": "Full annotated span within one retrieved chunk after NFKC/whitespace/case normalization"
+      },
+      "rawResponsesSha256": "ad30104d8589c4a37eee82753959546728e95f86e6741233d4427b0ab45e6c93",
+      "attemptedRequests": 63,
+      "rawRun": ".eval\\runs\\dev-structured-800-80"
+    },
+    {
+      "id": "structured-1200-120",
+      "metrics": {
+        "byCourse": {
+          "algorithms": {
+            "n": 10,
+            "hitAt5": 1,
+            "mrrAt10": 0.7666666666666666,
+            "contextEvidenceHit": 1,
+            "meanContextTokens": 3954.4,
+            "medianSearchMillis": 505.512350006029
+          },
+          "os": {
+            "n": 10,
+            "hitAt5": 0.9,
+            "mrrAt10": 0.7833333333333333,
+            "contextEvidenceHit": 0.9,
+            "meanContextTokens": 3790.4,
+            "medianSearchMillis": 329.2027000061353
+          }
+        },
+        "worstCourseHitAt5": 0.9,
+        "macroHitAt5": 0.95,
+        "macroMrrAt10": 0.7749999999999999
+      },
+      "corpusStats": {
+        "documents": 12,
+        "chunks": {
+          "PARENT": 40,
+          "CHILD": 103
+        },
+        "logicalDocumentTokens": 80851,
+        "uniqueContentDocumentTokens": 80851,
+        "tokenNote": "Logical per-child provider tokens, including cached artifacts; not incremental billed usage"
+      },
+      "profile": {
+        "config": "structured-1200-120",
+        "tokenizer": "jtokkit 1.1.0 CL100K_BASE countTokensOrdinary",
+        "tokenizerJarSha256": "1501ce0259ab897c6746ccfafa1d208acd404fb17e1ac62e157172f2678b1183",
+        "lengths": {
+          "CHILD": {
+            "count": 103,
+            "min": 132,
+            "median": 1181,
+            "p95NearestRank": 1200,
+            "max": 1200,
+            "total": 90662
+          },
+          "PARENT": {
+            "count": 40,
+            "min": 346,
+            "median": 2372.5,
+            "p95NearestRank": 2395,
+            "max": 2398,
+            "total": 83110
+          }
+        },
+        "equalParentChildParents": 5,
+        "equalParentChildParentRatio": 0.125,
+        "identicalChildDuplicates": 0,
+        "overlappingSourceUtf16Units": 17479,
+        "sourceOverlapRatio": 0.09077642170864711,
+        "primaryIndexStoreBytes": 2866009,
+        "storeNote": "Actual primary-store snapshot; Lucene segment layout is not controlled or force-merged",
+        "minimumRawVectorBytes": 421888
+      },
+      "spanCoverage": {
+        "split": "dev",
+        "config": "structured-1200-120",
+        "questions": 20,
+        "childPossible": 19,
+        "parentPossible": 20,
+        "note": "All-index oracle for full annotated span presence, not retrieval or semantic answer quality"
+      },
+      "runManifest": {
+        "goldSha256": "0397306190815195eeeb5e53baf15df369a5481db6f867e2e816b5c34552d71c",
+        "ingestStateSha256": "803cc51b898e96880368c066fbf5951f451dd6848bdf000836adcfb3a8018887",
+        "config": {
+          "id": "structured-1200-120",
+          "physicalIndex": "eval-chunks-structured-1200-120",
+          "readAlias": "eval-chunks-structured-1200-120-read",
+          "writeAlias": "eval-chunks-structured-1200-120-write",
+          "chunkerVersion": "v2-jtokkit1.1.0-cl100k-structured-c1200o120-p2400o0",
+          "strategy": "STRUCTURED",
+          "childTokens": 1200,
+          "childOverlap": 120,
+          "parentTokens": 2400,
+          "parentOverlap": 0,
+          "embeddingModel": "qwen3.7-text-embedding",
+          "dimensions": 1024,
+          "bm25CandidateSize": 30,
+          "vectorCandidateSize": 30,
+          "rrfK": 60,
+          "contextMaxTokens": 4096
+        },
+        "split": "dev",
+        "modes": [
+          "RRF"
+        ],
+        "topK": 10,
+        "jarSha256": "07ce719769e14059397f7ae29a31171d900f5f81de22b91fd8472d41dc8d57fb",
+        "gitSha": "4b4bf5026c9171484750f685f4815875019fd4c2",
+        "runnerSha256": "fb824a19c8af4a65145b9e71514e2bfc9d3cfec94ac46a7493f2011a49fdf1b3",
+        "corpusStats": {
+          "documents": 12,
+          "chunks": {
+            "PARENT": 40,
+            "CHILD": 103
+          },
+          "logicalDocumentTokens": 80851,
+          "uniqueContentDocumentTokens": 80851,
+          "tokenNote": "Logical per-child provider tokens, including cached artifacts; not incremental billed usage"
+        },
+        "metric": "Full annotated span within one retrieved chunk after NFKC/whitespace/case normalization"
+      },
+      "rawResponsesSha256": "ae83c16e22316d61df5dba8d49b377fb751aaf3620f54a847e2e2614842ee0b5",
+      "attemptedRequests": 91,
+      "rawRun": ".eval\\runs\\dev-structured-1200-120"
+    },
+    {
+      "id": "structured-800-0",
+      "metrics": {
+        "byCourse": {
+          "algorithms": {
+            "n": 10,
+            "hitAt5": 0.9,
+            "mrrAt10": 0.72,
+            "contextEvidenceHit": 0.9,
+            "meanContextTokens": 3961.8,
+            "medianSearchMillis": 381.88659999286756
+          },
+          "os": {
+            "n": 10,
+            "hitAt5": 1,
+            "mrrAt10": 0.875,
+            "contextEvidenceHit": 1,
+            "meanContextTokens": 3887.2,
+            "medianSearchMillis": 357.6764500030549
+          }
+        },
+        "worstCourseHitAt5": 0.9,
+        "macroHitAt5": 0.95,
+        "macroMrrAt10": 0.7975
+      },
+      "corpusStats": {
+        "documents": 12,
+        "chunks": {
+          "PARENT": 40,
+          "CHILD": 123
+        },
+        "logicalDocumentTokens": 74340,
+        "uniqueContentDocumentTokens": 74340,
+        "tokenNote": "Logical per-child provider tokens, including cached artifacts; not incremental billed usage"
+      },
+      "profile": {
+        "config": "structured-800-0",
+        "tokenizer": "jtokkit 1.1.0 CL100K_BASE countTokensOrdinary",
+        "tokenizerJarSha256": "1501ce0259ab897c6746ccfafa1d208acd404fb17e1ac62e157172f2678b1183",
+        "lengths": {
+          "CHILD": {
+            "count": 123,
+            "min": 2,
+            "median": 790,
+            "p95NearestRank": 800,
+            "max": 800,
+            "total": 83110
+          },
+          "PARENT": {
+            "count": 40,
+            "min": 346,
+            "median": 2372.5,
+            "p95NearestRank": 2395,
+            "max": 2398,
+            "total": 83110
+          }
+        },
+        "equalParentChildParents": 1,
+        "equalParentChildParentRatio": 0.025,
+        "identicalChildDuplicates": 0,
+        "overlappingSourceUtf16Units": 0,
+        "sourceOverlapRatio": 0.0,
+        "primaryIndexStoreBytes": 3130100,
+        "storeNote": "Actual primary-store snapshot; Lucene segment layout is not controlled or force-merged",
+        "minimumRawVectorBytes": 503808
+      },
+      "spanCoverage": {
+        "split": "dev",
+        "config": "structured-800-0",
+        "questions": 20,
+        "childPossible": 20,
+        "parentPossible": 20,
+        "note": "All-index oracle for full annotated span presence, not retrieval or semantic answer quality"
+      },
+      "runManifest": {
+        "goldSha256": "0397306190815195eeeb5e53baf15df369a5481db6f867e2e816b5c34552d71c",
+        "ingestStateSha256": "c628e2745b941468c2c8d2aa0faf7674f74297ff2e701f474941e4e65dfd6a4f",
+        "config": {
+          "id": "structured-800-0",
+          "physicalIndex": "eval-chunks-structured-800-0",
+          "readAlias": "eval-chunks-structured-800-0-read",
+          "writeAlias": "eval-chunks-structured-800-0-write",
+          "chunkerVersion": "v2-jtokkit1.1.0-cl100k-structured-c800o0-p2400o0",
+          "strategy": "STRUCTURED",
+          "childTokens": 800,
+          "childOverlap": 0,
+          "parentTokens": 2400,
+          "parentOverlap": 0,
+          "embeddingModel": "qwen3.7-text-embedding",
+          "dimensions": 1024,
+          "bm25CandidateSize": 30,
+          "vectorCandidateSize": 30,
+          "rrfK": 60,
+          "contextMaxTokens": 4096
+        },
+        "split": "dev",
+        "modes": [
+          "RRF"
+        ],
+        "topK": 10,
+        "jarSha256": "07ce719769e14059397f7ae29a31171d900f5f81de22b91fd8472d41dc8d57fb",
+        "gitSha": "4b4bf5026c9171484750f685f4815875019fd4c2",
+        "runnerSha256": "fb824a19c8af4a65145b9e71514e2bfc9d3cfec94ac46a7493f2011a49fdf1b3",
+        "corpusStats": {
+          "documents": 12,
+          "chunks": {
+            "PARENT": 40,
+            "CHILD": 123
+          },
+          "logicalDocumentTokens": 74340,
+          "uniqueContentDocumentTokens": 74340,
+          "tokenNote": "Logical per-child provider tokens, including cached artifacts; not incremental billed usage"
+        },
+        "metric": "Full annotated span within one retrieved chunk after NFKC/whitespace/case normalization"
+      },
+      "rawResponsesSha256": "8409b17a16b0c2209bd38319d8d1c497c986abdb43f3945e2b8544cffe6da3d5",
+      "attemptedRequests": 66,
+      "rawRun": ".eval\\runs\\dev-structured-800-0"
+    },
+    {
+      "id": "structured-800-160",
+      "metrics": {
+        "byCourse": {
+          "algorithms": {
+            "n": 10,
+            "hitAt5": 0.9,
+            "mrrAt10": 0.695,
+            "contextEvidenceHit": 0.9,
+            "meanContextTokens": 3819.7,
+            "medianSearchMillis": 284.58180000598077
+          },
+          "os": {
+            "n": 10,
+            "hitAt5": 1,
+            "mrrAt10": 0.87,
+            "contextEvidenceHit": 1,
+            "meanContextTokens": 3907.8,
+            "medianSearchMillis": 341.11059999850113
+          }
+        },
+        "worstCourseHitAt5": 0.9,
+        "macroHitAt5": 0.95,
+        "macroMrrAt10": 0.7825
+      },
+      "corpusStats": {
+        "documents": 12,
+        "chunks": {
+          "PARENT": 40,
+          "CHILD": 142
+        },
+        "logicalDocumentTokens": 88729,
+        "uniqueContentDocumentTokens": 88729,
+        "tokenNote": "Logical per-child provider tokens, including cached artifacts; not incremental billed usage"
+      },
+      "profile": {
+        "config": "structured-800-160",
+        "tokenizer": "jtokkit 1.1.0 CL100K_BASE countTokensOrdinary",
+        "tokenizerJarSha256": "1501ce0259ab897c6746ccfafa1d208acd404fb17e1ac62e157172f2678b1183",
+        "lengths": {
+          "CHILD": {
+            "count": 142,
+            "min": 244,
+            "median": 791.5,
+            "p95NearestRank": 800,
+            "max": 800,
+            "total": 99423
+          },
+          "PARENT": {
+            "count": 40,
+            "min": 346,
+            "median": 2372.5,
+            "p95NearestRank": 2395,
+            "max": 2398,
+            "total": 83110
+          }
+        },
+        "equalParentChildParents": 1,
+        "equalParentChildParentRatio": 0.025,
+        "identicalChildDuplicates": 0,
+        "overlappingSourceUtf16Units": 33883,
+        "sourceOverlapRatio": 0.16215530690965477,
+        "primaryIndexStoreBytes": 3537207,
+        "storeNote": "Actual primary-store snapshot; Lucene segment layout is not controlled or force-merged",
+        "minimumRawVectorBytes": 581632
+      },
+      "spanCoverage": {
+        "split": "dev",
+        "config": "structured-800-160",
+        "questions": 20,
+        "childPossible": 20,
+        "parentPossible": 20,
+        "note": "All-index oracle for full annotated span presence, not retrieval or semantic answer quality"
+      },
+      "runManifest": {
+        "goldSha256": "0397306190815195eeeb5e53baf15df369a5481db6f867e2e816b5c34552d71c",
+        "ingestStateSha256": "2c870253e46f12e19d7e28764276a6a66799d4d68c3d711a036a9aa04813e062",
+        "config": {
+          "id": "structured-800-160",
+          "physicalIndex": "eval-chunks-structured-800-160",
+          "readAlias": "eval-chunks-structured-800-160-read",
+          "writeAlias": "eval-chunks-structured-800-160-write",
+          "chunkerVersion": "v2-jtokkit1.1.0-cl100k-structured-c800o160-p2400o0",
+          "strategy": "STRUCTURED",
+          "childTokens": 800,
+          "childOverlap": 160,
+          "parentTokens": 2400,
+          "parentOverlap": 0,
+          "embeddingModel": "qwen3.7-text-embedding",
+          "dimensions": 1024,
+          "bm25CandidateSize": 30,
+          "vectorCandidateSize": 30,
+          "rrfK": 60,
+          "contextMaxTokens": 4096
+        },
+        "split": "dev",
+        "modes": [
+          "RRF"
+        ],
+        "topK": 10,
+        "jarSha256": "07ce719769e14059397f7ae29a31171d900f5f81de22b91fd8472d41dc8d57fb",
+        "gitSha": "4b4bf5026c9171484750f685f4815875019fd4c2",
+        "runnerSha256": "d82650f0b1e0f752f7f08329e6fdef39ae80f017fc279e7cf00ee57263868f2d",
+        "corpusStats": {
+          "documents": 12,
+          "chunks": {
+            "PARENT": 40,
+            "CHILD": 142
+          },
+          "logicalDocumentTokens": 88729,
+          "uniqueContentDocumentTokens": 88729,
+          "tokenNote": "Logical per-child provider tokens, including cached artifacts; not incremental billed usage"
+        },
+        "indexPopulationChecked": true,
+        "primaryShards": 1,
+        "metric": "Full annotated span within one retrieved chunk after NFKC/whitespace/case normalization"
+      },
+      "rawResponsesSha256": "fc4549add1bb5d34799c91a5cc60c97550b4c836e732dfbcd8ff246a89eb9d78",
+      "attemptedRequests": 79,
+      "rawRun": ".eval\\runs\\dev-structured-800-160"
+    }
+  ],
+  "correction": "Original mixed-index 800/80 preflight preserved and excluded; isolated repeat retained identical ranking metrics. All final comparison indices contain exactly 12 source documents and one primary shard."
+}

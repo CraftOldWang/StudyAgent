@@ -155,7 +155,7 @@ def main():
     for row in rows.values():
         row["split"] = "dev" if row["id"] in dev else "validation"
         quote = row.pop("quote")
-        assert norm(quote) in norm(texts[row["sourceId"]]), row["id"]
+        assert norm(quote) and norm(quote) in norm(texts[row["sourceId"]]), row["id"]
         row["evidence"] = [dict(sourceId=sid, sourceSha256=sources[sid]["sha256"], quote=quote)
                            for sid, text in texts.items()
                            if sources[sid]["course"] == row["course"] and norm(quote) in norm(text)]
@@ -175,6 +175,8 @@ def main():
         raise RuntimeError("Frozen gold differs: create a new version and preserve the old one")
     target.write_text(data, encoding="utf-8")
     metadata = dict(version="gold-v1", sha256=hashlib.sha256(data.encode()).hexdigest(),
+                    sha256Encoding="UTF-8 text with LF line endings; run manifests separately hash actual file bytes",
+                    fileSha256=hashlib.sha256(target.read_bytes()).hexdigest(),
                     splitSeed=20260909, questions=100, answerable=80, insufficient=20,
                     dev=20, validation=80, heldOutCourse="compiler", reviewChanges=len(changes),
                     provenance="DeepSeek drafts; Codex per-item semantic review; deterministic literal-source checks; no human gold review",

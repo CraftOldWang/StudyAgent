@@ -1,0 +1,19 @@
+{
+  "id": "validation-structured-800-0",
+  "physicalIndex": "eval-validation-structured-800-0",
+  "readAlias": "eval-validation-structured-800-0-read",
+  "writeAlias": "eval-validation-structured-800-0-write",
+  "chunkerVersion": "v2-jtokkit1.1.0-cl100k-structured-c800o0-p2400o0",
+  "strategy": "STRUCTURED",
+  "childTokens": 800,
+  "childOverlap": 0,
+  "parentTokens": 2400,
+  "parentOverlap": 0,
+  "embeddingModel": "qwen3.7-text-embedding",
+  "dimensions": 1024,
+  "bm25CandidateSize": 30,
+  "vectorCandidateSize": 30,
+  "rrfK": 60,
+  "contextMaxTokens": 4096,
+  "selectionEvidence": "docs/evidence/m4/chunk-selection-v1.json"
+}

@@ -27,6 +27,11 @@ scripts/*
 !scripts/freeze-rag-gold.py
 !scripts/run-rag-evaluation.py
 !scripts/test-rag-evaluation.py
+!scripts/run-chunk-config.py
+!scripts/evaluate-rag-answers.py
+!scripts/audit-rag-coverage.py
+!scripts/ChunkTokenLengths.java
+!scripts/profile-chunk-index.py
 !scripts/smoke-api.py
 !scripts/requirements-eval.txt
 .agentscope/workspace/state/

@@ -1,0 +1,18 @@
+{
+  "id": "fixed-800-80",
+  "physicalIndex": "eval-chunks-fixed-800-80",
+  "readAlias": "eval-chunks-fixed-800-80-read",
+  "writeAlias": "eval-chunks-fixed-800-80-write",
+  "chunkerVersion": "v2-jtokkit1.1.0-cl100k-fixed-c800o80-p2400o0",
+  "strategy": "FIXED",
+  "childTokens": 800,
+  "childOverlap": 80,
+  "parentTokens": 2400,
+  "parentOverlap": 0,
+  "embeddingModel": "qwen3.7-text-embedding",
+  "dimensions": 1024,
+  "bm25CandidateSize": 30,
+  "vectorCandidateSize": 30,
+  "rrfK": 60,
+  "contextMaxTokens": 4096
+}

@@ -1,0 +1,35 @@
+{
+  "stage": "size-selection-dev-only",
+  "candidates": [
+    {
+      "id": "structured-400-40",
+      "worstCourseHitAt5": 0.6,
+      "macroMrrAt10": 0.5633333333333334,
+      "logicalDocumentTokens": 83566,
+      "scoresSha256": "c2f9d0394542457afd5c189908728650eb4fdff5b7bc67e71934ee653215f2c8"
+    },
+    {
+      "id": "structured-800-80",
+      "worstCourseHitAt5": 0.9,
+      "macroMrrAt10": 0.7891666666666667,
+      "logicalDocumentTokens": 81389,
+      "scoresSha256": "549e98b78c8b420b6abce78017b2dd804464506073e37ad7ddc65922de522a11"
+    },
+    {
+      "id": "structured-1200-120",
+      "worstCourseHitAt5": 0.9,
+      "macroMrrAt10": 0.7749999999999999,
+      "logicalDocumentTokens": 80851,
+      "scoresSha256": "4033ca0e933317ab586a65a686b5f8cc5aa3f3fc07dd75cf3595f050cd23f0c0"
+    }
+  ],
+  "selected": "structured-800-80",
+  "criterion": [
+    "worstCourseHitAt5 desc",
+    "macroMrrAt10 desc",
+    "logicalDocumentTokens asc"
+  ],
+  "heldOutExamined": false,
+  "status": "SUPERSEDED_PENDING_ISOLATED_BASELINE",
+  "reason": "Original 800/80 index also contained smoke and compiler documents; repeat with the same 12-source index population before freezing size."
+}

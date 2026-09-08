@@ -1,0 +1,18 @@
+{
+  "id": "structured-400-40",
+  "physicalIndex": "eval-chunks-structured-400-40",
+  "readAlias": "eval-chunks-structured-400-40-read",
+  "writeAlias": "eval-chunks-structured-400-40-write",
+  "chunkerVersion": "v2-jtokkit1.1.0-cl100k-structured-c400o40-p2400o0",
+  "strategy": "STRUCTURED",
+  "childTokens": 400,
+  "childOverlap": 40,
+  "parentTokens": 2400,
+  "parentOverlap": 0,
+  "embeddingModel": "qwen3.7-text-embedding",
+  "dimensions": 1024,
+  "bm25CandidateSize": 30,
+  "vectorCandidateSize": 30,
+  "rrfK": 60,
+  "contextMaxTokens": 4096
+}

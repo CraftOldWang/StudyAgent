@@ -1,6 +1,8 @@
 {
   "version": "gold-v1",
   "sha256": "fa307ae4ae29fc0c1f76c40eee056346e65fbcb3e89b0969b39ae91702fc3851",
+  "sha256Encoding": "UTF-8 text with LF line endings; run manifests separately hash actual file bytes",
+  "fileSha256": "0397306190815195eeeb5e53baf15df369a5481db6f867e2e816b5c34552d71c",
   "splitSeed": 20260909,
   "questions": 100,
   "answerable": 80,

@@ -1,8 +1,8 @@
 {
   "id": "structured-800-80",
-  "physicalIndex": "eval-chunks-structured-800-80",
-  "readAlias": "eval-chunks-structured-800-80-read",
-  "writeAlias": "eval-chunks-structured-800-80-write",
+  "physicalIndex": "eval-qwen37-1024-structured-v2-c800-p2400",
+  "readAlias": "eval-qwen37-1024-structured-v2-read",
+  "writeAlias": "eval-qwen37-1024-structured-v2-write",
   "chunkerVersion": "v2-jtokkit1.1.0-cl100k-structured-c800o80-p2400o0",
   "strategy": "STRUCTURED",
   "childTokens": 800,

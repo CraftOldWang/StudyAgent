@@ -67,6 +67,13 @@ def main():
     indexed = es.json()["hits"]["hits"]
     assert len(indexed) == es.json()["hits"]["total"]["value"] < 10000
     chunks = [item["_source"] for item in indexed]
+    count_response = requests.get(f"http://localhost:9200/{config['physicalIndex']}/_count", timeout=10)
+    count_response.raise_for_status()
+    assert count_response.json()["count"] == len(chunks), "Index includes documents outside this evaluation split; BM25 statistics would be confounded"
+    settings_response = requests.get(f"http://localhost:9200/{config['physicalIndex']}/_settings", timeout=10)
+    settings_response.raise_for_status()
+    index_settings = settings_response.json()[config["physicalIndex"]]["settings"]["index"]
+    assert index_settings["number_of_shards"] == "1", "This small-corpus protocol requires one primary shard"
     assert {c["document_id"] for c in chunks} == set(selected_docs)
     assert {c["chunker_version"] for c in chunks} == {config["chunkerVersion"]}
     assert {c["embedding_model"] for c in chunks} == {config["embeddingModel"]}
@@ -92,6 +99,7 @@ def main():
                 "jarSha256": digest("target/study-agent-0.0.1-SNAPSHOT.jar"),
                 "gitSha": subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip(),
                 "runnerSha256": digest(__file__), "corpusStats": corpus_stats,
+                "indexPopulationChecked": True, "primaryShards": int(index_settings["number_of_shards"]),
                 "metric": "Full annotated span within one retrieved chunk after NFKC/whitespace/case normalization"}
     manifest_path = args.run_dir / "manifest.json"
     raw_path = args.run_dir / "responses.jsonl"
