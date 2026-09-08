@@ -1,0 +1,51 @@
+{
+  "reviewer": "Codex assistant; not human review",
+  "scope": "Reviewed all nine automatically rejected question/mode pairs and nine selected accepted pairs; examined actual retrieved context for identified discrepancies. This is a targeted audit, not an unbiased population accuracy estimate.",
+  "rejectedPairsReviewed": [
+    "algorithms-02-q3/PARENT", "algorithms-02-q4/PARENT", "algorithms-02-q5/PARENT",
+    "algorithms-04-q4/RRF", "algorithms-04-q4/PARENT", "algorithms-05-q3/PARENT",
+    "algorithms-05-q4/PARENT", "compiler-01-q1/RRF", "os-insufficient-03/PARENT"
+  ],
+  "acceptedPairsReviewed": [
+    "algorithms-03-q2/RRF", "algorithms-05-q5/PARENT", "os-03-q1/RRF",
+    "os-04-q1/PARENT", "os-05-q3/RRF", "compiler-02-q4/RRF",
+    "compiler-03-q3/PARENT", "compiler-04-q3/RRF", "compiler-06-q3/PARENT"
+  ],
+  "findings": [
+    {
+      "pair": "os-04-q1/PARENT",
+      "finding": "Automatic correctness false positive: answer defines a critical section correctly, then incorrectly says its structure contains entry, critical, exit and remainder sections. Those describe the surrounding process/program structure, not subparts of the critical section.",
+      "effect": "The reported automatic 54/60 accepted parent answers is not a verified correctness count. No corrected population rate is inferred from this targeted sample."
+    },
+    {
+      "pair": "algorithms-02-q4/PARENT",
+      "finding": "Automatic grounding false positive: the answer inserts the formal c1/c2 definition while claiming it is absent. Its sole retrieved parent contains limit tests and properties, not that formal definition. Judge incorrectly attributes the reference definition to contexts.",
+      "effect": "Do not interpret model-judged 100% grounding as zero unsupported content."
+    },
+    {
+      "pair": "algorithms-05-q3/PARENT",
+      "finding": "Judge rejection decision is reasonable but its reason claims parameter definitions are in contexts. The admitted parents are dynamic-programming material; the reference recurrence-parameter definition is not present there.",
+      "effect": "Distinguish a correct rejection decision from a reliable explanation of the cause."
+    },
+    {
+      "pair": "compiler-01-q1/RRF",
+      "finding": "Core analysis/synthesis answer is correct; judge's claim that any expansion contradicts the reference is too strict. Some expanded classic-phase assertions are not established by the cited fragments, so answer/citation support still needs qualification.",
+      "effect": "Preserve raw judge result and disagreement; do not silently replace labels to improve scores."
+    },
+    {
+      "pair": "os-insufficient-03/PARENT",
+      "finding": "Confirmed wrong entity: the answer supplies a lecture's 80386 timing example for a question about the current test computer's actual last context switch. The cited fact exists, but does not answer the requested measurement.",
+      "effect": "Citation presence and supported source facts do not establish that the user's question was answered."
+    },
+    {
+      "pair": "compiler-06-q3/PARENT",
+      "finding": "Core common-subexpression reasoning is correct. The added statement that both b and c on the right-hand side have already been updated is imprecise: b changed earlier, while that assignment reads the old c.",
+      "effect": "Extra explanatory claims need checking even when the core reference answer is present."
+    }
+  ],
+  "goldFollowup": {
+    "id": "algorithms-05-q5",
+    "note": "A future gold version should explicitly scope the closest-pair strip argument to finding an improvement below the already known delta, rather than claiming to find an arbitrary closest cross-partition pair. Frozen v1 labels and questions are unchanged."
+  },
+  "decision": "Use deterministic annotated-evidence retrieval figures for the resume. Publish automatic answer scores only as model-judge outputs accompanied by this audit; do not claim human accuracy or zero hallucination."
+}

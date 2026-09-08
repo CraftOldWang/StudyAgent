@@ -47,6 +47,18 @@ public class KnowledgeRetrievalService {
                         normalizedQuery,
                         queryVector,
                         ragProperties.bm25CandidateSize(), ragProperties.vectorCandidateSize(), limit, ragProperties.rrfK());
+        return contextView(userId, knowledgeBaseId, normalizedQuery, effectiveMode, rankedChildren);
+    }
+
+    public ContextComparison compareContexts(Long userId, Long knowledgeBaseId, String query, Integer topK) {
+        KnowledgeSearchResponse child = search(userId, knowledgeBaseId, query, RetrievalMode.RRF, topK);
+        // Independent provider/search calls can reorder candidates; an ablation must share the exact retrieval result.
+        KnowledgeSearchResponse parent = contextView(userId, knowledgeBaseId, child.query(), RetrievalMode.PARENT, child.rankedChildren());
+        return new ContextComparison(child, parent);
+    }
+
+    private KnowledgeSearchResponse contextView(Long userId, Long knowledgeBaseId, String normalizedQuery,
+                                                RetrievalMode effectiveMode, List<RetrievalHit> rankedChildren) {
         List<KnowledgeSearchResponse.Result> candidates = effectiveMode == RetrievalMode.PARENT
                 ? parentAggregator.aggregate(userId.toString(), knowledgeBaseId.toString(), rankedChildren)
                 : rankedChildren.stream().map(hit -> new KnowledgeSearchResponse.Result(
@@ -70,4 +82,6 @@ public class KnowledgeRetrievalService {
                 results.isEmpty() ? KnowledgeSearchResponse.NO_EVIDENCE_MESSAGE : null,
                 List.copyOf(results), rankedChildren, List.copyOf(matches), contextTokens, effectiveMode);
     }
+
+    public record ContextComparison(KnowledgeSearchResponse childContext, KnowledgeSearchResponse parentContext) { }
 }

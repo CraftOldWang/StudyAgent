@@ -1,0 +1,426 @@
+{
+  "status": "COMPONENT_VALIDATION_COMPLETE",
+  "selectionFrozenBeforeValidation": true,
+  "answerableQuestions": 60,
+  "insufficientQuestions": 20,
+  "retrieval": {
+    "BM25": {
+      "overall": {
+        "n": 60,
+        "hitsAt5": 42,
+        "hitAt5": 0.7,
+        "mrrAt10": 0.606845238095238,
+        "contextEvidenceHits": 43,
+        "meanContextTokens": 3879.7166666666667
+      },
+      "byCourse": {
+        "algorithms": {
+          "n": 20,
+          "hitsAt5": 8,
+          "hitAt5": 0.4,
+          "mrrAt10": 0.30505952380952384,
+          "contextEvidenceHits": 8,
+          "meanContextTokens": 3906.85
+        },
+        "os": {
+          "n": 20,
+          "hitsAt5": 17,
+          "hitAt5": 0.85,
+          "mrrAt10": 0.7071428571428572,
+          "contextEvidenceHits": 17,
+          "meanContextTokens": 3877.15
+        },
+        "compiler": {
+          "n": 20,
+          "hitsAt5": 17,
+          "hitAt5": 0.85,
+          "mrrAt10": 0.8083333333333333,
+          "contextEvidenceHits": 18,
+          "meanContextTokens": 3855.15
+        }
+      },
+      "medianApiMillis": 169.324049995339,
+      "latencyNote": "Sequential single-run API timings including provider/network; not a controlled speed benchmark"
+    },
+    "VECTOR": {
+      "overall": {
+        "n": 60,
+        "hitsAt5": 55,
+        "hitAt5": 0.9166666666666666,
+        "mrrAt10": 0.75,
+        "contextEvidenceHits": 55,
+        "meanContextTokens": 3821.516666666667
+      },
+      "byCourse": {
+        "algorithms": {
+          "n": 20,
+          "hitsAt5": 19,
+          "hitAt5": 0.95,
+          "mrrAt10": 0.7833333333333333,
+          "contextEvidenceHits": 19,
+          "meanContextTokens": 3936.35
+        },
+        "os": {
+          "n": 20,
+          "hitsAt5": 18,
+          "hitAt5": 0.9,
+          "mrrAt10": 0.7041666666666667,
+          "contextEvidenceHits": 18,
+          "meanContextTokens": 3800.95
+        },
+        "compiler": {
+          "n": 20,
+          "hitsAt5": 18,
+          "hitAt5": 0.9,
+          "mrrAt10": 0.7625,
+          "contextEvidenceHits": 18,
+          "meanContextTokens": 3727.25
+        }
+      },
+      "medianApiMillis": 446.2158999958774,
+      "latencyNote": "Sequential single-run API timings including provider/network; not a controlled speed benchmark"
+    },
+    "RRF": {
+      "overall": {
+        "n": 60,
+        "hitsAt5": 55,
+        "hitAt5": 0.9166666666666666,
+        "mrrAt10": 0.7213888888888889,
+        "contextEvidenceHits": 55,
+        "meanContextTokens": 3874.1666666666665
+      },
+      "byCourse": {
+        "algorithms": {
+          "n": 20,
+          "hitsAt5": 18,
+          "hitAt5": 0.9,
+          "mrrAt10": 0.6141666666666666,
+          "contextEvidenceHits": 18,
+          "meanContextTokens": 3911.85
+        },
+        "os": {
+          "n": 20,
+          "hitsAt5": 19,
+          "hitAt5": 0.95,
+          "mrrAt10": 0.7666666666666667,
+          "contextEvidenceHits": 19,
+          "meanContextTokens": 3884.05
+        },
+        "compiler": {
+          "n": 20,
+          "hitsAt5": 18,
+          "hitAt5": 0.9,
+          "mrrAt10": 0.7833333333333333,
+          "contextEvidenceHits": 18,
+          "meanContextTokens": 3826.6
+        }
+      },
+      "medianApiMillis": 460.84904999588616,
+      "latencyNote": "Sequential single-run API timings including provider/network; not a controlled speed benchmark"
+    }
+  },
+  "pairedContext": {
+    "RRF": {
+      "overall": {
+        "n": 60,
+        "hitsAt5": 55,
+        "hitAt5": 0.9166666666666666,
+        "mrrAt10": 0.7213888888888889,
+        "contextEvidenceHits": 55,
+        "meanContextTokens": 3874.1666666666665
+      },
+      "byCourse": {
+        "algorithms": {
+          "n": 20,
+          "hitsAt5": 18,
+          "hitAt5": 0.9,
+          "mrrAt10": 0.6141666666666666,
+          "contextEvidenceHits": 18,
+          "meanContextTokens": 3911.85
+        },
+        "os": {
+          "n": 20,
+          "hitsAt5": 19,
+          "hitAt5": 0.95,
+          "mrrAt10": 0.7666666666666667,
+          "contextEvidenceHits": 19,
+          "meanContextTokens": 3884.05
+        },
+        "compiler": {
+          "n": 20,
+          "hitsAt5": 18,
+          "hitAt5": 0.9,
+          "mrrAt10": 0.7833333333333333,
+          "contextEvidenceHits": 18,
+          "meanContextTokens": 3826.6
+        }
+      }
+    },
+    "PARENT": {
+      "overall": {
+        "n": 60,
+        "hitsAt5": 55,
+        "hitAt5": 0.9166666666666666,
+        "mrrAt10": 0.7213888888888889,
+        "contextEvidenceHits": 54,
+        "meanContextTokens": 3361.6666666666665
+      },
+      "byCourse": {
+        "algorithms": {
+          "n": 20,
+          "hitsAt5": 18,
+          "hitAt5": 0.9,
+          "mrrAt10": 0.6141666666666666,
+          "contextEvidenceHits": 14,
+          "meanContextTokens": 3526.1
+        },
+        "os": {
+          "n": 20,
+          "hitsAt5": 19,
+          "hitAt5": 0.95,
+          "mrrAt10": 0.7666666666666667,
+          "contextEvidenceHits": 20,
+          "meanContextTokens": 3024.6
+        },
+        "compiler": {
+          "n": 20,
+          "hitsAt5": 18,
+          "hitAt5": 0.9,
+          "mrrAt10": 0.7833333333333333,
+          "contextEvidenceHits": 20,
+          "meanContextTokens": 3534.3
+        }
+      }
+    }
+  },
+  "modelJudgedAnswerQuality": {
+    "RRF": {
+      "overall": {
+        "answerableCount": 60,
+        "acceptedAnswers": 58,
+        "acceptedAnswerRate": 0.9666666666666667,
+        "correctAnswers": 58,
+        "groundedAnswers": 60,
+        "insufficientCount": 20,
+        "correctRefusals": 20,
+        "unsupportedResponses": 0,
+        "invalidCitationIds": 0
+      },
+      "algorithms": {
+        "answerableCount": 20,
+        "acceptedAnswers": 19,
+        "acceptedAnswerRate": 0.95,
+        "correctAnswers": 19,
+        "groundedAnswers": 20,
+        "insufficientCount": 7,
+        "correctRefusals": 7,
+        "unsupportedResponses": 0,
+        "invalidCitationIds": 0
+      },
+      "os": {
+        "answerableCount": 20,
+        "acceptedAnswers": 20,
+        "acceptedAnswerRate": 1,
+        "correctAnswers": 20,
+        "groundedAnswers": 20,
+        "insufficientCount": 7,
+        "correctRefusals": 7,
+        "unsupportedResponses": 0,
+        "invalidCitationIds": 0
+      },
+      "compiler": {
+        "answerableCount": 20,
+        "acceptedAnswers": 19,
+        "acceptedAnswerRate": 0.95,
+        "correctAnswers": 19,
+        "groundedAnswers": 20,
+        "insufficientCount": 6,
+        "correctRefusals": 6,
+        "unsupportedResponses": 0,
+        "invalidCitationIds": 0
+      }
+    },
+    "PARENT": {
+      "overall": {
+        "answerableCount": 60,
+        "acceptedAnswers": 54,
+        "acceptedAnswerRate": 0.9,
+        "correctAnswers": 54,
+        "groundedAnswers": 60,
+        "insufficientCount": 20,
+        "correctRefusals": 19,
+        "unsupportedResponses": 0,
+        "invalidCitationIds": 0
+      },
+      "algorithms": {
+        "answerableCount": 20,
+        "acceptedAnswers": 14,
+        "acceptedAnswerRate": 0.7,
+        "correctAnswers": 14,
+        "groundedAnswers": 20,
+        "insufficientCount": 7,
+        "correctRefusals": 7,
+        "unsupportedResponses": 0,
+        "invalidCitationIds": 0
+      },
+      "os": {
+        "answerableCount": 20,
+        "acceptedAnswers": 20,
+        "acceptedAnswerRate": 1,
+        "correctAnswers": 20,
+        "groundedAnswers": 20,
+        "insufficientCount": 7,
+        "correctRefusals": 6,
+        "unsupportedResponses": 0,
+        "invalidCitationIds": 0
+      },
+      "compiler": {
+        "answerableCount": 20,
+        "acceptedAnswers": 20,
+        "acceptedAnswerRate": 1,
+        "correctAnswers": 20,
+        "groundedAnswers": 20,
+        "insufficientCount": 6,
+        "correctRefusals": 6,
+        "unsupportedResponses": 0,
+        "invalidCitationIds": 0
+      }
+    }
+  },
+  "pairedBootstrap": {
+    "rrfHitAt5MinusBM25": {
+      "estimate": 0.21666666666666667,
+      "interval95": [
+        0.13333333333333333,
+        0.31666666666666665
+      ],
+      "method": "Percentile paired bootstrap resampling questions within each course; conditional on fixed corpus and labels",
+      "seed": 20260909,
+      "repetitions": 10000
+    },
+    "rrfHitAt5MinusVECTOR": {
+      "estimate": 0.0,
+      "interval95": [
+        -0.049999999999999996,
+        0.049999999999999996
+      ],
+      "method": "Percentile paired bootstrap resampling questions within each course; conditional on fixed corpus and labels",
+      "seed": 20260909,
+      "repetitions": 10000
+    },
+    "parentMinusChildContextEvidenceHit": {
+      "estimate": -0.016666666666666666,
+      "interval95": [
+        -0.1,
+        0.08333333333333333
+      ],
+      "method": "Percentile paired bootstrap resampling questions within each course; conditional on fixed corpus and labels",
+      "seed": 20260909,
+      "repetitions": 10000
+    }
+  },
+  "modelUsage": {
+    "answer": {
+      "attempts": 160,
+      "usageKnown": 160,
+      "knownInputTokens": 633960,
+      "knownOutputTokens": 18928,
+      "knownTotalTokens": 652888
+    },
+    "judge": {
+      "attempts": 160,
+      "usageKnown": 160,
+      "knownInputTokens": 688936,
+      "knownOutputTokens": 10904,
+      "knownTotalTokens": 699840
+    }
+  },
+  "independentRequestRankMismatchIds": [
+    "algorithms-03-q5",
+    "algorithms-05-q3",
+    "algorithms-05-q4",
+    "compiler-insufficient-03",
+    "compiler-insufficient-04"
+  ],
+  "artifacts": {
+    ".eval\\runs\\validation-selected-v1\\manifest.json": "c59c941890f30da6c9c2452f3b04574103252384a47e0fa37a6bce8aa8777d72",
+    ".eval\\runs\\validation-selected-v1\\responses.jsonl": "0f9b357d79f8f45fca6b168959309bd857d1f6807492f149a77bc1cfb2acdc51",
+    ".eval\\runs\\validation-parent-paired-v1\\manifest.json": "913524ac26b9f72de64fa73768fca6bba9068cacf0aa8ba95735b354632f124a",
+    ".eval\\runs\\validation-parent-paired-v1\\pairs.jsonl": "ebdce714b6fcef0e90836499f69e3da93a27265810d17bf148ac8e480dd94918",
+    ".eval\\runs\\validation-answers-v1\\manifest.json": "08827425bb3094e7a76734e8eda6375d964bbfba5b25474a1dcb21f281bee47f",
+    ".eval\\runs\\validation-answers-v1\\judgments.json": "90f5ccae272221834acce6d3f81e8b808efd6c8457004b654aa8dbf2c89b90b7",
+    "eval\\rag\\gold-v1.jsonl": "0397306190815195eeeb5e53baf15df369a5481db6f867e2e816b5c34552d71c"
+  },
+  "targetedAssistantAudit": {
+    "reviewer": "Codex assistant; not human review",
+    "scope": "Reviewed all nine automatically rejected question/mode pairs and nine selected accepted pairs; examined actual retrieved context for identified discrepancies. This is a targeted audit, not an unbiased population accuracy estimate.",
+    "rejectedPairsReviewed": [
+      "algorithms-02-q3/PARENT",
+      "algorithms-02-q4/PARENT",
+      "algorithms-02-q5/PARENT",
+      "algorithms-04-q4/RRF",
+      "algorithms-04-q4/PARENT",
+      "algorithms-05-q3/PARENT",
+      "algorithms-05-q4/PARENT",
+      "compiler-01-q1/RRF",
+      "os-insufficient-03/PARENT"
+    ],
+    "acceptedPairsReviewed": [
+      "algorithms-03-q2/RRF",
+      "algorithms-05-q5/PARENT",
+      "os-03-q1/RRF",
+      "os-04-q1/PARENT",
+      "os-05-q3/RRF",
+      "compiler-02-q4/RRF",
+      "compiler-03-q3/PARENT",
+      "compiler-04-q3/RRF",
+      "compiler-06-q3/PARENT"
+    ],
+    "findings": [
+      {
+        "pair": "os-04-q1/PARENT",
+        "finding": "Automatic correctness false positive: answer defines a critical section correctly, then incorrectly says its structure contains entry, critical, exit and remainder sections. Those describe the surrounding process/program structure, not subparts of the critical section.",
+        "effect": "The reported automatic 54/60 accepted parent answers is not a verified correctness count. No corrected population rate is inferred from this targeted sample."
+      },
+      {
+        "pair": "algorithms-02-q4/PARENT",
+        "finding": "Automatic grounding false positive: the answer inserts the formal c1/c2 definition while claiming it is absent. Its sole retrieved parent contains limit tests and properties, not that formal definition. Judge incorrectly attributes the reference definition to contexts.",
+        "effect": "Do not interpret model-judged 100% grounding as zero unsupported content."
+      },
+      {
+        "pair": "algorithms-05-q3/PARENT",
+        "finding": "Judge rejection decision is reasonable but its reason claims parameter definitions are in contexts. The admitted parents are dynamic-programming material; the reference recurrence-parameter definition is not present there.",
+        "effect": "Distinguish a correct rejection decision from a reliable explanation of the cause."
+      },
+      {
+        "pair": "compiler-01-q1/RRF",
+        "finding": "Core analysis/synthesis answer is correct; judge's claim that any expansion contradicts the reference is too strict. Some expanded classic-phase assertions are not established by the cited fragments, so answer/citation support still needs qualification.",
+        "effect": "Preserve raw judge result and disagreement; do not silently replace labels to improve scores."
+      },
+      {
+        "pair": "os-insufficient-03/PARENT",
+        "finding": "Confirmed wrong entity: the answer supplies a lecture's 80386 timing example for a question about the current test computer's actual last context switch. The cited fact exists, but does not answer the requested measurement.",
+        "effect": "Citation presence and supported source facts do not establish that the user's question was answered."
+      },
+      {
+        "pair": "compiler-06-q3/PARENT",
+        "finding": "Core common-subexpression reasoning is correct. The added statement that both b and c on the right-hand side have already been updated is imprecise: b changed earlier, while that assignment reads the old c.",
+        "effect": "Extra explanatory claims need checking even when the core reference answer is present."
+      }
+    ],
+    "goldFollowup": {
+      "id": "algorithms-05-q5",
+      "note": "A future gold version should explicitly scope the closest-pair strip argument to finding an improvement below the already known delta, rather than claiming to find an arbitrary closest cross-partition pair. Frozen v1 labels and questions are unchanged."
+    },
+    "decision": "Use deterministic annotated-evidence retrieval figures for the resume. Publish automatic answer scores only as model-judge outputs accompanied by this audit; do not claim human accuracy or zero hallucination."
+  },
+  "answerAccuracyClaimApproved": false,
+  "limitations": [
+    "Assistant-generated and reviewed gold, with incomplete semantic relevance labels",
+    "Mostly Chinese questions against mixed Chinese/English course content; BM25 baseline affected by cross-language retrieval",
+    "Same-family model judge; not human accuracy",
+    "One fixed small validation set; no universal best-parameter claim",
+    "Controlled RAG component API evaluation, not the complete learning Agent flow",
+    "Full annotated evidence must fit in one chunk; parent comparison uses shared ranks and equal maximum body budget, not equal realized token count"
+  ]
+}

@@ -4,6 +4,7 @@ import importlib.util
 import json
 from pathlib import Path
 import requests
+from eval_jsonl import read_jsonl
 
 
 spec = importlib.util.spec_from_file_location("scorer", Path(__file__).with_name("run-rag-evaluation.py"))
@@ -28,7 +29,7 @@ def main():
     values = response.json()["hits"]
     assert len(values["hits"]) == values["total"]["value"] < 10000
     chunks = [r["_source"] for r in values["hits"]]
-    questions = [q for q in map(json.loads, Path("eval/rag/gold-v1.jsonl").read_text(encoding="utf-8").splitlines()) if q["split"] == args.split and q["answerable"]]
+    questions = [q for q in read_jsonl("eval/rag/gold-v1.jsonl") if q["split"] == args.split and q["answerable"]]
     rows = []
     for q in questions:
         match = {kind: [c["chunk_id"] for c in chunks if c["chunk_type"] == kind and scorer.matches(

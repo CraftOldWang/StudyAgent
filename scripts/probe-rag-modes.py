@@ -8,6 +8,7 @@ import time
 from pathlib import Path
 
 import requests
+from eval_jsonl import read_jsonl
 
 
 def main():
@@ -23,7 +24,7 @@ def main():
     raw_path = args.run_dir / "responses.jsonl"
     if raw_path.exists() and not args.resume:
         raise RuntimeError("Existing results; inspect them or explicitly resume")
-    cases = [json.loads(line) for line in args.cases.read_text(encoding="utf-8-sig").splitlines() if line.strip()]
+    cases = read_jsonl(args.cases)
     case_hash = hashlib.sha256(args.cases.read_bytes()).hexdigest()
     manifest_path = args.run_dir / "manifest.json"
     manifest = {"casesSha256": case_hash, "gitSha": subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip(),
@@ -39,7 +40,7 @@ def main():
             raise RuntimeError("Resume configuration differs from the recorded run")
     else:
         manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
-    records = [json.loads(line) for line in raw_path.read_text(encoding="utf-8").splitlines()] if raw_path.exists() else []
+    records = read_jsonl(raw_path) if raw_path.exists() else []
     completed = {(row["caseId"], row["mode"]): row for row in records
                  if row.get("status") == 200 and row.get("response", {}).get("code") == 0}
     session = requests.Session()
@@ -68,7 +69,7 @@ def main():
                 with raw_path.open("a", encoding="utf-8") as file:
                     file.write(json.dumps(row, ensure_ascii=False) + "\n")
             completed[(case["id"], mode)] = row
-    ledger = [json.loads(line) for line in Path(".eval/embedding-calls.jsonl").read_text(encoding="utf-8").splitlines()]
+    ledger = read_jsonl(".eval/embedding-calls.jsonl")
     checks = []
     for case in cases:
         rows = {mode: completed[(case["id"], mode)] for mode in manifest["modes"]}
@@ -76,14 +77,13 @@ def main():
         ranks = {mode: [hit["chunkId"] for hit in data["rankedChildren"]] for mode, data in values.items()}
         bm25_calls = [e for e in ledger if e.get("traceId") == rows["BM25"]["traceId"] and e["status"] == "STARTED"]
         assert not bm25_calls, "BM25 unexpectedly invoked embedding"
-        assert ranks["RRF"] == ranks["PARENT"], "RRF and parent mode did not retain identical child ranks"
         for data in values.values():
             ids = [hit["chunkId"] for hit in data["hits"]]
             assert len(ids) == len(set(ids)), "Duplicate context IDs"
             assert data["contextTokens"] <= args.context_budget, "Context text exceeds the budget"
             known = {hit["chunkId"] for hit in data["rankedChildren"]}
             assert all(child["chunkId"] in known for match in data["contextMatches"] for child in match["matchedChildren"])
-        checks.append({"caseId": case["id"], "sameRrfParentChildRanks": True, "bm25EmbeddingCalls": 0,
+        checks.append({"caseId": case["id"], "sameRrfParentChildRanks": ranks["RRF"] == ranks["PARENT"], "bm25EmbeddingCalls": 0,
                        "modes": {mode: {"rankedChildren": len(data["rankedChildren"]), "contexts": len(data["hits"]),
                                          "contextTokens": data["contextTokens"], "traceId": rows[mode]["traceId"]}
                                  for mode, data in values.items()}})

@@ -65,6 +65,29 @@ class KnowledgeRetrievalServiceTest {
     }
 
     @Test
+    void comparisonUsesOneRetrievalAndTheSameChildRanksForBothContextViews() {
+        float[] vector = {0.1f, 0.2f};
+        var source = new RetrievalHit.Provenance("doc", "Title", "location");
+        var first = new RetrievalHit("c1", "p", "a".repeat(1500), source, 0.9, RetrievalStrategy.RRF);
+        var second = new RetrievalHit("c2", "p", "b".repeat(1200), source, 0.8, RetrievalStrategy.RRF);
+        when(embedding.embed("query", EmbeddingPurpose.QUERY)).thenReturn(vector);
+        when(retrieval.retrieve(RetrievalMode.RRF, "11", "22", "query", vector, 30, 20, 2, 60))
+                .thenReturn(List.of(first, second));
+        when(parents.aggregate("11", "22", List.of(first, second))).thenReturn(List.of(
+                new KnowledgeSearchResponse.Result("p", "p".repeat(2300), source, 0.9)));
+        var result = service.compareContexts(11L, 22L, "query", 2);
+        assertThat(result.childContext().rankedChildren()).containsExactly(first, second);
+        assertThat(result.parentContext().rankedChildren()).isSameAs(result.childContext().rankedChildren());
+        assertThat(result.childContext().hits()).extracting(KnowledgeSearchResponse.Result::chunkId).containsExactly("c1");
+        assertThat(result.parentContext().hits()).extracting(KnowledgeSearchResponse.Result::chunkId).containsExactly("p");
+        assertThat(result.childContext().contextTokens()).isEqualTo(1500);
+        assertThat(result.parentContext().contextTokens()).isEqualTo(2300);
+        verify(embedding, times(1)).embed("query", EmbeddingPurpose.QUERY);
+        verify(retrieval, times(1)).retrieve(RetrievalMode.RRF, "11", "22", "query", vector, 30, 20, 2, 60);
+        verifyNoMoreInteractions(retrieval, embedding);
+    }
+
+    @Test
     void invalidTopKIsRejectedBeforeProviderUsage() {
         assertThatThrownBy(() -> service.search(11L, 22L, "query", RetrievalMode.RRF, 21))
                 .hasMessageContaining("topK");

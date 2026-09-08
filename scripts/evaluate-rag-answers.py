@@ -8,6 +8,7 @@ import time
 from pathlib import Path
 
 import requests
+from eval_jsonl import read_jsonl
 
 
 def sha(path):
@@ -24,9 +25,9 @@ def main():
     args = parser.parse_args()
     args.run_dir.mkdir(parents=True, exist_ok=True)
     source = args.retrieval_run / "responses.jsonl"
-    retrieval = {(r["questionId"], r["mode"]): r for r in map(json.loads, source.read_text(encoding="utf-8").splitlines())
+    retrieval = {(r["questionId"], r["mode"]): r for r in read_jsonl(source)
                  if r.get("status") == 200 and r.get("response", {}).get("code") == 0}
-    questions = [q for q in map(json.loads, Path("eval/rag/gold-v1.jsonl").read_text(encoding="utf-8").splitlines()) if q["split"] == "validation"]
+    questions = [q for q in read_jsonl("eval/rag/gold-v1.jsonl") if q["split"] == "validation"]
     systems = {stage: Path(f"eval/rag/{name}.txt").read_text(encoding="utf-8") for stage, name in
                [("answer", "answer-system-v1"), ("judge", "answer-judge-system-v1")]}
     manifest = {"goldFileSha256": sha("eval/rag/gold-v1.jsonl"), "retrievalResponsesSha256": sha(source),

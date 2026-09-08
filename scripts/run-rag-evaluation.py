@@ -12,6 +12,7 @@ from collections import Counter
 from pathlib import Path
 
 import requests
+from eval_jsonl import read_jsonl
 
 
 def normalize(text):
@@ -52,7 +53,7 @@ def main():
     args.run_dir.mkdir(parents=True, exist_ok=True)
     config = json.loads(args.config.read_text(encoding="utf-8"))
     state = json.loads(args.ingest_state.read_text(encoding="utf-8"))
-    gold = [json.loads(line) for line in Path("eval/rag/gold-v1.jsonl").read_text(encoding="utf-8").splitlines()]
+    gold = read_jsonl("eval/rag/gold-v1.jsonl")
     questions = [q for q in gold if q["split"] == args.split]
     courses = sorted({q["course"] for q in questions})
     selected_docs = {str(doc["documentId"]): doc for doc in state["documents"].values()
@@ -79,8 +80,7 @@ def main():
     assert {c["embedding_model"] for c in chunks} == {config["embeddingModel"]}
     # A reused embedding inherits its original measured cost; cache hits never become free in a configuration comparison.
     starts, costs = {}, {}
-    for line in Path(".eval/embedding-calls.jsonl").read_text(encoding="utf-8").splitlines():
-        e = json.loads(line)
+    for e in read_jsonl(".eval/embedding-calls.jsonl"):
         if e["status"] == "STARTED":
             starts[e["callId"]] = e
         elif e["status"] == "SUCCEEDED" and e.get("usageAvailable"):
@@ -108,7 +108,7 @@ def main():
             raise RuntimeError("Existing run or changed inputs; inspect before resuming")
     else:
         manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    previous = [json.loads(line) for line in raw_path.read_text(encoding="utf-8").splitlines()] if raw_path.exists() else []
+    previous = read_jsonl(raw_path) if raw_path.exists() else []
     completed = {(r["questionId"], r["mode"]): r for r in previous if r.get("status") == 200 and r.get("response", {}).get("code") == 0}
     http = requests.Session()
     http.headers["X-User-Id"] = "1"
@@ -151,13 +151,17 @@ def main():
         summaries[mode] = {"byCourse": by_course, "worstCourseHitAt5": min(c["hitAt5"] for c in by_course.values()),
                            "macroHitAt5": statistics.mean(c["hitAt5"] for c in by_course.values()),
                            "macroMrrAt10": statistics.mean(c["mrrAt10"] for c in by_course.values())}
+    rank_mismatches = []
     if "RRF" in args.modes and "PARENT" in args.modes:
         for q in questions:
             ranks = [[h["chunkId"] for h in completed[q["id"], mode]["response"]["data"]["rankedChildren"]] for mode in ("RRF", "PARENT")]
-            assert ranks[0] == ranks[1], "Parent expansion changed the child ranking"
+            if ranks[0] != ranks[1]:
+                rank_mismatches.append(q["id"])
     report = {"split": args.split, "modes": summaries, "corpusStats": corpus_stats,
               "answerable": sum(q["answerable"] for q in questions), "insufficient": sum(not q["answerable"] for q in questions),
-              "insufficientNote": "Retrieval alone cannot establish refusal correctness; answer evaluation is separate"}
+              "insufficientNote": "Retrieval alone cannot establish refusal correctness; answer evaluation is separate",
+              "independentRequestRankMismatches": rank_mismatches,
+              "parentComparisonNote": "Independent requests do not control candidate identity; use run-parent-comparison.py for the causal context ablation"}
     (args.run_dir / "scores.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report, ensure_ascii=False))
 

@@ -32,6 +32,9 @@ scripts/*
 !scripts/audit-rag-coverage.py
 !scripts/ChunkTokenLengths.java
 !scripts/profile-chunk-index.py
+!scripts/eval_jsonl.py
+!scripts/run-parent-comparison.py
+!scripts/report-rag-evaluation.py
 !scripts/smoke-api.py
 !scripts/requirements-eval.txt
 .agentscope/workspace/state/
