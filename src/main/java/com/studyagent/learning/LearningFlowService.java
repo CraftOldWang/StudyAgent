@@ -4,16 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.studyagent.agent.integration.AgentInvocationScopeFactory;
-import com.studyagent.agent.integration.LearningContextCompactor;
 import com.studyagent.common.exception.BusinessException;
 import com.studyagent.mapper.ReviewCardMapper;
 import com.studyagent.model.KnowledgePoint;
 import com.studyagent.model.LearningSession;
 import com.studyagent.model.Quiz;
 import com.studyagent.model.ReviewCard;
-import com.studyagent.review.ReviewCardService;
-import io.agentscope.core.agent.RuntimeContext;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -25,11 +21,9 @@ public class LearningFlowService {
 
     private final LearningPlanService learningPlanService;
     private final LearningPersistenceService persistence;
-    private final LearningModelGateway modelGateway;
+    private final LearningConversationService conversation;
     private final LearningTraceService traceService;
-    private final LearningContextCompactor contextCompactor;
     private final AgentInvocationScopeFactory scopeFactory;
-    private final ReviewCardService reviewCardService;
     private final ReviewCardMapper reviewCardMapper;
     private final ObjectMapper objectMapper;
 
@@ -56,123 +50,58 @@ public class LearningFlowService {
     }
 
     public TracedAnswer explain(Long userId, Long sessionId) {
-        LearningSession session = persistence.requireSession(userId, sessionId);
-        KnowledgePoint point = persistence.requireActivePoint(session);
-        requireStatus(point, KnowledgePointStatus.NEW);
-        String traceId = traceService.start();
-        try {
-            traceService.record(userId, traceId, sessionId, "EXPLAIN", "MODEL_CALL", "主 Agent 开始讲解", "STARTED");
-            String answer = modelGateway.explain(session, point);
-            traceService.record(userId, traceId, sessionId, "EXPLAIN", "MODEL_CALL", "主 Agent 完成讲解", "SUCCEEDED");
-            persistence.saveExplanationAndAdvance(session, point, answer);
-            traceService.record(userId, traceId, sessionId, "EXPLAIN", "TOOL_CALL", "知识点 NEW → EXPLAINING", "SUCCEEDED");
-            return new TracedAnswer(traceId, answer);
-        } catch (RuntimeException ex) {
-            fail(session, point, traceId, "EXPLAIN", ex);
-            throw ex;
-        }
+        var turn = shortcut(userId, sessionId, "请开始讲解当前知识点。", "EXPLANATION");
+        return new TracedAnswer(turn.getTraceId(), turn.getAssistantMessage());
     }
 
     public TracedAnswer answerQuestion(Long userId, Long sessionId, String question) {
-        LearningSession session = persistence.requireSession(userId, sessionId);
-        KnowledgePoint point = persistence.requireActivePoint(session);
-        KnowledgePointStatus status = parseStatus(point);
-        if (status != KnowledgePointStatus.EXPLAINING && status != KnowledgePointStatus.QUIZZING) {
-            throw new BusinessException("仅 EXPLAINING 或 QUIZZING 状态允许答疑");
-        }
-        String traceId = traceService.start();
-        try {
-            traceService.record(userId, traceId, sessionId, "QUESTION", "MODEL_CALL", "主 Agent 开始答疑", "STARTED");
-            String answer = modelGateway.answerQuestion(session, point, question);
-            persistence.clearFailure(session, point);
-            traceService.record(userId, traceId, sessionId, "QUESTION", "MODEL_CALL", "主 Agent 完成答疑，知识点状态保持 " + status, "SUCCEEDED");
-            return new TracedAnswer(traceId, answer);
-        } catch (RuntimeException ex) {
-            fail(session, point, traceId, "QUESTION", ex);
-            throw ex;
-        }
+        var turn = shortcut(userId, sessionId, question, null);
+        return new TracedAnswer(turn.getTraceId(), turn.getAssistantMessage());
     }
 
     public GeneratedQuiz generateQuiz(Long userId, Long sessionId) {
-        LearningSession session = persistence.requireSession(userId, sessionId);
-        KnowledgePoint point = persistence.requireActivePoint(session);
-        requireStatus(point, KnowledgePointStatus.EXPLAINING);
-        String traceId = traceService.start();
-        try {
-            traceService.record(userId, traceId, sessionId, "QUIZ", "MODEL_CALL", "主 Agent 开始生成五题测验", "STARTED");
-            List<QuizQuestionDraft> questions = modelGateway.generateQuiz(session, point);
-            Quiz quiz = persistence.saveQuizAndAdvance(session, point, toJson(questions));
-            traceService.record(userId, traceId, sessionId, "QUIZ", "TOOL_CALL", "五题测验已持久化，知识点 EXPLAINING → QUIZZING", "SUCCEEDED");
-            return new GeneratedQuiz(traceId, quiz, questions);
-        } catch (RuntimeException ex) {
-            fail(session, point, traceId, "QUIZ", ex);
-            throw ex;
-        }
+        var turn = shortcut(userId, sessionId, "我准备好了，请生成当前知识点的五题测验。", "QUIZ");
+        var point = persistence.requireActivePoint(persistence.requireSession(userId, sessionId));
+        var quiz = persistence.requireQuiz(point);
+        return new GeneratedQuiz(turn.getTraceId(), quiz, readQuestions(quiz.getQuestionsJson()));
     }
 
     public QuizScore submitQuiz(Long userId, Long sessionId, List<String> answers) {
-        LearningSession session = persistence.requireSession(userId, sessionId);
-        KnowledgePoint point = persistence.requireActivePoint(session);
-        requireStatus(point, KnowledgePointStatus.QUIZZING);
-        if (answers == null || answers.size() != 5 || answers.stream().anyMatch(answer -> answer == null || answer.isBlank())) {
-            throw new BusinessException("必须一次提交 5 个非空答案");
+        var point = persistence.requireActivePoint(persistence.requireSession(userId, sessionId));
+        var quiz = persistence.requireQuiz(point);
+        var questions = readQuestions(quiz.getQuestionsJson());
+        if (answers == null || answers.size() != 5) { throw new BusinessException("必须一次提交五个答案"); }
+        StringBuilder message = new StringBuilder("提交答案：");
+        for (int i = 0; i < 5; i++) {
+            int index = questions.get(i).options().indexOf(answers.get(i));
+            if (index < 0) { throw new BusinessException("答案必须是对应题目的选项"); }
+            message.append(i + 1).append('.').append((char) ('A' + index)).append(' ');
         }
-        String traceId = traceService.start();
-        try {
-            Quiz quiz = persistence.requireQuiz(point);
-            List<QuizQuestionDraft> questions = readQuestions(quiz.getQuestionsJson());
-            List<QuizFeedback> feedback = new ArrayList<>(5);
-            int correctCount = 0;
-            for (int index = 0; index < questions.size(); index++) {
-                QuizQuestionDraft question = questions.get(index);
-                boolean correct = question.correctAnswer().equals(answers.get(index));
-                if (correct) {
-                    correctCount++;
-                }
-                feedback.add(new QuizFeedback(index, correct, question.correctAnswer(), question.explanation()));
-            }
-            int score = correctCount * 20;
-            persistence.saveQuizResultAndAdvance(session, quiz, point, toJson(answers), score, toJson(feedback));
-            traceService.record(userId, traceId, sessionId, "QUIZ", "TOOL_CALL", "测验已评分且无及格门槛，知识点 QUIZZING → CARD_GENERATING", "SUCCEEDED");
-            return new QuizScore(traceId, quiz.getId(), score, List.copyOf(feedback));
-        } catch (RuntimeException ex) {
-            fail(session, point, traceId, "QUIZ", ex);
-            throw ex;
-        }
+        var turn = shortcut(userId, sessionId, message.toString(), "GRADE");
+        quiz = persistence.requireQuiz(point);
+        return new QuizScore(turn.getTraceId(), quiz.getId(), quiz.getScore(), readFeedback(quiz.getFeedbackJson()));
     }
 
     public GeneratedCards generateCardsAndComplete(Long userId, Long sessionId) {
-        LearningSession session = persistence.requireSession(userId, sessionId);
-        KnowledgePoint point = persistence.requireActivePoint(session);
-        requireStatus(point, KnowledgePointStatus.CARD_GENERATING);
-        String traceId = traceService.start();
-        try {
-            List<ReviewCard> cards = existingCards(point.getId());
-            if (!cards.isEmpty() && cards.size() != 3) {
-                throw new BusinessException("当前知识点已保存的复习卡数量不是 3，不能完成");
-            }
-            if (cards.isEmpty()) {
-                traceService.record(userId, traceId, sessionId, "CARD", "MODEL_CALL", "主 Agent 开始生成三张复习卡", "STARTED");
-                List<GeneratedCard> drafts = modelGateway.generateCards(session, point);
-                cards = reviewCardService.writeBatch(
-                        userId,
-                        point.getId(),
-                        session.getKnowledgeBaseId(),
-                        drafts.stream().map(draft -> new ReviewCardService.Draft(
-                                draft.front(), draft.back(), draft.sourceChunkId())).toList());
-                traceService.record(userId, traceId, sessionId, "CARD", "TOOL_CALL", "三张复习卡已持久化", "SUCCEEDED");
-            }
-            RuntimeContext runtimeContext = scopeFactory.createRuntimeContext(
-                    session.getAgentscopeSessionId(), userId, session.getKnowledgeBaseId(), point.getId());
-            contextCompactor.compact(runtimeContext);
-            traceService.record(userId, traceId, sessionId, "COMPACTION", "MODEL_CALL", "完成 turn 已 one-off 压缩并保存 AgentState", "SUCCEEDED");
-            persistence.completePoint(session, point);
-            traceService.record(userId, traceId, sessionId, "COMPLETE", "STATE_TRANSITION", "知识点 CARD_GENERATING → COMPLETED", "SUCCEEDED");
-            return new GeneratedCards(traceId, point.getId(), cards);
-        } catch (RuntimeException ex) {
-            fail(session, point, traceId, "CARD", ex);
-            throw ex;
+        var turn = shortcut(userId, sessionId, "请为当前知识点生成三张复习卡并完成本知识点。", "CARDS");
+        return new GeneratedCards(turn.getTraceId(), turn.getKnowledgePointId(), existingCards(turn.getKnowledgePointId()));
+    }
+
+    private com.studyagent.model.LearningTurn shortcut(Long userId, Long sessionId, String message, String expectedArtifact) {
+        var turn = conversation.message(userId, sessionId, UUID.randomUUID().toString(), message, event -> { });
+        if (!"SUCCEEDED".equals(turn.getStatus())) {
+            throw new BusinessException("回合 " + turn.getId() + " 未完成：" + turn.getErrorMessage());
         }
+        if (expectedArtifact != null) {
+            try {
+                if (!expectedArtifact.equals(objectMapper.readTree(turn.getArtifactJson()).path("type").asText())) {
+                    throw new BusinessException("模型本轮选择了答疑，请通过消息入口继续：" + turn.getAssistantMessage());
+                }
+            } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+                throw new BusinessException("回合产物无法读取");
+            }
+        }
+        return turn;
     }
 
     public LearningSession loadSession(Long userId, Long sessionId) {
@@ -213,33 +142,6 @@ public class LearningFlowService {
             return objectMapper.readValue(json, new TypeReference<>() { });
         } catch (Exception ex) {
             throw new BusinessException("读取测验反馈失败: " + ex.getMessage());
-        }
-    }
-
-    private void fail(LearningSession session, KnowledgePoint point, String traceId, String stage, RuntimeException ex) {
-        persistence.recordFailure(session, point, failureMessage(ex));
-        traceService.record(session.getUserId(), traceId, session.getId(), stage, "FAILURE", failureMessage(ex), "FAILED");
-    }
-
-    private void requireStatus(KnowledgePoint point, KnowledgePointStatus expected) {
-        if (parseStatus(point) != expected) {
-            throw new BusinessException("当前知识点必须处于 " + expected + " 状态");
-        }
-    }
-
-    private KnowledgePointStatus parseStatus(KnowledgePoint point) {
-        try {
-            return KnowledgePointStatus.valueOf(point.getStatus());
-        } catch (RuntimeException ex) {
-            throw new BusinessException("未知知识点状态: " + point.getStatus());
-        }
-    }
-
-    private String toJson(Object value) {
-        try {
-            return objectMapper.writeValueAsString(value);
-        } catch (Exception ex) {
-            throw new BusinessException("学习流程 JSON 序列化失败: " + ex.getMessage());
         }
     }
 

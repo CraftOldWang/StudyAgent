@@ -48,9 +48,11 @@ class LearningPersistenceServiceTest {
 
         ArgumentCaptor<UpdateWrapper<LearningSession>> update = ArgumentCaptor.forClass(UpdateWrapper.class);
         verify(sessionMapper).update(isNull(), update.capture());
-        assertThat(update.getValue().getSqlSet()).contains("error_message", "updated_at");
+        assertThat(update.getValue().getSqlSet()).contains("error_message", "updated_at", "active_knowledge_point_id");
         assertThat(update.getValue().getParamNameValuePairs()).containsValue(null);
         assertThat(session.getErrorMessage()).isNull();
+        assertThat(session.getActiveKnowledgePointId()).isNull();
+        assertThat(session.getStatus()).isEqualTo("COMPLETED");
     }
 
     @Test

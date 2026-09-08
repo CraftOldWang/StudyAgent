@@ -54,8 +54,9 @@ class AgentScopeToolConfigurationTest {
                             HarnessAgent.class);
                     try {
                         assertThat(agent.getToolkit().getToolNames())
-                                .contains("knowledge_search", "learning_state_transition")
+                                .contains("knowledge_search")
                                 .doesNotContain(
+                                        "learning_state_transition",
                                         "review_card_write",
                                         "grep_files",
                                         "memory_search",

@@ -42,9 +42,13 @@ public class KnowledgePoint {
     @TableField("error_message")
     private String errorMessage;
 
+    @TableField("chapter_id")
     private Long chapterId;
+    @TableField("chapter_title")
     private String chapterTitle;
+    @TableField("priority")
     private String priority;
+    @TableField("sources_json")
     private String sourcesJson;
 
     @TableField("started_at")

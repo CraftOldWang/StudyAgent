@@ -1,7 +1,6 @@
 package com.studyagent.config;
 
 import com.studyagent.agent.governance.ToolGovernanceInterceptor;
-import com.studyagent.learning.LearningTransitionToolChoiceHook;
 import io.agentscope.core.model.Model;
 import io.agentscope.core.state.JsonFileAgentStateStore;
 import io.agentscope.core.tool.AgentTool;
@@ -23,8 +22,7 @@ public class AgentScopeAgentConfiguration {
     public static final String HARNESS_AGENT_BEAN_NAME = "harnessAgent";
     public static final String TOOLKIT_BEAN_NAME = "agentScopeToolkit";
     private static final Set<String> MAIN_AGENT_TOOL_NAMES = Set.of(
-            "knowledge_search",
-            "learning_state_transition");
+            "knowledge_search");
     static final int COMPACTION_TRIGGER_MESSAGES = 6;
     static final int COMPACTION_KEEP_MESSAGES = 2;
     static final String COMPACTION_SUMMARY_PROMPT = """
@@ -65,7 +63,6 @@ public class AgentScopeAgentConfiguration {
                 .stateStore(new JsonFileAgentStateStore(
                         workspace.resolve("state").resolve("ReActAgent")))
                 .maxRetries(modelProperties.maxRetries())
-                .hook(new LearningTransitionToolChoiceHook())
                 .middleware(new ToolGovernanceInterceptor())
                 .compaction(learningCompactionConfig())
                 .disableFilesystemTools()

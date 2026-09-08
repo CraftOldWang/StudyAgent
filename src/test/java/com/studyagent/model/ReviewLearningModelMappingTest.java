@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 class ReviewLearningModelMappingTest {
 
     @Test
-    void learningSessionMatchesV3Schema() {
+    void learningSessionMatchesV11Schema() {
         assertModel(LearningSession.class, "learning_sessions", fields(
                 field("id", "id", Long.class),
                 field("userId", "user_id", Long.class),
@@ -30,6 +30,7 @@ class ReviewLearningModelMappingTest {
                 field("learningGoal", "learning_goal", String.class),
                 field("agentscopeSessionId", "agentscope_session_id", String.class),
                 field("activeKnowledgePointId", "active_knowledge_point_id", Long.class),
+                field("activeTurnId", "active_turn_id", Long.class),
                 field("status", "status", String.class),
                 field("errorMessage", "error_message", String.class),
                 field("createdAt", "created_at", LocalDateTime.class),
@@ -47,7 +48,7 @@ class ReviewLearningModelMappingTest {
     }
 
     @Test
-    void knowledgePointMatchesV3Schema() {
+    void knowledgePointMatchesV10Schema() {
         assertModel(KnowledgePoint.class, "knowledge_points", fields(
                 field("id", "id", Long.class),
                 field("sessionId", "session_id", Long.class),
@@ -58,6 +59,10 @@ class ReviewLearningModelMappingTest {
                 field("estimatedMinutes", "estimated_minutes", Integer.class),
                 field("status", "status", String.class),
                 field("explanation", "explanation", String.class),
+                field("chapterId", "chapter_id", Long.class),
+                field("chapterTitle", "chapter_title", String.class),
+                field("priority", "priority", String.class),
+                field("sourcesJson", "sources_json", String.class),
                 field("errorMessage", "error_message", String.class),
                 field("startedAt", "started_at", LocalDateTime.class),
                 field("completedAt", "completed_at", LocalDateTime.class),
@@ -106,7 +111,7 @@ class ReviewLearningModelMappingTest {
     }
 
     @Test
-    void traceEventMatchesM2Schema() {
+    void traceEventMatchesV11Schema() {
         assertModel(AgentTraceEvent.class, "agent_trace_events", fields(
                 field("id", "id", Long.class),
                 field("userId", "user_id", Long.class),
@@ -116,6 +121,9 @@ class ReviewLearningModelMappingTest {
                 field("stage", "stage", String.class),
                 field("eventType", "event_type", String.class),
                 field("summary", "summary", String.class),
+                field("payloadJson", "payload_json", String.class),
+                field("elapsedMillis", "elapsed_millis", Long.class),
+                field("toolCallId", "tool_call_id", String.class),
                 field("status", "status", String.class),
                 field("createdAt", "created_at", LocalDateTime.class)));
     }

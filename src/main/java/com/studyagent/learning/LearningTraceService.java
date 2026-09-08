@@ -30,6 +30,11 @@ public class LearningTraceService {
             String eventType,
             String summary,
             String status) {
+        recordDetail(userId, traceId, sessionId, stage, eventType, summary, status, null, null, null);
+    }
+
+    public synchronized void recordDetail(Long userId, String traceId, Long sessionId, String stage, String eventType,
+            String summary, String status, String payloadJson, Long elapsedMillis, String toolCallId) {
         Long count = traceEventMapper.selectCount(new LambdaQueryWrapper<AgentTraceEvent>()
                 .eq(AgentTraceEvent::getTraceId, traceId));
         AgentTraceEvent event = new AgentTraceEvent();
@@ -42,6 +47,9 @@ public class LearningTraceService {
         event.setSummary(truncate(requireText(summary, "trace summary 不能为空"), 512));
         event.setStatus(requireText(status, "trace status 不能为空"));
         event.setCreatedAt(LocalDateTime.now());
+        event.setPayloadJson(payloadJson);
+        event.setElapsedMillis(elapsedMillis);
+        event.setToolCallId(toolCallId);
         traceEventMapper.insert(event);
     }
 

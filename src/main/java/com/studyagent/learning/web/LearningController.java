@@ -20,6 +20,8 @@ public class LearningController {
     private final LearningFlowService flowService;
     private final LearningResponseAssembler assembler;
     private final CurrentUserContext currentUserContext;
+    private final com.studyagent.learning.LearningConversationService conversation;
+    private final com.studyagent.learning.LearningTurnPersistence turns;
 
     @PostMapping
     public ApiResponse<LearningMutationResponse.Created> create(
@@ -46,10 +48,20 @@ public class LearningController {
     public ApiResponse<LearningTurnResponse> message(
             @PathVariable Long sessionId,
             @Valid @RequestBody LearningMessageRequest request) {
-        LearningFlowService.TracedAnswer result = flowService.answerQuestion(
-                currentUserContext.userId(), sessionId, request.message());
+        var result = conversation.message(currentUserContext.userId(), sessionId,
+                request.requestId() == null ? java.util.UUID.randomUUID().toString() : request.requestId(), request.message(), event -> { });
         return ApiResponse.ok(new LearningTurnResponse(
-                result.traceId(), result.answer(), assembler.session(currentUserContext.userId(), sessionId)));
+                result.getTraceId(), result.getAssistantMessage(), assembler.session(currentUserContext.userId(), sessionId), result));
+    }
+
+    @GetMapping("/{sessionId}/messages")
+    public ApiResponse<java.util.List<com.studyagent.model.LearningTurn>> history(@PathVariable Long sessionId) {
+        return ApiResponse.ok(turns.list(currentUserContext.userId(), sessionId));
+    }
+
+    @GetMapping("/{sessionId}/turns/{turnId}")
+    public ApiResponse<com.studyagent.model.LearningTurn> turn(@PathVariable Long sessionId, @PathVariable Long turnId) {
+        return ApiResponse.ok(turns.require(currentUserContext.userId(), sessionId, turnId));
     }
 
     @PostMapping("/{sessionId}/quiz")

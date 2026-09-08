@@ -39,6 +39,14 @@ public class AgentTraceEvent {
     @TableField("status")
     private String status;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    @TableField("payload_json")
+    private String payloadJson;
+    @TableField("elapsed_millis")
+    private Long elapsedMillis;
+    @TableField("tool_call_id")
+    private String toolCallId;
+
     @TableField("created_at")
     private LocalDateTime createdAt;
 }

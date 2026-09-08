@@ -30,6 +30,9 @@ public class LearningSession {
     @TableField("active_knowledge_point_id")
     private Long activeKnowledgePointId;
 
+    @TableField("active_turn_id")
+    private Long activeTurnId;
+
     @TableField("status")
     private String status;
 

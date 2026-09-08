@@ -1,0 +1,41 @@
+{
+  "scope": "authored synthetic data; precommitted artifacts; NO model acceptance",
+  "verifiedAt": "2026-09-08T21:57:40.924763+00:00",
+  "sessionId": "6000001897478103200",
+  "turnId": "6000001897478103202",
+  "traceId": "c8da4ff3-3df4-4188-9f72-c68fedf06c25",
+  "checks": {
+    "concurrentRecoveryStatuses": [
+      "SUCCEEDED",
+      "RUNNING"
+    ],
+    "oneRetryAttempt": true,
+    "historyRows": 1,
+    "inputConflictBusinessCode": 409,
+    "ownershipBusinessCode": 404,
+    "businessErrorHttpStatus": 400,
+    "databaseRows": [
+      "COMPLETED\tNULL\tNULL",
+      "COMPLETED",
+      "3",
+      "COMPLETED\tSUCCEEDED\t2"
+    ],
+    "sseCompletedReplay": true
+  },
+  "modelAttemptsBefore": 394,
+  "modelAttemptsAfter": 394,
+  "backendTests": {
+    "tests": 199,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 3
+  },
+  "rawEvidence": ".eval/runs/m5-local-recovery-v2/",
+  "script": "scripts/verify-learning-local-recovery.py",
+  "limitations": [
+    "Artifacts were inserted as a synthetic post-commit fixture.",
+    "Lease expiry was preconfigured; no process was killed.",
+    "No real model, retrieval, semantic quality or mid-generation disconnect acceptance."
+  ],
+  "earlierFixtureFailure": "v1 used MySQL local NOW rather than application UTC; its lease had not expired. v2 uses UTC_TIMESTAMP. Initial v2 setup also hit unique knowledge-base name validation; isolated run names fixed it. Raw failures retained."
+}

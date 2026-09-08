@@ -208,13 +208,13 @@ public class LearningPersistenceService {
                 .orElse(null);
         session.setActiveKnowledgePointId(next == null ? null : next.getId());
         session.setStatus(next == null ? "COMPLETED" : "ACTIVE");
-        boolean hadFailure = session.getErrorMessage() != null;
         session.setErrorMessage(null);
         session.setUpdatedAt(LocalDateTime.now());
-        sessionMapper.updateById(session);
-        if (hadFailure) {
-            persistSessionFailureClear(session);
-        }
+        // updateById skips null fields; the final point must explicitly clear the active pointer.
+        sessionMapper.update(null, new UpdateWrapper<LearningSession>()
+                .eq("id", session.getId()).eq("user_id", session.getUserId())
+                .set("active_knowledge_point_id", session.getActiveKnowledgePointId()).set("status", session.getStatus())
+                .set("error_message", null).set("updated_at", session.getUpdatedAt()));
     }
 
     @Transactional
