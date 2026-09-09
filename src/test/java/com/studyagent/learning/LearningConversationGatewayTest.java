@@ -61,6 +61,8 @@ class LearningConversationGatewayTest {
             public String getModelName() { return "local-sdk-test"; }
             public Flux<ChatResponse> stream(List<Msg> messages, List<ToolSchema> tools, GenerateOptions options) {
                 assertThat(messages.stream().map(Msg::getTextContent).toList()).anyMatch(t -> t.contains("preserved synthetic fact"));
+                assertThat(messages.stream().filter(m -> m.getRole() == MsgRole.SYSTEM).map(Msg::getTextContent).toList())
+                        .anyMatch(t -> t.contains("整体大纲和进度"));
                 assertThat(options.getToolChoice()).isNull();
                 return Flux.just(ChatResponse.builder().id("qa").content(List.of(TextBlock.builder().text("A synthetic clarification.").build())).finishReason("stop").build());
             }

@@ -21,6 +21,6 @@ export function SavedArtifacts({ json, currentQuizId, hideCards = false }: { jso
       <strong>第 {item.questionIndex + 1} 题 · {item.correct ? '回答正确' : `正确答案：${item.correctAnswer}`}</strong><p>{item.explanation}</p>
     </div>)}</section>
   }
-  if (artifact.type === 'CARDS') return hideCards ? null : <ReviewCards cards={artifact.cards} />
+  if (artifact.type === 'CARDS') return hideCards ? null : <details><summary>当时的卡片草稿</summary><ReviewCards cards={artifact.cards} draft /></details>
   return null
 }
