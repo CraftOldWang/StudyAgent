@@ -1,60 +1,38 @@
-import { type ChangeEvent, useRef, useState } from 'react'
 import { isDocumentTerminal, statusLabel } from '../status'
 import type { DocumentItem, KnowledgeBase } from '../types'
+import { UploadWidget } from './UploadWidget'
+
+function displayTime(value: string) {
+  const utc = /(?:Z|[+-]\d{2}:\d{2})$/.test(value) ? value : `${value}Z`
+  return new Date(utc).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })
+}
 
 interface Props {
   knowledgeBase: KnowledgeBase
   documents: DocumentItem[]
   loading: boolean
-  uploadBusy: boolean
-  onUpload: (file: File) => Promise<void>
+  onUploaded: (knowledgeBaseId: string) => void
 }
 
-export function DocumentPanel({ knowledgeBase, documents, loading, uploadBusy, onUpload }: Props) {
-  const inputRef = useRef<HTMLInputElement>(null)
-  const [fileError, setFileError] = useState('')
-
-  async function chooseFile(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0]
-    event.target.value = ''
-    if (!file) return
-    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
-    if (!isPdf) {
-      setFileError('当前里程碑仅支持 PDF 文件。')
-      return
-    }
-    setFileError('')
-    await onUpload(file)
-  }
-
+export function DocumentPanel({ knowledgeBase, documents, loading, onUploaded }: Props) {
   return (
     <section className="panel documents-panel">
       <div className="panel-header">
         <div>
           <span className="eyebrow">当前知识库</span>
           <h1>{knowledgeBase.name}</h1>
-          <p>上传真实 PDF，处理完成后即可检索。</p>
+          <p>整理课件与往年习题，处理完成后即可检索和制定学习计划。</p>
         </div>
-        <button disabled={uploadBusy} onClick={() => inputRef.current?.click()} type="button">
-          {uploadBusy ? '正在上传…' : '上传 PDF'}
-        </button>
-        <input
-          ref={inputRef}
-          accept="application/pdf,.pdf"
-          className="visually-hidden"
-          onChange={chooseFile}
-          type="file"
-        />
       </div>
-      {fileError && <p className="inline-error" role="alert">{fileError}</p>}
+      <UploadWidget knowledgeBase={knowledgeBase} onUploaded={onUploaded} />
 
       {loading ? (
         <div className="empty-state">正在读取文档状态…</div>
       ) : documents.length === 0 ? (
         <div className="empty-state">
-          <span className="empty-icon">PDF</span>
+          <span className="empty-icon">资料</span>
           <strong>还没有资料</strong>
-          <p>上传一份 PDF，系统会依次存储、解析、分块、向量化并建立索引。</p>
+          <p>从一份课件开始。资料处理完成后，会显示为“可检索”。</p>
         </div>
       ) : (
         <div className="document-table-wrap">
@@ -75,7 +53,7 @@ export function DocumentPanel({ knowledgeBase, documents, loading, uploadBusy, o
                       {statusLabel(document.pipelineStatus)}
                     </span>
                   </td>
-                  <td>{new Date(document.updatedAt).toLocaleString('zh-CN')}</td>
+                  <td>{displayTime(document.updatedAt)}</td>
                 </tr>
               ))}
             </tbody>

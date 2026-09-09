@@ -7,12 +7,14 @@ const apiMock = vi.hoisted(() => ({
   listDocuments: vi.fn(),
   createKnowledgeBase: vi.fn(),
   renameKnowledgeBase: vi.fn(),
-  uploadPdf: vi.fn(),
   search: vi.fn(),
   agentSearch: vi.fn(),
 }))
 
 vi.mock('./api', () => ({ api: apiMock }))
+const uploadMock = vi.hoisted(() => ({ initializeUpload: vi.fn(), uploadStatus: vi.fn(), uploadMissing: vi.fn(), completeUpload: vi.fn() }))
+vi.mock('./upload/hashFile', () => ({ hashFile: vi.fn().mockResolvedValue('a'.repeat(64)) }))
+vi.mock('./upload/uploadClient', async (original) => ({ ...await original<typeof import('./upload/uploadClient')>(), ...uploadMock }))
 
 import App from './App'
 
@@ -37,7 +39,7 @@ function document(id: string, knowledgeBaseId: string, title: string): DocumentI
 }
 
 describe('App knowledge-base request association', () => {
-  beforeEach(() => vi.clearAllMocks())
+  beforeEach(() => { vi.clearAllMocks(); localStorage.clear() })
 
   it('ignores an earlier knowledge base response and its finally after selection changes', async () => {
     const first = deferred<DocumentItem[]>()
@@ -72,7 +74,10 @@ describe('App knowledge-base request association', () => {
     ])
     apiMock.listDocuments.mockImplementation((id: string) =>
       id === '101' ? Promise.resolve([]) : secondDocuments.promise)
-    apiMock.uploadPdf.mockReturnValue(upload.promise)
+    uploadMock.initializeUpload.mockResolvedValue({ uploadSessionId: '55', duplicated: false })
+    uploadMock.uploadStatus.mockResolvedValue({ status: 'UPLOADING', fileSize: 3, chunkSize: 3, uploadedChunkIndexes: [] })
+    uploadMock.uploadMissing.mockResolvedValue(undefined)
+    uploadMock.completeUpload.mockReturnValue(upload.promise)
 
     const { container } = render(<App />)
     await waitFor(() => expect(apiMock.listDocuments).toHaveBeenCalledWith('101'))
@@ -80,13 +85,13 @@ describe('App knowledge-base request association', () => {
     fireEvent.change(fileInput, {
       target: { files: [new File(['pdf'], 'source.pdf', { type: 'application/pdf' })] },
     })
-    await waitFor(() => expect(apiMock.uploadPdf).toHaveBeenCalledWith('101', expect.any(File)))
+    await waitFor(() => expect(uploadMock.completeUpload).toHaveBeenCalledWith(expect.objectContaining({ knowledgeBaseId: '101' })))
 
     fireEvent.click(screen.getByRole('button', { name: '▤ 知识库 B' }))
     await waitFor(() => expect(apiMock.listDocuments).toHaveBeenCalledWith('202'))
     upload.resolve({ fileId: '301', documentId: '401', status: 'RECEIVED' })
 
-    await waitFor(() => expect(screen.getByRole('button', { name: '上传 PDF' })).toBeEnabled())
+    await waitFor(() => expect(screen.getByRole('button', { name: '选择文件' })).toBeEnabled())
     await waitFor(() => expect(apiMock.listDocuments).toHaveBeenCalledTimes(2))
     expect(screen.getByText('正在读取文档状态…')).toBeInTheDocument()
 

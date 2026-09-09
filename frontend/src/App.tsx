@@ -15,7 +15,6 @@ export default function App() {
   const [initialLoading, setInitialLoading] = useState(true)
   const [documentsLoading, setDocumentsLoading] = useState(false)
   const [mutationBusy, setMutationBusy] = useState(false)
-  const [uploadBusy, setUploadBusy] = useState(false)
   const [searchBusy, setSearchBusy] = useState(false)
   const [searchResult, setSearchResult] = useState<SearchResult | AgentSearchResult | null>(null)
   const [error, setError] = useState('')
@@ -119,20 +118,6 @@ export default function App() {
     }
   }
 
-  async function uploadPdf(file: File) {
-    if (!selectedId) return
-    setUploadBusy(true)
-    setError('')
-    try {
-      await api.uploadPdf(selectedId, file)
-      await refreshDocuments(true)
-    } catch (caught) {
-      reportError(caught)
-    } finally {
-      setUploadBusy(false)
-    }
-  }
-
   async function search(mode: 'retrieval' | 'agent', query: string) {
     if (!selectedId) return
     const knowledgeBaseId = selectedId
@@ -207,8 +192,9 @@ export default function App() {
                 documents={documents}
                 knowledgeBase={selectedKnowledgeBase}
                 loading={documentsLoading}
-                onUpload={uploadPdf}
-                uploadBusy={uploadBusy}
+                onUploaded={(knowledgeBaseId) => {
+                  if (selectedIdRef.current === knowledgeBaseId) void refreshDocuments(true)
+                }}
               />
               <SearchPanel
                 disabled={!hasIndexedDocument}
@@ -232,7 +218,7 @@ export default function App() {
           <section className="welcome-state">
             <span className="welcome-mark">S</span>
             <h1>从一份真实资料开始</h1>
-            <p>先创建知识库，再上传 PDF。处理完成后，可以直接检索或让 Agent 基于资料回答。</p>
+            <p>先创建知识库，再上传课件与习题。处理完成后，可以检索资料并制定学习计划。</p>
           </section>
         )}
       </main>

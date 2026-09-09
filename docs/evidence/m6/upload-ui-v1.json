@@ -1,0 +1,39 @@
+{
+  "result": "PASS",
+  "knowledgeBaseId": "2097477555321827329",
+  "uploadSessionId": "2097477843122384898",
+  "filename": "ui-400mb-synthetic.pdf",
+  "bytes": 400000000,
+  "sha256": "611c3ebab2a693c976d55c24d3d17143097e29b9be8962765e2af1f6e4ce2963",
+  "pausedServerParts": 40,
+  "pausedServerBytes": 335544320,
+  "missingIndexesAtPause": [
+    39,
+    40,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47
+  ],
+  "remainingBytesAtPause": 64455680,
+  "completedParts": 48,
+  "fileId": "2097479141746012161",
+  "documentId": "2097479141808926722",
+  "modelAttemptsAfter": 394,
+  "browserChecks": [
+    "400MB file hashing and transfer can be paused",
+    "Target remains original knowledge base after switching sidebar selection",
+    "Reload restores metadata, then loads server progress automatically",
+    "Reselecting same file resumes and reaches confirmed upload completion",
+    "Completed document appears in the original knowledge base",
+    "390px viewport: clientWidth 380, scrollWidth 380, widget width about 358; native screenshot readable",
+    "Temporary viewport override reset after verification"
+  ],
+  "limits": [
+    "Synthetic bytes with PDF extension; isolated upload environment does not parse or call models",
+    "Browser displayed 312MiB at pause; one in-flight part completed, server subsequently confirmed 320MiB",
+    "Remaining byte total is calculated from production status; browser network wire bytes were not instrumented"
+  ]
+}
