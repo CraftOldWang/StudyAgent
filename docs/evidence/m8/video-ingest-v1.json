@@ -1,0 +1,82 @@
+{
+  "status": "PASSED_VIDEO_UPLOAD_ASR_AND_SOURCE_RETRIEVAL",
+  "knowledgeBaseId": "2097504440811696129",
+  "documentId": "2097504990227771393",
+  "sourceOriginal": "D:/Download/BDNetdisk_DL/数据结构/20221213复习课.mp4",
+  "clipStartSeconds": 600,
+  "clipDurationSeconds": 60,
+  "clipBytes": 729413,
+  "clipSha256": "635df60266c0751c7b92c2e8f8cdf3e46e147e057a69632b1e9e6d35ac7b7a64",
+  "timestampBasis": "clip-relative; add 600 seconds for original recording",
+  "workerConfig": {
+    "processorVersion": "fw-small-536b066-v1",
+    "engine": "faster-whisper",
+    "engineVersion": "1.2.1",
+    "runtimeVersion": "4.4.0",
+    "modelSha256": "3e305921506d8872816023e4c273e75d2419fb89b24da97b4fe7bce14170d671",
+    "device": "cpu",
+    "computeType": "int8",
+    "cpuThreads": 4,
+    "beamSize": 5,
+    "vadFilter": true,
+    "conditionOnPreviousText": false,
+    "language": "auto"
+  },
+  "asrDurationMs": 60000,
+  "asrElapsedMs": 15922,
+  "asrRtf": 0.26536666666666664,
+  "segments": 20,
+  "asrAttempts": [
+    {
+      "at": "2026-09-09T01:58:55.820392+00:00",
+      "jobKey": "1c832ea160060fb50563053d916e24a416e7c2c5ca7e0371d859568176033d09",
+      "status": "STARTED",
+      "inputSha256": "635df60266c0751c7b92c2e8f8cdf3e46e147e057a69632b1e9e6d35ac7b7a64"
+    },
+    {
+      "at": "2026-09-09T01:59:11.739291+00:00",
+      "jobKey": "1c832ea160060fb50563053d916e24a416e7c2c5ca7e0371d859568176033d09",
+      "status": "SUCCEEDED",
+      "elapsedMs": 15922,
+      "durationMs": 60000,
+      "segments": 20
+    }
+  ],
+  "sqlVerification": {
+    "pipelineStatus": "INDEXED",
+    "attempts": 1,
+    "asrAndParsedArtifactsPresent": true,
+    "chunks": 2
+  },
+  "sourceApiMatches": true,
+  "query": "希尔排序又叫什么排序？",
+  "definitionRank": 1,
+  "sourceChunkId": "003875ae05e940c4cfebda473f15faff53209138cded444e623bbc8d5e811fc9",
+  "contentSha256": "d5cdb33636a86a6835f0526b629c27d3748fa0e000207b95224fef2b37513731",
+  "noSpeechSample": {
+    "documentId": "2097504615701590017",
+    "clipStartSeconds": 60,
+    "clipDurationSeconds": 60,
+    "state": "FAILED",
+    "attemptsObserved": 5,
+    "asrAndParsedKeysNull": true,
+    "chunks": 0,
+    "reason": "No speech text was recognized"
+  },
+  "browserVerification": {
+    "uploadBothMp4": true,
+    "observedTranscribingThenIndexed": true,
+    "ordinaryRetrievalShowsSourceAndTimestamps": true,
+    "sourceLocationFormatted": true,
+    "viewportWidth": 390,
+    "documentClientWidth": 380,
+    "documentScrollWidth": 380,
+    "hitListWidth": 318.666687
+  },
+  "limitations": [
+    "One positive clip; not a measured ASR accuracy dataset.",
+    "No learning/DeepSeek call.",
+    "Original first clip failure preserved; existing MQ redelivery retries it.",
+    "Timestamp is relative to the derived clip, not original full video."
+  ]
+}

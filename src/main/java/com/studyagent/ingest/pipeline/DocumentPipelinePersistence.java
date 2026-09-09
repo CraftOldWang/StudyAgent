@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class DocumentPipelinePersistence {
     public static final List<String> ACTIVE_STATUSES = List.of(
-            "PARSING", "PARSED", "CHUNKING", "CHUNKED", "EMBEDDING", "EMBEDDED", "INDEXING");
+            "PARSING", "TRANSCRIBING", "TRANSCRIBED", "PARSED", "CHUNKING", "CHUNKED", "EMBEDDING", "EMBEDDED", "INDEXING");
     private final DocumentMapper documentMapper;
     private final FileRecordMapper fileRecordMapper;
     private final DocumentChunkMapper documentChunkMapper;
@@ -62,11 +62,19 @@ public class DocumentPipelinePersistence {
     public void renewLease(Document document) { writeOwned(document, update -> { }); }
 
     @Transactional
-    public void markParsed(Document document, String key, String hash) {
+    public void markParsed(Document document, String key, String hash, String parserVersion) {
         writeOwned(document, update -> update.set("pipeline_status", "PARSED")
-                .set("parser_version", DocumentPipeline.PARSER_VERSION)
+                .set("parser_version", parserVersion)
                 .set("parsed_text_key", key).set("parsed_text_hash", hash)
                 .set("last_successful_stage", "PARSED"));
+    }
+
+    @Transactional
+    public void markTranscribed(Document document, String key, String metadata, String parserVersion) {
+        writeOwned(document, update -> update.set("pipeline_status", "TRANSCRIBED")
+                .set("asr_result_key", key).set("asr_metadata_json", metadata)
+                .set("parser_version", parserVersion).set("parsed_text_key", null).set("parsed_text_hash", null)
+                .set("last_successful_stage", "TRANSCRIBED"));
     }
 
     @Transactional

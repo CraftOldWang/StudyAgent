@@ -29,11 +29,11 @@
 | Toast | `frontend/src/components/ui/Feedback.tsx` | 本文 | 持久 inline status/alert；当前无瞬时 toast 队列 | live region + 错误恢复 |
 | CRUD | `frontend/src/api.ts`、App、KnowledgeBaseSidebar | 已有 API | 创建后选中、重命名原处更新 | 真实 API + 组件测试 |
 | Table Selection | `frontend/src/components/PlanningStart.tsx` | 规划 API | 逐份文档选择“课件/习题/不使用” | 键盘、角色互斥、不可检索禁用 |
-| File Upload | `frontend/src/components/UploadWidget.tsx`、`frontend/src/upload` | 原生 multipart API | 单文件、8MiB/4并发、Worker哈希、暂停/取消/恢复 | 生产API重启验收、400MB浏览器刷新续传 |
+| File Upload | `frontend/src/components/UploadWidget.tsx`、`frontend/src/upload` | 原生 multipart API | 课件及MP4/M4A/MP3/WAV；单文件、8MiB/4并发、Worker哈希、暂停/取消/恢复 | 生产API重启验收、400MB浏览器刷新续传；媒体链路另验收 |
 
 当前没有日期输入或 authored Select/Listbox，使用原生数字输入、radio 和 checkbox；因此不引入对应弹层组件。
 
-来源抽屉由 `SourceDrawer.tsx` 统一拥有，使用原生 dialog.showModal 的焦点隔离、Escape 与焦点归还，关闭时恢复页面滚动。来源只经当前会话/计划绑定资料库读取，失败明示，正文按纯文本显示；旧资料仅记录字符区间时，不冒充原课件页码。
+来源抽屉由 `SourceDrawer.tsx` 统一拥有，使用原生 dialog.showModal 的焦点隔离、Escape 与焦点归还，关闭时恢复页面滚动。来源只经当前会话/计划绑定资料库读取，失败明示，正文按纯文本显示；旧资料仅记录字符区间时，不冒充原课件页码。普通检索复用来源位置格式化，不直接显示位置JSON；音视频的时间戳保留在正文。
 
 ## Flow ledger
 

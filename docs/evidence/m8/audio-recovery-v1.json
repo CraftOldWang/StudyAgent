@@ -1,0 +1,89 @@
+{
+  "source": "D:\\Download\\BDNetdisk_DL\\编译原理\\课件\\第10章\\10-2.m4a",
+  "sha256": "b39e28528fef4511cdface4ff67eb41979839e2f953555058956f4daba258b79",
+  "sourceBytes": 19766324,
+  "worker": {
+    "ready": true,
+    "config": {
+      "processorVersion": "fw-small-536b066-v1",
+      "engine": "faster-whisper",
+      "engineVersion": "1.2.1",
+      "runtimeVersion": "4.4.0",
+      "modelSha256": "3e305921506d8872816023e4c273e75d2419fb89b24da97b4fe7bce14170d671",
+      "device": "cpu",
+      "computeType": "int8",
+      "cpuThreads": 4,
+      "beamSize": 5,
+      "vadFilter": true,
+      "conditionOnPreviousText": false,
+      "language": "auto"
+    }
+  },
+  "jarSha256": "06f962804a41b28917f6c0f61e1919d35bff5f083d0a809e2bca720a66843319",
+  "knowledgeBaseId": "2097501531286913026",
+  "documentId": "2097501536244580353",
+  "jobKey": "a2f99695d5989ac70d1380dff1da42f2b2117da6e9b3e67cf9b66d015f187dbc",
+  "leaseBefore": "2026-09-09 01:50:11.210567",
+  "leaseAfterHeartbeat": "2026-09-09 01:50:21.349613",
+  "killedAt": "2026-09-09T01:45:34.293048+00:00",
+  "restartedAt": "2026-09-09T01:45:35.365567+00:00",
+  "asrAttempts": [
+    {
+      "at": "2026-09-09T01:45:12.275199+00:00",
+      "jobKey": "a2f99695d5989ac70d1380dff1da42f2b2117da6e9b3e67cf9b66d015f187dbc",
+      "status": "STARTED",
+      "inputSha256": "b39e28528fef4511cdface4ff67eb41979839e2f953555058956f4daba258b79"
+    },
+    {
+      "at": "2026-09-09T01:47:21.641648+00:00",
+      "jobKey": "a2f99695d5989ac70d1380dff1da42f2b2117da6e9b3e67cf9b66d015f187dbc",
+      "status": "SUCCEEDED",
+      "elapsedMs": 129359,
+      "durationMs": 797838,
+      "segments": 253
+    },
+    {
+      "at": "2026-09-09T01:50:43.530499+00:00",
+      "jobKey": "a2f99695d5989ac70d1380dff1da42f2b2117da6e9b3e67cf9b66d015f187dbc",
+      "status": "CACHE_HIT"
+    }
+  ],
+  "chunkCount": 17,
+  "llmAttemptsBefore": 394,
+  "llmAttemptsAfter": 394,
+  "completedAt": "2026-09-09T01:51:23.266799+00:00",
+  "status": "PASSED_INGEST_RECOVERY_AND_SOURCE_RETRIEVAL",
+  "asrRtf": 0.1621369250399204,
+  "checks": {
+    "BM25": {
+      "hits": 5,
+      "definitionRank": 1,
+      "sourceApiContentMatches": true,
+      "chunkId": "7a2a9e97f9e1314617da742354739e2aaf98db28ae49f13354dad99b992b552e",
+      "documentId": "2097501536244580353",
+      "sourceLocation": "{\"endOffset\": 990, \"headingPath\": [], \"startOffset\": 0}",
+      "contentSha256": "ee3fee33df86c42da492403c4c2efeb9df3d468be16b64106d3ba97711af46ea",
+      "timestampFound": "00:01:13.850"
+    },
+    "RRF": {
+      "hits": 5,
+      "definitionRank": 1,
+      "sourceApiContentMatches": true,
+      "chunkId": "7a2a9e97f9e1314617da742354739e2aaf98db28ae49f13354dad99b992b552e",
+      "documentId": "2097501536244580353",
+      "sourceLocation": "{\"endOffset\": 990, \"headingPath\": [], \"startOffset\": 0}",
+      "contentSha256": "ee3fee33df86c42da492403c4c2efeb9df3d468be16b64106d3ba97711af46ea",
+      "timestampFound": "00:01:13.850"
+    }
+  },
+  "rawReport": {
+    "path": ".eval\\runs\\m8-asr-recovery-v1\\report.json",
+    "sha256": "4ef044853d53e823f3a961c006d7a87bf7887495c0332c259375223f0430e756"
+  },
+  "limitations": [
+    "One recording and one retrieval query; not an ASR accuracy or RAG aggregate benchmark.",
+    "Learning acceptance remains pending; no DeepSeek call.",
+    "Observer initially failed on restart HTTP 502, then resumed original document without another upload or kill.",
+    "Timestamps are in transcript content, not clickable media playback."
+  ]
+}

@@ -32,7 +32,7 @@ export interface UploadStatus {
 }
 
 export function validateUploadFile(file: File): string | null {
-  if (!/\.(pdf|pptx|txt|md|markdown)$/i.test(file.name)) return '支持 PDF、PPTX、TXT 和 Markdown 文件。'
+  if (!/\.(pdf|pptx|txt|md|markdown|mp4|m4a|mp3|wav)$/i.test(file.name)) return '支持 PDF、PPTX、TXT、Markdown、MP4、M4A、MP3 和 WAV 文件。'
   if (file.size === 0) return '文件为空，请重新选择。'
   if (file.size > MAX_UPLOAD_BYTES) return '文件超过 1 GiB 上传上限。'
   return null

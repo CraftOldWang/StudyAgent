@@ -1,0 +1,8 @@
+{
+  "documentId": "2097499708182347777",
+  "attemptsObserved": 12,
+  "asrResultKey": null,
+  "parsedTextKey": null,
+  "chunks": 0,
+  "note": "Existing RocketMQ redelivery adds attempts beyond the explicit retry."
+}

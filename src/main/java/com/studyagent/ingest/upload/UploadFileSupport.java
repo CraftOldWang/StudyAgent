@@ -36,9 +36,16 @@ final class UploadFileSupport {
             case ".pptx" -> "application/vnd.openxmlformats-officedocument.presentationml.presentation";
             case ".txt" -> "text/plain";
             case ".md", ".markdown" -> "text/markdown";
-            default -> throw new BusinessException("仅支持 TXT、Markdown、PDF、PPTX 文件");
+            case ".mp4" -> "video/mp4";
+            case ".m4a" -> "audio/mp4";
+            case ".mp3" -> "audio/mpeg";
+            case ".wav" -> "audio/wav";
+            default -> throw new BusinessException("支持 TXT、Markdown、PDF、PPTX、MP4、M4A、MP3、WAV 文件");
         };
         String actual = contentType(type).split(";", 2)[0].trim().toLowerCase(Locale.ROOT);
+        if (actual.equals("audio/x-m4a")) actual = "audio/mp4";
+        if (actual.equals("audio/x-wav") || actual.equals("audio/wave")) actual = "audio/wav";
+        if (actual.equals("audio/mp3")) actual = "audio/mpeg";
         if (!actual.equals(expected) && !actual.equals("application/octet-stream")
                 && !(expected.equals("text/markdown") && actual.equals("text/plain"))) {
             throw new BusinessException("文件扩展名与 content-type 不匹配");

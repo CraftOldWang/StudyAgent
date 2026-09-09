@@ -9,6 +9,12 @@ export function statusLabel(status: string): string {
   const labels: Record<string, string> = {
     RECEIVED: '已接收',
     STORED: '已存储',
+    PARSING: '解析中',
+    TRANSCRIBING: '转写中',
+    TRANSCRIBED: '已转写',
+    CHUNKING: '分块中',
+    EMBEDDING: '向量化中',
+    INDEXING: '索引中',
     PARSED: '已解析',
     CHUNKED: '已分块',
     EMBEDDED: '已向量化',

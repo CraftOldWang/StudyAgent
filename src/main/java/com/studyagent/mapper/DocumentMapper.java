@@ -14,7 +14,7 @@ public interface DocumentMapper extends BaseMapper<Document> {
     @Select("""
             SELECT id, user_id FROM documents
             WHERE pipeline_status = 'STORED'
-               OR (pipeline_status IN ('PARSING','PARSED','CHUNKING','CHUNKED','EMBEDDING','EMBEDDED','INDEXING')
+               OR (pipeline_status IN ('PARSING','TRANSCRIBING','TRANSCRIBED','PARSED','CHUNKING','CHUNKED','EMBEDDING','EMBEDDED','INDEXING')
                    AND (lease_until IS NULL OR lease_until <= #{now}))
             ORDER BY updated_at, id LIMIT #{limit}
             """)

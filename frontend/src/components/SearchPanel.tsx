@@ -1,6 +1,7 @@
 import { type FormEvent, useState } from 'react'
 import type { AgentSearchResult, SearchHit, SearchResult } from '../types'
 import { MultilineInput } from './ui/Field'
+import { locationLabel } from './SourceDrawer'
 
 type SearchMode = 'retrieval' | 'agent'
 
@@ -19,7 +20,7 @@ function ResultHits({ hits }: { hits: SearchHit[] }) {
         <li key={hit.chunkId}>
           <div className="hit-meta">
             <strong>{hit.provenance.documentTitle}</strong>
-            <span>{hit.provenance.sourceLocation}</span>
+            <span>{locationLabel(hit.provenance.sourceLocation)}</span>
             <span>相关度 {hit.score.toFixed(4)}</span>
           </div>
           <p>{hit.content}</p>

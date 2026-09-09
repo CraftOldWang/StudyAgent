@@ -46,6 +46,10 @@ public class Document {
     private String parsedTextKey;
     @TableField("parsed_text_hash")
     private String parsedTextHash;
+    @TableField("asr_result_key")
+    private String asrResultKey;
+    @TableField("asr_metadata_json")
+    private String asrMetadataJson;
     @TableField("last_successful_stage")
     private String lastSuccessfulStage;
     @com.fasterxml.jackson.annotation.JsonIgnore

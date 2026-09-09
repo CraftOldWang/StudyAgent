@@ -12,6 +12,7 @@ import com.studyagent.config.AiModelProperties;
 import com.studyagent.config.RagProperties;
 import com.studyagent.config.ElasticsearchProperties;
 import com.studyagent.ingest.parse.DocumentTextParser;
+import com.studyagent.ingest.parse.MediaTranscriptionService;
 import com.studyagent.ingest.storage.ObjectStorageService;
 import com.studyagent.model.Document;
 import com.studyagent.model.DocumentChunk;
@@ -51,6 +52,7 @@ public class DocumentPipeline {
     private final ObjectMapper objectMapper;
     private final RagProperties ragProperties;
     private final ElasticsearchProperties elasticsearchProperties;
+    private final MediaTranscriptionService mediaTranscription;
 
     public boolean process(Long documentId) {
         return execute(documentId, true);
@@ -80,16 +82,27 @@ public class DocumentPipeline {
 
         PipelineStatus stage = PipelineStatus.PARSING;
         try {
-            boolean reusableParse = PARSER_VERSION.equals(document.getParserVersion())
+            boolean media = MediaTranscriptionService.isMedia(document.getTitle());
+            String parserVersion = media ? mediaTranscription.processorVersion() : PARSER_VERSION;
+            boolean reusableParse = parserVersion.equals(document.getParserVersion())
                     && document.getParsedTextKey() != null;
-            String parsedText = reusableParse ? loadParsed(document) : parse(document);
+            String parsedText;
+            if (reusableParse) {
+                parsedText = loadParsed(document);
+            } else if (media) {
+                stage = PipelineStatus.TRANSCRIBING;
+                persistence.startStage(document, stage);
+                parsedText = mediaTranscription.transcribe(document);
+            } else {
+                parsedText = parse(document);
+            }
             if (!reusableParse) {
                 byte[] bytes = parsedText.getBytes(StandardCharsets.UTF_8);
                 if (parsedText.isBlank()) { throw new BusinessException("文档解析结果为空"); }
                 String hash = sha256(parsedText);
-                String key = "parsed/" + document.getUserId() + "/" + documentId + "/" + PARSER_VERSION + "/" + hash + ".txt";
+                String key = "parsed/" + document.getUserId() + "/" + documentId + "/" + parserVersion + "/" + hash + ".txt";
                 objectStorageService.putObject(key, new ByteArrayInputStream(bytes), bytes.length, "text/plain; charset=utf-8");
-                persistence.markParsed(document, key, hash);
+                persistence.markParsed(document, key, hash, parserVersion);
             }
 
             stage = PipelineStatus.CHUNKING;

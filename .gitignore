@@ -44,6 +44,9 @@ scripts/*
 !scripts/summarize-upload-benchmark.py
 !scripts/verify-native-upload.py
 !scripts/verify-anki-export.py
+!scripts/local-asr-worker.py
+!scripts/requirements-asr.txt
+!scripts/verify-asr-recovery.py
 .agentscope/workspace/state/
 .eval/
 config/local-secrets.properties

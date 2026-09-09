@@ -47,6 +47,8 @@ class IngestModelMappingTest {
                 field("chunkerVersion", "chunker_version", String.class),
                 field("parsedTextKey", "parsed_text_key", String.class),
                 field("parsedTextHash", "parsed_text_hash", String.class),
+                field("asrResultKey", "asr_result_key", String.class),
+                field("asrMetadataJson", "asr_metadata_json", String.class),
                 field("lastSuccessfulStage", "last_successful_stage", String.class),
                 field("processingToken", "processing_token", String.class),
                 field("leaseUntil", "lease_until", LocalDateTime.class),

@@ -21,6 +21,7 @@ services:
       S3_ENDPOINT: http://rustfs:9000
       STUDY_AGENT_ELASTICSEARCH_ENDPOINT: http://elasticsearch:9200
       STUDY_AGENT_ANKI_ENDPOINT: http://host.docker.internal:8765
+      STUDY_AGENT_ASR_ENDPOINT: http://host.docker.internal:8767/transcribe
     networks:
       - study-agent-net
 

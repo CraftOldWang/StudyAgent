@@ -5,7 +5,7 @@ import { Feedback } from './ui/Feedback'
 interface Source { chunkId: string; documentId: string; documentTitle: string; sourceLocation: string; content: string }
 const SourceContext = createContext<((chunkId: string) => void) | null>(null)
 
-function locationLabel(raw: string) {
+export function locationLabel(raw: string) {
   if (!raw?.startsWith('{')) return raw || '资料位置未记录'
   try {
     const value = JSON.parse(raw) as { headingPath?: string[]; startOffset?: number; endOffset?: number }

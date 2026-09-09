@@ -52,7 +52,7 @@ class DocumentPipelineTest {
         @SuppressWarnings("unchecked")
         ArgumentCaptor<List<ElasticsearchChunkDocument>> indexed = ArgumentCaptor.forClass(List.class);
         InOrder order = inOrder(fixture.persistence(), fixture.elasticsearchIndexer());
-        order.verify(fixture.persistence()).markParsed(any(Document.class), any(), any());
+        order.verify(fixture.persistence()).markParsed(any(Document.class), any(), any(), eq(DocumentPipeline.PARSER_VERSION));
         order.verify(fixture.persistence()).replaceChunks(any(Document.class), anyList(), eq(fixture.pipeline().chunkerVersion()));
         order.verify(fixture.persistence()).markEmbeddingCompleted(any(Document.class));
         order.verify(fixture.elasticsearchIndexer()).bulkIndexAcknowledged(indexed.capture());
@@ -105,6 +105,8 @@ class DocumentPipelineTest {
         DocumentPipelinePersistence persistence = mock(DocumentPipelinePersistence.class);
         ObjectStorageService objectStorage = mock(ObjectStorageService.class);
         DocumentTextParser parser = mock(DocumentTextParser.class);
+        var media = mock(com.studyagent.ingest.parse.MediaTranscriptionService.class);
+        when(media.processorVersion()).thenReturn("fw-small-536b066-v1");
         DocumentEmbeddingArtifacts embeddingArtifacts = mock(DocumentEmbeddingArtifacts.class);
         ElasticsearchIndexer elasticsearchIndexer = mock(ElasticsearchIndexer.class);
         when(elasticsearchIndexer.bulkIndexAcknowledged(anyList())).thenAnswer(invocation -> {
@@ -128,8 +130,8 @@ class DocumentPipelineTest {
                                 "unused",
                                 "http://localhost"),
                         null),
-                new ObjectMapper(), ragProperties, new ElasticsearchProperties("http://localhost", "test-v1", "test-read", "test-write", 2));
-        return new Fixture(pipeline, persistence, objectStorage, parser, embeddingArtifacts, elasticsearchIndexer);
+                new ObjectMapper(), ragProperties, new ElasticsearchProperties("http://localhost", "test-v1", "test-read", "test-write", 2), media);
+        return new Fixture(pipeline, persistence, objectStorage, parser, embeddingArtifacts, elasticsearchIndexer, media);
     }
 
     @Test
@@ -222,13 +224,44 @@ class DocumentPipelineTest {
         return file;
     }
 
+    @Test
+    void mediaUsesTranscriptionThenTheSameChunkEmbeddingIndexStages() {
+        Fixture f = fixture();
+        Document doc = document(); doc.setTitle("lecture.m4a");
+        when(f.persistence().claim(10L, true)).thenReturn(doc);
+        when(f.media().transcribe(doc)).thenReturn("[00:00:01.000–00:00:02.000] 队列先进先出。");
+        when(f.embeddingArtifacts().loadOrCreate(eq(30L), any())).thenReturn(new float[]{0.1f, 0.2f});
+        assertThat(f.pipeline().process(10L)).isTrue();
+        verify(f.parser(), never()).parse(any());
+        InOrder order = inOrder(f.persistence(), f.media());
+        order.verify(f.persistence()).startStage(doc, PipelineStatus.TRANSCRIBING);
+        order.verify(f.media()).transcribe(doc);
+        order.verify(f.persistence()).markParsed(eq(doc), any(), any(), eq("fw-small-536b066-v1"));
+        order.verify(f.persistence()).replaceChunks(eq(doc), anyList(), any());
+        order.verify(f.persistence()).markCompleted(doc);
+    }
+
+    @Test
+    void transcriptionFailureNeverReachesEmbeddingOrIndexing() {
+        Fixture f = fixture();
+        Document doc = document(); doc.setTitle("lecture.mp4");
+        when(f.persistence().claim(10L, true)).thenReturn(doc);
+        var failure = new BusinessException("ASR unavailable");
+        when(f.media().transcribe(doc)).thenThrow(failure);
+        assertThatThrownBy(() -> f.pipeline().process(10L)).isSameAs(failure);
+        verify(f.persistence()).markFailed(doc, PipelineStatus.TRANSCRIBING, failure);
+        verify(f.embeddingArtifacts(), never()).loadOrCreate(any(), any());
+        verify(f.elasticsearchIndexer(), never()).bulkIndexAcknowledged(anyList());
+    }
+
     private record Fixture(
             DocumentPipeline pipeline,
             DocumentPipelinePersistence persistence,
             ObjectStorageService objectStorage,
             DocumentTextParser parser,
             DocumentEmbeddingArtifacts embeddingArtifacts,
-            ElasticsearchIndexer elasticsearchIndexer
+            ElasticsearchIndexer elasticsearchIndexer,
+            com.studyagent.ingest.parse.MediaTranscriptionService media
     ) {
     }
 }

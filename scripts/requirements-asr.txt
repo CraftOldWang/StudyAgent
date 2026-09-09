@@ -1,0 +1,6 @@
+faster-whisper==1.2.1
+ctranslate2==4.4.0
+av==18.1.0
+onnxruntime==1.20.1
+setuptools==80.9.0
+numpy==2.5.3
