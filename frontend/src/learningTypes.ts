@@ -1,5 +1,5 @@
 export type LearningSessionStatus = 'ACTIVE' | 'COMPLETED'
-export type KnowledgePointStatus = 'NEW' | 'EXPLAINING' | 'QUIZZING' | 'CARD_GENERATING' | 'COMPLETED'
+export type KnowledgePointStatus = 'NEW' | 'EXPLAINING' | 'QUIZZING' | 'FEEDBACK' | 'CARD_GENERATING' | 'CARD_CONFIRMING' | 'COMPLETED'
 
 export interface KnowledgePoint {
   id: string
@@ -70,6 +70,7 @@ export interface LearningTurn {
 }
 
 export interface ConversationTurn {
+  knowledgePointId?: string
   id: string
   requestId: string
   userMessage: string

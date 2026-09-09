@@ -284,3 +284,10 @@ td strong, .document-error { display: block; overflow-wrap: anywhere; }
 }
 .anki-export { display: flex; flex-direction: column; align-items: flex-start; gap: .5rem; margin-top: 1rem; min-width: 0; }
 .anki-export .feedback { width: 100%; overflow-wrap: anywhere; }
+/* Tool activity stays separate from the learning text and is folded by default. */
+.tool-call { margin-block: 0.5rem; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-surface); }
+.tool-call summary { cursor: pointer; font-weight: 600; }
+.tool-call summary span { margin-left: 1rem; font-weight: 400; }
+.tool-call pre { max-height: 18rem; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.8rem; }
+.tool-call summary:hover { color: var(--color-primary); }
+.tool-call summary:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }

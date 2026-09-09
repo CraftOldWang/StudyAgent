@@ -15,7 +15,7 @@ export function QuizSection({ busy, quiz, onSubmit, readOnly = false }: Props) {
   useEffect(() => setAnswers({}), [quiz.quizId])
 
   const submitted = quiz.score !== null
-  const complete = quiz.questions.length === 5
+  const complete = quiz.questions.length >= 1 && quiz.questions.length <= 10
     && quiz.questions.every((question) => Boolean(answers[question.questionIndex]))
 
   async function submit(event: FormEvent) {
@@ -28,7 +28,7 @@ export function QuizSection({ busy, quiz, onSubmit, readOnly = false }: Props) {
     <section className="quiz-block">
       <div className="learning-section-heading">
         <div>
-          <span className="eyebrow">五题测验</span>
+          <span className="eyebrow">{quiz.questions.length} 道选择题</span>
           <h2>{submitted ? `得分 ${quiz.score} / 100` : readOnly ? '已保存测验' : '检验刚刚学到的内容'}</h2>
         </div>
       </div>
@@ -68,7 +68,7 @@ export function QuizSection({ busy, quiz, onSubmit, readOnly = false }: Props) {
         })}
         {!submitted && !readOnly && (
           <button disabled={busy || !complete} type="submit">
-            {busy ? '正在评分…' : complete ? '提交五题答案' : '请完成全部五题'}
+            {busy ? '正在评分…' : complete ? '提交答案' : '请完成全部题目'}
           </button>
         )}
       </form>

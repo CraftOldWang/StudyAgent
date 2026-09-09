@@ -8,7 +8,7 @@ type Artifact = { type: 'QUIZ'; quizId: string; knowledgePointId: string; questi
   | { type: 'CARDS'; cards: ReviewCard[] }
   | { type: 'QUESTION' | 'EXPLANATION' }
 
-export function SavedArtifacts({ json, currentQuizId }: { json: string | null; currentQuizId?: string }) {
+export function SavedArtifacts({ json, currentQuizId, hideCards = false }: { json: string | null; currentQuizId?: string; hideCards?: boolean }) {
   if (!json) return null
   let artifact: Artifact
   try { artifact = JSON.parse(json) as Artifact }
@@ -21,6 +21,6 @@ export function SavedArtifacts({ json, currentQuizId }: { json: string | null; c
       <strong>第 {item.questionIndex + 1} 题 · {item.correct ? '回答正确' : `正确答案：${item.correctAnswer}`}</strong><p>{item.explanation}</p>
     </div>)}</section>
   }
-  if (artifact.type === 'CARDS') return <ReviewCards cards={artifact.cards} />
+  if (artifact.type === 'CARDS') return hideCards ? null : <ReviewCards cards={artifact.cards} />
   return null
 }

@@ -6,6 +6,9 @@ import { LearningPlan } from './LearningPlan'
 import { PlanningStart } from './PlanningStart'
 import { QuizSection } from './QuizSection'
 import { ReviewCards } from './ReviewCards'
+import { CardDrafts } from './CardDrafts'
+import { ToolCalls, type ToolCall } from './ToolCalls'
+import { apiRequest } from '../api'
 import { Feedback } from './ui/Feedback'
 import { Field, MultilineInput } from './ui/Field'
 import { SavedArtifacts } from './SavedArtifacts'
@@ -22,6 +25,7 @@ export function LearningPanel({ knowledgeBase, onSessionKnowledgeBase }: Props) 
   const [pending, setPending] = useState<Pending | null>(null)
   const [partial, setPartial] = useState('')
   const [progress, setProgress] = useState('')
+  const [tools, setTools] = useState<ToolCall[]>([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const lock = useRef(false)
@@ -77,6 +81,7 @@ export function LearningPanel({ knowledgeBase, onSessionKnowledgeBase }: Props) 
   }
   async function send(text: string, retry?: Pending) {
     if (!session || lock.current || !text.trim() || (!retry && !canSend)) return
+    setTools([])
     const request = retry || { message: text.trim(), requestId: crypto.randomUUID() }
     const id = session.id
     pendingBySession.current.set(id, request)
@@ -89,6 +94,10 @@ export function LearningPanel({ knowledgeBase, onSessionKnowledgeBase }: Props) 
         else if (event.event === 'progress') setProgress((event.data as { text: string }).text)
         else if (event.event === 'accepted') setProgress('请求已收到，正在处理…')
         else if (event.event === 'failure') throw new Error((event.data as { message: string }).message)
+        else if (event.event === 'tool') {
+          const call = JSON.parse((event.data as { text: string }).text) as ToolCall
+          setTools(current => [...current.filter(c => c.id !== call.id), call])
+        }
         else if (event.event === 'result') {
           const result = event.data as LearningTurn
           setSession(result.session)
@@ -113,8 +122,25 @@ export function LearningPanel({ knowledgeBase, onSessionKnowledgeBase }: Props) 
   const unresolved = lastTurn?.status !== 'SUCCEEDED' ? lastTurn : undefined
   const retry = pending || (unresolved ? { requestId: unresolved.requestId, message: unresolved.userMessage } : null)
   const blocking = pending || (unresolved && (unresolved.status === 'RUNNING' || unresolved.phase === 'ARTIFACTS_COMMITTED'))
-  const canSend = !!active && !busy && !blocking
-  const hint = active?.status === 'NEW' ? '开始这个知识点的讲解' : active?.status === 'EXPLAINING' ? '我理解了，开始五题测验' : active?.status === 'CARD_GENERATING' ? '生成三张复习卡片，完成这个知识点' : ''
+  const canSend = !!active && active.status !== 'CARD_CONFIRMING' && !busy && !blocking
+  const hint = active?.status === 'NEW' ? '开始这个知识点的讲解' : active?.status === 'EXPLAINING' ? '我理解了，继续练习' : active?.status === 'FEEDBACK' ? '没有疑问了，继续生成复习卡片' : ''
+  async function saveCards(cards: LearningSession['cards'], confirm = false) {
+    if (!session || !active || lock.current) return
+    lock.current = true; setBusy(true); setError(''); setProgress(confirm ? '正在确认卡片、写入 Anki 并整理学习记录…' : '正在保存卡片…')
+    try {
+      if (active.status !== 'CARD_CONFIRMING') {
+        await apiRequest<LearningSession>(`/api/learning/sessions/${session.id}/points/${active.id}/cards`, {
+          method: 'PUT', body: JSON.stringify(cards.map(({ id, front, back }) => ({ id, front, back }))),
+        })
+      }
+      if (confirm) await apiRequest<LearningSession>(`/api/learning/sessions/${session.id}/points/${active.id}/cards/confirm`, { method: 'POST' })
+      await loadSession(await learningApi.getSession(session.id))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+      const current = await learningApi.getSession(session.id).catch(() => null)
+      if (current) setSession(current)
+    } finally { lock.current = false; setBusy(false) }
+  }
   if (!session) return <section className="panel learning-start">
     <div className="panel-header"><div><span className="eyebrow">学习工作台</span><h1>{knowledgeBase.name}</h1><p>资料有依据，学习有顺序，复习有记录。</p></div></div>
     {error && <Feedback error>{error}</Feedback>}
@@ -138,10 +164,12 @@ export function LearningPanel({ knowledgeBase, onSessionKnowledgeBase }: Props) 
         <div className="conversation-history">{history.map(turn => <article className="conversation-turn" key={turn.id}>
           <div className="chat-user"><span>你</span><p>{turn.userMessage}</p></div>
           {turn.assistantMessage && <div className="chat-answer"><span>StudyPilot</span><MessageContent text={turn.assistantMessage} /></div>}
-          <SavedArtifacts json={turn.artifactJson} currentQuizId={session.currentQuiz?.quizId} />
+          <ToolCalls sessionId={session.id} turnId={turn.id} />
+          <SavedArtifacts json={turn.artifactJson} currentQuizId={session.currentQuiz?.quizId} hideCards={turn.knowledgePointId === active?.id} />
           {turn.status !== 'SUCCEEDED' && <small className={turn.status === 'FAILED' ? 'field-error' : 'muted'}>{turn.status === 'FAILED' ? `未完成：${turn.errorMessage || '可重试原回合'}` : '处理中，可查询进度'}</small>}
         </article>)}</div>
         {pending && !history.some(t => t.requestId === pending.requestId) && <div className="chat-user"><span>你 · 待确认</span><p>{pending.message}</p></div>}
+        {busy && <ToolCalls live={tools} />}
         {partial && <div className="chat-answer streaming"><span>StudyPilot · 生成中</span><MessageContent text={partial} /></div>}
         {busy && <Feedback>{progress || '正在处理…'} {transport.current && <button className="text-button" type="button" onClick={() => transport.current?.abort()}>断开显示</button>}</Feedback>}
         {!busy && retry && <div className="recovery-actions"><Feedback>{blocking ? '请先确认上次消息的结果。' : '上次生成未完成，也可以调整消息后继续。'}重试会沿用同一请求编号。</Feedback><button disabled={busy} type="button" onClick={() => void send(retry.message, retry)}>重试原回合</button></div>}
@@ -149,7 +177,11 @@ export function LearningPanel({ knowledgeBase, onSessionKnowledgeBase }: Props) 
           const quiz = session.currentQuiz!
           await send(answers.map((answer, i) => `${i + 1}. ${'ABCD'[quiz.questions[i].options.indexOf(answer)]}`).join('\n'))
         }} />}
-        {history.length === 0 && <ReviewCards cards={session.cards} />}
+        {active && ['CARD_GENERATING', 'CARD_CONFIRMING'].includes(active.status)
+          ? <CardDrafts cards={session.cards} busy={busy || !!blocking} confirming={active.status === 'CARD_CONFIRMING'}
+              onSave={cards => saveCards(cards)} onConfirm={cards => saveCards(cards, true)}
+              onRewrite={() => { setMessage('请重写这些卡片：'); document.getElementById('learning-message')?.focus() }} />
+          : <ReviewCards cards={session.cards} />}
         {active && <form noValidate className="learning-message-form" onSubmit={e => { e.preventDefault(); void send(message) }}>
           <Field id="learning-message" label="继续学习或提问" hint="可自然提问、请求测验或生成卡片。Ctrl + Enter 发送。">
             <MultilineInput id="learning-message" rows={3} value={message} maxLength={12000} onChange={e => { setMessage(e.target.value); draft.current.set(session.id, e.target.value) }} aria-describedby="learning-message-hint" onKeyDown={e => {

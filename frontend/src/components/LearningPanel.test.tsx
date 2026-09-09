@@ -4,7 +4,7 @@ import type { ConversationTurn, LearningSession } from '../learningTypes'
 
 const mock = vi.hoisted(() => ({ getSession: vi.fn(), history: vi.fn(), streamMessage: vi.fn() }))
 vi.mock('../learningApi', () => ({ learningApi: mock }))
-vi.mock('../api', () => ({ api: { listDocuments: vi.fn().mockResolvedValue([]) } }))
+vi.mock('../api', () => ({ api: { listDocuments: vi.fn().mockResolvedValue([]) }, apiRequest: vi.fn().mockResolvedValue([]) }))
 import { LearningPanel } from './LearningPanel'
 
 const point = { id: '901', sequenceNo: 1, topic: '可见性', subtopics: [], estimatedMinutes: 20,

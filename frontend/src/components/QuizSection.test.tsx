@@ -24,12 +24,12 @@ describe('QuizSection', () => {
       />,
     )
 
-    const submit = screen.getByRole('button', { name: '请完成全部五题' })
+    const submit = screen.getByRole('button', { name: '请完成全部题目' })
     expect(submit).toBeDisabled()
     for (let index = 1; index <= 5; index += 1) {
       fireEvent.click(screen.getByLabelText(`选项 ${index}B`))
     }
-    fireEvent.click(screen.getByRole('button', { name: '提交五题答案' }))
+    fireEvent.click(screen.getByRole('button', { name: '提交答案' }))
 
     await waitFor(() => expect(onSubmit).toHaveBeenCalledWith([
       '选项 1B', '选项 2B', '选项 3B', '选项 4B', '选项 5B',

@@ -5,7 +5,9 @@ export function pointStatusLabel(status: KnowledgePointStatus): string {
     NEW: '待学习',
     EXPLAINING: '讲解中',
     QUIZZING: '测验中',
-    CARD_GENERATING: '生成卡片',
+    FEEDBACK: '练习后答疑',
+    CARD_GENERATING: '卡片待确认',
+    CARD_CONFIRMING: '正在写入 Anki',
     COMPLETED: '已完成',
   }[status]
 }
