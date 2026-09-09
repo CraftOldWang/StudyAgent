@@ -17,7 +17,7 @@
 - [~] M8：本机faster-whisper/CPU int8转写worker、媒体上传、TRANSCRIBING阶段/续租、转写产物/元数据持久化与复用已实现。后端222项（219通过、3跳过）、前端37项/构建/严格审计通过。完整797.838秒录音转写129.359秒；终止后端后1次ASR+1次缓存复用恢复INDEXED，13次文档embedding。60秒真实MP4经浏览器上传转写15.922秒，来源检索通过；无效媒体及无语音明确失败且无下游产物。390px布局通过。学习问答仍受DeepSeek课程外传审批阻塞；见 `docs/implementation/m8-local-asr.md`。
 - [ ] 收尾：独立验收、文档一致性检查、证据归档，以及按实测结果改写简历与面试说明。
 
-**下一步：** M4、M6上传及M7 Anki已完成实测，M8音视频入库/检索/恢复已通过，学习待验收。RAG VECTOR/RRF Hit@5均91.7%（BM25 70%），父块无总体改善；400MB同4并发35.048s→17.833s（各5次）。LLM账本394/2000次尝试。当前8080为 `study_agent_eval`、Redis DB1、`eval-m8-asr`索引，V15迁移已应用，正常AnkiConnect8765与本机ASR8767运行；上传独立库保留。接下来完善剩余会话/压缩验收脚本及收尾证据。规划v3真实调用因自动审批拒绝暂停，未绕过；真实模型trace、完整自然学习、SSE生成中断与正式压缩实验仍待验收，Goal尚未完成。
+**下一步：** M4、M6上传、M7 Anki及M8音视频入库/检索/恢复已有实测证据；M8提交`8c5cfa9`已推送。LLM账本394/2000次。自编虚构课程与可恢复模型功能脚本已准备，尚未模型执行；见 `docs/implementation/m5-authored-functional-acceptance.md`。当前8080配置为 `study_agent_eval`、Redis DB1、`eval-synthetic-learning`索引，V15已应用；其两份自编资料因容器DNS失败尚未INDEXED。Docker管理API500，WSL负载125且进一步诊断超时；需先恢复项目运行环境。本轮ASR worker已停止释放内存，缓存保留。真实课程→DeepSeek的既有审批拒绝未绕过；规划v3真实课程、完整自然学习、SSE生成中断及正式压缩实验仍待验收，Goal尚未完成。
 
 **完成门槛：** M3–M8 全部真实验收，三类指标可复现，Anki 实际导入与 ASR 实际链路通过；不预设指标涨幅，不因计划落盘或第一批完成关闭 Goal。
 

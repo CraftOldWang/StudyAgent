@@ -47,6 +47,8 @@ scripts/*
 !scripts/local-asr-worker.py
 !scripts/requirements-asr.txt
 !scripts/verify-asr-recovery.py
+!scripts/run-authored-learning-smoke.py
+!scripts/run-learning-conversation-smoke.py
 .agentscope/workspace/state/
 .eval/
 config/local-secrets.properties
