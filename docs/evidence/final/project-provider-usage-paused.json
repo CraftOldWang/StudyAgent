@@ -1,0 +1,56 @@
+{
+  "attempts": 789,
+  "pending": 0,
+  "statuses": {
+    "SUCCEEDED": 786,
+    "FAILED": 3
+  },
+  "withoutUsage": 3,
+  "operations": {
+    "COMPACTION": {
+      "attempts": 104,
+      "unknown": 0,
+      "sumElapsedSeconds": 442.573,
+      "inputTokens": 1199407,
+      "outputTokens": 62175,
+      "totalTokens": 1261582,
+      "cachedInputTokens": 26624
+    },
+    "EVAL": {
+      "attempts": 339,
+      "unknown": 0,
+      "sumElapsedSeconds": 453.678,
+      "inputTokens": 1420847,
+      "outputTokens": 39155,
+      "totalTokens": 1460002,
+      "cachedInputTokens": 4096
+    },
+    "LEARNING": {
+      "attempts": 204,
+      "unknown": 1,
+      "sumElapsedSeconds": 1094.339,
+      "inputTokens": 2011445,
+      "outputTokens": 119088,
+      "totalTokens": 2130533,
+      "cachedInputTokens": 918784
+    },
+    "PLAN": {
+      "attempts": 99,
+      "unknown": 0,
+      "sumElapsedSeconds": 1006.541,
+      "inputTokens": 280104,
+      "outputTokens": 155182,
+      "totalTokens": 435286,
+      "cachedInputTokens": 77952
+    },
+    "POST": {
+      "attempts": 43,
+      "unknown": 2,
+      "sumElapsedSeconds": 95.963,
+      "inputTokens": 216150,
+      "outputTokens": 11303,
+      "totalTokens": 227453,
+      "cachedInputTokens": 76288
+    }
+  }
+}

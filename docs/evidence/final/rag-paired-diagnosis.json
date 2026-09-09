@@ -1,0 +1,18 @@
+{
+  "questions": 60,
+  "fusionGainsOverVector": [
+    "os-02-q1"
+  ],
+  "fusionLossesVersusVector": [
+    "algorithms-04-q4"
+  ],
+  "vectorHit": 55,
+  "rrfHit": 55,
+  "bm25Hit": 42,
+  "bothVectorAndRrfMiss": [
+    "algorithms-04-q2",
+    "os-04-q5",
+    "compiler-03-q2",
+    "compiler-04-q3"
+  ]
+}

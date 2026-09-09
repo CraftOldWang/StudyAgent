@@ -1,0 +1,661 @@
+{
+  "scope": {
+    "threadId": "01a0813d-dd87-7903-941c-fd009795c49f",
+    "start": "2026-09-08T14:46:38+00:00",
+    "pause": "2026-09-09T09:16:39.580000+00:00",
+    "wallHours": 18.50043888888889,
+    "files": [
+      {
+        "name": "rollout-2026-09-08T21-38-30-01a0813d-dd87-7903-941c-fd009795c49f.jsonl",
+        "bytes": 2788899
+      },
+      {
+        "name": "rollout-2026-09-08T22-38-43-01a0813d-dd87-7903-941c-fd009795c49f_01a08175-009e-7ee2-8f59-db018e1ad57e.jsonl",
+        "bytes": 64448062
+      }
+    ]
+  },
+  "codex": {
+    "responseRecords": 1564,
+    "totals": {
+      "input_tokens": 228977783,
+      "cached_input_tokens": 224194816,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 1080409,
+      "reasoning_output_tokens": 368625,
+      "total_tokens": 230058192
+    },
+    "uncachedInputTokens": 4782967,
+    "uncachedInputPlusOutput": 5863376,
+    "inputMedian": 145050.0,
+    "inputMaximum": 250978,
+    "cachedInputFraction": 0.9791116546883503,
+    "modelContexts": [
+      {
+        "model": "gpt-6-astra",
+        "effort": "high",
+        "count": 22
+      }
+    ]
+  },
+  "activity": {
+    "recordKinds": {
+      "response_item": 4999,
+      "token_usage_record": 1564,
+      "event_msg": 5447,
+      "turn_context": 22,
+      "compacted": 13,
+      "world_state": 16
+    },
+    "toolCalls": {
+      "exec": 1270,
+      "wait": 135,
+      "js": 134,
+      "js_reset": 3,
+      "sleep": 1
+    },
+    "nestedToolInvocations": {
+      "create_goal": 1,
+      "exec_command": 1482,
+      "web__run": 31,
+      "apply_patch": 280,
+      "mcp__codex_app__load_workspace_dependencies": 2,
+      "write_stdin": 321,
+      "get_goal": 12,
+      "stream": 1,
+      "clock__curr_time": 3
+    },
+    "commandCallPatterns": {
+      "getContentCalls": 659,
+      "rgCalls": 219,
+      "dockerComposeCalls": 110,
+      "mavenCalls": 92,
+      "hashMentions": 141,
+      "freezeMentions": 34,
+      "gitCommitCalls": 23,
+      "gitPushCalls": 24,
+      "npmTestCalls": 21
+    },
+    "repeatedExactToolInputs": 46,
+    "toolOutputChars": {
+      "custom_tool_call_output": 6585911,
+      "function_call_output": 2191796
+    },
+    "assistantTextChars": {
+      "unknown": 28104
+    },
+    "toolAwaitWallSecondsUnion": 13677.443,
+    "toolAwaitByName": {
+      "exec": {
+        "paired": 1270,
+        "sumSeconds": 13156.743,
+        "medianSeconds": 7.5920000000000005,
+        "maxSeconds": 53.321
+      },
+      "wait": {
+        "paired": 135,
+        "sumSeconds": 138.905,
+        "medianSeconds": 1.006,
+        "maxSeconds": 11.033
+      },
+      "js": {
+        "paired": 134,
+        "sumSeconds": 361.256,
+        "medianSeconds": 0.4605,
+        "maxSeconds": 52.163
+      },
+      "js_reset": {
+        "paired": 3,
+        "sumSeconds": 0.506,
+        "medianSeconds": 0.193,
+        "maxSeconds": 0.208
+      },
+      "sleep": {
+        "paired": 1,
+        "sumSeconds": 20.033,
+        "medianSeconds": 20.033,
+        "maxSeconds": 20.033
+      }
+    },
+    "mostRepeatedGetContentPaths": [
+      {
+        "path": "PROGRESS.md",
+        "calls": 23
+      },
+      {
+        "path": ".eval/diagnostic-build.log",
+        "calls": 15
+      },
+      {
+        "path": "docs/design/002-简历目标与验收计划.md",
+        "calls": 15
+      },
+      {
+        "path": ".gitignore",
+        "calls": 12
+      },
+      {
+        "path": ".eval/sdk-source/io/agentscope/core/ReActAgent.java",
+        "calls": 12
+      },
+      {
+        "path": ".eval/model-calls.jsonl",
+        "calls": 11
+      },
+      {
+        "path": "src/main/java/com/studyagent/learning/LearningPlanningService.java",
+        "calls": 11
+      },
+      {
+        "path": ".eval/m8-asr-model-download.log",
+        "calls": 11
+      },
+      {
+        "path": "AGENTS.md",
+        "calls": 10
+      },
+      {
+        "path": "frontend/package.json",
+        "calls": 10
+      },
+      {
+        "path": "src/main/java/com/studyagent/learning/web/LearningController.java",
+        "calls": 9
+      },
+      {
+        "path": "scripts/run-chunk-config.py",
+        "calls": 9
+      },
+      {
+        "path": "src/main/java/com/studyagent/learning/LearningConversationGateway.java",
+        "calls": 9
+      },
+      {
+        "path": "src/main/resources/application.yml",
+        "calls": 8
+      },
+      {
+        "path": "src/main/java/com/studyagent/ingest/upload/FileUploadService.java",
+        "calls": 8
+      }
+    ],
+    "compactions": [
+      {
+        "at": "2026-09-08T15:59:42.222Z",
+        "replacementHistoryChars": 96732
+      },
+      {
+        "at": "2026-09-08T17:11:53.359Z",
+        "replacementHistoryChars": 99440
+      },
+      {
+        "at": "2026-09-08T18:30:46.263Z",
+        "replacementHistoryChars": 97648
+      },
+      {
+        "at": "2026-09-08T19:56:35.682Z",
+        "replacementHistoryChars": 105412
+      },
+      {
+        "at": "2026-09-08T21:22:01.587Z",
+        "replacementHistoryChars": 113308
+      },
+      {
+        "at": "2026-09-08T22:10:21.498Z",
+        "replacementHistoryChars": 103620
+      },
+      {
+        "at": "2026-09-08T23:10:30.673Z",
+        "replacementHistoryChars": 104004
+      },
+      {
+        "at": "2026-09-09T00:32:19.585Z",
+        "replacementHistoryChars": 101725
+      },
+      {
+        "at": "2026-09-09T01:53:43.498Z",
+        "replacementHistoryChars": 102193
+      },
+      {
+        "at": "2026-09-09T03:04:17.909Z",
+        "replacementHistoryChars": 95057
+      },
+      {
+        "at": "2026-09-09T04:07:15.065Z",
+        "replacementHistoryChars": 98850
+      },
+      {
+        "at": "2026-09-09T07:56:30.566Z",
+        "replacementHistoryChars": 101366
+      },
+      {
+        "at": "2026-09-09T08:55:10.315Z",
+        "replacementHistoryChars": 103330
+      }
+    ]
+  },
+  "hourlyUsage": {
+    "2026-09-08T14:00Z": {
+      "calls": 28,
+      "input_tokens": 2497627,
+      "cached_input_tokens": 2418432,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 12810,
+      "reasoning_output_tokens": 4423,
+      "total_tokens": 2510437
+    },
+    "2026-09-08T15:00Z": {
+      "calls": 85,
+      "input_tokens": 14516019,
+      "cached_input_tokens": 14266112,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 65056,
+      "reasoning_output_tokens": 30473,
+      "total_tokens": 14581075
+    },
+    "2026-09-08T16:00Z": {
+      "calls": 121,
+      "input_tokens": 17168542,
+      "cached_input_tokens": 16861696,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 59886,
+      "reasoning_output_tokens": 26254,
+      "total_tokens": 17228428
+    },
+    "2026-09-08T17:00Z": {
+      "calls": 74,
+      "input_tokens": 9271540,
+      "cached_input_tokens": 9053696,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 73178,
+      "reasoning_output_tokens": 23112,
+      "total_tokens": 9344718
+    },
+    "2026-09-08T18:00Z": {
+      "calls": 71,
+      "input_tokens": 10368246,
+      "cached_input_tokens": 10051712,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 73167,
+      "reasoning_output_tokens": 22944,
+      "total_tokens": 10441413
+    },
+    "2026-09-08T19:00Z": {
+      "calls": 63,
+      "input_tokens": 10942669,
+      "cached_input_tokens": 10624896,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 71845,
+      "reasoning_output_tokens": 36275,
+      "total_tokens": 11014514
+    },
+    "2026-09-08T20:00Z": {
+      "calls": 78,
+      "input_tokens": 11841079,
+      "cached_input_tokens": 11690624,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 71031,
+      "reasoning_output_tokens": 29008,
+      "total_tokens": 11912110
+    },
+    "2026-09-08T21:00Z": {
+      "calls": 92,
+      "input_tokens": 13034131,
+      "cached_input_tokens": 12668800,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 82199,
+      "reasoning_output_tokens": 26851,
+      "total_tokens": 13116330
+    },
+    "2026-09-08T22:00Z": {
+      "calls": 106,
+      "input_tokens": 16373894,
+      "cached_input_tokens": 16094720,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 77470,
+      "reasoning_output_tokens": 15329,
+      "total_tokens": 16451364
+    },
+    "2026-09-08T23:00Z": {
+      "calls": 99,
+      "input_tokens": 12301422,
+      "cached_input_tokens": 12057344,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 69918,
+      "reasoning_output_tokens": 18904,
+      "total_tokens": 12371340
+    },
+    "2026-09-09T00:00Z": {
+      "calls": 120,
+      "input_tokens": 17997035,
+      "cached_input_tokens": 17647232,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 72766,
+      "reasoning_output_tokens": 21537,
+      "total_tokens": 18069801
+    },
+    "2026-09-09T01:00Z": {
+      "calls": 93,
+      "input_tokens": 14933490,
+      "cached_input_tokens": 14433536,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 69948,
+      "reasoning_output_tokens": 29280,
+      "total_tokens": 15003438
+    },
+    "2026-09-09T02:00Z": {
+      "calls": 86,
+      "input_tokens": 13635931,
+      "cached_input_tokens": 13400576,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 43980,
+      "reasoning_output_tokens": 14779,
+      "total_tokens": 13679911
+    },
+    "2026-09-09T03:00Z": {
+      "calls": 136,
+      "input_tokens": 18208145,
+      "cached_input_tokens": 17959552,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 64581,
+      "reasoning_output_tokens": 23635,
+      "total_tokens": 18272726
+    },
+    "2026-09-09T04:00Z": {
+      "calls": 84,
+      "input_tokens": 10450025,
+      "cached_input_tokens": 10176256,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 47888,
+      "reasoning_output_tokens": 11936,
+      "total_tokens": 10497913
+    },
+    "2026-09-09T07:00Z": {
+      "calls": 54,
+      "input_tokens": 9319566,
+      "cached_input_tokens": 9043840,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 40159,
+      "reasoning_output_tokens": 13998,
+      "total_tokens": 9359725
+    },
+    "2026-09-09T08:00Z": {
+      "calls": 124,
+      "input_tokens": 19850006,
+      "cached_input_tokens": 19579520,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 68445,
+      "reasoning_output_tokens": 16171,
+      "total_tokens": 19918451
+    },
+    "2026-09-09T09:00Z": {
+      "calls": 50,
+      "input_tokens": 6268416,
+      "cached_input_tokens": 6166272,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 16082,
+      "reasoning_output_tokens": 3716,
+      "total_tokens": 6284498
+    }
+  },
+  "repository": {
+    "trackedSize": {
+      "otherFiles": 28,
+      "otherLines": 2196,
+      "documentationFiles": 64,
+      "documentationLines": 3594,
+      "frontendTestsFiles": 17,
+      "frontendTestsLines": 752,
+      "frontendSourceFiles": 31,
+      "frontendSourceLines": 2010,
+      "scriptsFiles": 42,
+      "scriptsLines": 3871,
+      "productionJavaFiles": 202,
+      "productionJavaLines": 11011,
+      "backendTestsFiles": 80,
+      "backendTestsLines": 6793
+    },
+    "largestJavaFiles": [
+      {
+        "file": "src/main/java/com/studyagent/learning/LearningPlanningService.java",
+        "lines": 338
+      },
+      {
+        "file": "src/main/java/com/studyagent/ingest/upload/NativeMultipartUploadService.java",
+        "lines": 317
+      },
+      {
+        "file": "src/main/java/com/studyagent/learning/LearningPersistenceService.java",
+        "lines": 310
+      },
+      {
+        "file": "src/main/java/com/studyagent/ingest/pipeline/DocumentPipeline.java",
+        "lines": 300
+      },
+      {
+        "file": "src/main/java/com/studyagent/learning/LearningTurnPersistence.java",
+        "lines": 241
+      },
+      {
+        "file": "src/main/java/com/studyagent/learning/PlanningValidation.java",
+        "lines": 227
+      },
+      {
+        "file": "src/main/java/com/studyagent/algo/chunk/StructuredChunker.java",
+        "lines": 208
+      },
+      {
+        "file": "src/main/java/com/studyagent/algo/fsrs/FsrsScheduler.java",
+        "lines": 208
+      },
+      {
+        "file": "src/main/java/com/studyagent/ingest/storage/S3ObjectStorageService.java",
+        "lines": 206
+      },
+      {
+        "file": "src/main/java/com/studyagent/learning/LearningConversationGateway.java",
+        "lines": 195
+      }
+    ],
+    "commits": [
+      {
+        "sha": "a69fa94",
+        "at": "2026-09-09T17:02:19+08:00",
+        "subject": "fix: read confirmed learning sources with scoped evidence tracking",
+        "files": 11,
+        "added": 453,
+        "deleted": 11
+      },
+      {
+        "sha": "b00ca44",
+        "at": "2026-09-09T16:37:31+08:00",
+        "subject": "fix: clarify quiz answers and preserve unresolved learning context",
+        "files": 11,
+        "added": 150,
+        "deleted": 16
+      },
+      {
+        "sha": "dfe752f",
+        "at": "2026-09-09T16:19:18+08:00",
+        "subject": "feat: verify sourced media learning and freeze compaction protocol",
+        "files": 26,
+        "added": 1055,
+        "deleted": 10
+      },
+      {
+        "sha": "299768b",
+        "at": "2026-09-09T15:36:45+08:00",
+        "subject": "feat: verify real five-point learning and strengthen resumable planning",
+        "files": 30,
+        "added": 1772,
+        "deleted": 54
+      },
+      {
+        "sha": "47ec29a",
+        "at": "2026-09-09T11:25:40+08:00",
+        "subject": "fix: tighten planning coverage and prepare frozen learning experiments",
+        "files": 15,
+        "added": 338,
+        "deleted": 19
+      },
+      {
+        "sha": "186f06a",
+        "at": "2026-09-09T10:29:59+08:00",
+        "subject": "docs: audit measured evidence and draft resume with remaining gates",
+        "files": 5,
+        "added": 181,
+        "deleted": 4
+      },
+      {
+        "sha": "8d658a9",
+        "at": "2026-09-09T10:21:29+08:00",
+        "subject": "test: prepare isolated authored learning and resumable conversation checks",
+        "files": 8,
+        "added": 280,
+        "deleted": 1
+      },
+      {
+        "sha": "8c5cfa9",
+        "at": "2026-09-09T10:06:10+08:00",
+        "subject": "feat: ingest local audio and video with recoverable ASR artifacts",
+        "files": 33,
+        "added": 981,
+        "deleted": 23
+      },
+      {
+        "sha": "1675911",
+        "at": "2026-09-09T09:00:00+08:00",
+        "subject": "test: track reproducible local Anki fault acceptance",
+        "files": 2,
+        "added": 200,
+        "deleted": 0
+      },
+      {
+        "sha": "eef5d92",
+        "at": "2026-09-09T08:59:12+08:00",
+        "subject": "feat: export sourced review cards to Anki with recoverable deduplication",
+        "files": 24,
+        "added": 1023,
+        "deleted": 3
+      },
+      {
+        "sha": "f9c298a",
+        "at": "2026-09-09T08:25:42+08:00",
+        "subject": "feat: add resumable upload UI and measured 400MB comparison",
+        "files": 21,
+        "added": 7827,
+        "deleted": 72
+      },
+      {
+        "sha": "56b7415",
+        "at": "2026-09-09T07:57:35+08:00",
+        "subject": "feat: use recoverable native multipart uploads with scoped deduplication",
+        "files": 24,
+        "added": 1224,
+        "deleted": 839
+      },
+      {
+        "sha": "6ae0a70",
+        "at": "2026-09-09T07:25:39+08:00",
+        "subject": "test: preserve real 400MB upload baseline and phase timings",
+        "files": 7,
+        "added": 3821,
+        "deleted": 2
+      },
+      {
+        "sha": "bd80e08",
+        "at": "2026-09-09T07:02:20+08:00",
+        "subject": "feat: add recoverable learning workspace and source viewer",
+        "files": 40,
+        "added": 2984,
+        "deleted": 648
+      },
+      {
+        "sha": "24bd418",
+        "at": "2026-09-09T05:59:54+08:00",
+        "subject": "feat: persist autonomous learning turns and point summaries",
+        "files": 62,
+        "added": 2259,
+        "deleted": 1261
+      },
+      {
+        "sha": "c42630b",
+        "at": "2026-09-09T04:51:35+08:00",
+        "subject": "feat(learning): persist staged course planning and evidence validation",
+        "files": 25,
+        "added": 1347,
+        "deleted": 6
+      },
+      {
+        "sha": "e44a648",
+        "at": "2026-09-09T03:59:29+08:00",
+        "subject": "fix(ingest): avoid empty-range chunk deletion deadlocks",
+        "files": 7,
+        "added": 218,
+        "deleted": 4
+      },
+      {
+        "sha": "aea7f48",
+        "at": "2026-09-09T03:37:59+08:00",
+        "subject": "fix(eval): pair context ablations and audit real RAG results",
+        "files": 17,
+        "added": 911,
+        "deleted": 15
+      },
+      {
+        "sha": "925a450",
+        "at": "2026-09-09T03:01:36+08:00",
+        "subject": "feat(eval): freeze six-arm chunk selection and validation protocol",
+        "files": 26,
+        "added": 1325,
+        "deleted": 7
+      },
+      {
+        "sha": "4b4bf50",
+        "at": "2026-09-09T02:40:40+08:00",
+        "subject": "feat(eval): freeze course evidence set and production RAG scorer",
+        "files": 20,
+        "added": 2369,
+        "deleted": 1
+      },
+      {
+        "sha": "06a2fa9",
+        "at": "2026-09-09T02:05:33+08:00",
+        "subject": "Expose RAG comparisons with deduplicated budgeted context",
+        "files": 22,
+        "added": 543,
+        "deleted": 221
+      },
+      {
+        "sha": "e3c9ac0",
+        "at": "2026-09-09T01:46:51+08:00",
+        "subject": "Add resumable document ingestion and measured structural chunking",
+        "files": 51,
+        "added": 3569,
+        "deleted": 155
+      },
+      {
+        "sha": "34b9301",
+        "at": "2026-09-09T00:38:26+08:00",
+        "subject": "Establish eval runtime, usage accounting and document smoke baselines",
+        "files": 50,
+        "added": 2777,
+        "deleted": 29
+      }
+    ]
+  },
+  "limits": [
+    "Raw input includes repeatedly supplied cached context; it is not unique new text or a monetary bill.",
+    "One response_id counted once; reasoning tokens are already within output, cached input already within input.",
+    "Command pattern counts are per tool input, may batch several commands and overlap categories; not exact process counts.",
+    "Wall time includes user pauses and external waits; it is not exclusive coding or model compute time.",
+    "Repository size is the current tracked snapshot, not a judgment that all code is necessary."
+  ],
+  "goalPanelAtPause": {
+    "status": "paused",
+    "tokensUsed": 5300345,
+    "timeUsedSeconds": 55561,
+    "source": "get_goal snapshot after user pause",
+    "note": "Application accounting; not equated with per-response raw usage or monetary billing."
+  }
+}
