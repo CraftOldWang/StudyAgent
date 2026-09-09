@@ -183,6 +183,7 @@ td strong, .document-error { display: block; overflow-wrap: anywhere; }
 .markdown-content a { color: var(--color-primary); text-underline-offset: .2em; }
 .markdown-content blockquote { border-left: 3px solid var(--color-border); margin-inline: 0; padding-left: 1rem; color: var(--color-muted); }
 .markdown-table { overflow-x: auto; }
+.markdown-content .katex-display { overflow-x: auto; overflow-y: hidden; padding-block: .25rem; }
 .learning-message-form { display: grid; gap: .8rem; margin-top: 1.5rem; border-top: 1px solid var(--color-border); padding-top: 1.3rem; }
 .action-row { display: flex; gap: .6rem; flex-wrap: wrap; align-items: center; margin-top: .8rem; }
 .quiz-block, .cards-block { margin-top: 1.5rem; border-top: 1px solid var(--color-border); }

@@ -1,0 +1,43 @@
+{
+  "backendVersion": "a69fa94",
+  "frontendTests": {
+    "tests": 39,
+    "passed": 39,
+    "failed": 0
+  },
+  "typecheckAndBuild": "PASSED",
+  "premiumStrictViolations": 0,
+  "tokenMappingsChecked": 23,
+  "browser": {
+    "sessionId": "6200005172350079200",
+    "savedTurns": 23,
+    "renderedMathAndMathML": 321,
+    "desktopClientWidth": 976,
+    "desktopScrollWidth": 976,
+    "visualCheck": "Stable matching formulas rendered; full saved learning history visible"
+  },
+  "scopeChange": "User explicitly removed narrow-screen acceptance; future checks target desktop web only.",
+  "libraries": {
+    "remark-math": "6.0.0",
+    "rehype-katex": "7.0.1",
+    "katex": "0.16.47"
+  },
+  "limits": [
+    "KaTeX adds bundle weight; Vite reports a 620 kB minified JS chunk, about 194 kB gzip.",
+    "Rendering formulas does not validate their mathematical correctness."
+  ],
+  "files": [
+    {
+      "path": ".eval/m6-math-tests.log",
+      "sha256": "da18da8da243627888f4da9420a69ab998e45fbf6ce5a693b4f5ba822bd56a8b"
+    },
+    {
+      "path": ".eval/m6-math-build.log",
+      "sha256": "6eb5d68b0b471b3339bfad435617a6deb3597be01fdd988b55e4be86abb80057"
+    },
+    {
+      "path": ".eval/m6-math-premium-audit.json",
+      "sha256": "2aafa915b2b103bca509edab7a41fb265bc1e6dc5974c0d32dbb17d5d89f40d2"
+    }
+  ]
+}

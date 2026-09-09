@@ -35,6 +35,8 @@
 
 来源抽屉由 `SourceDrawer.tsx` 统一拥有，使用原生 dialog.showModal 的焦点隔离、Escape 与焦点归还，关闭时恢复页面滚动。来源只经当前会话/计划绑定资料库读取，失败明示，正文按纯文本显示；旧资料仅记录字符区间时，不冒充原课件页码。普通检索复用来源位置格式化，不直接显示位置JSON；音视频的时间戳保留在正文。
 
+已保存讲解、对话和流式正文共用`components/ui/MessageContent.tsx`，支持Markdown及美元符号包裹的数学公式。KaTeX保持trust=false，模型HTML和远程图片不执行；不完整或无效公式仍保留可读内容，不影响其余消息。独立长公式的溢出归公式区域，不撑开页面；来源原文抽屉仍为纯文本，不改写证据。
+
 ## Flow ledger
 
 | Operation | Pending | Success | Failure recovery |
@@ -50,7 +52,9 @@
 
 Anki 导出由 `AnkiCardExport.tsx` 统一拥有，旧会话卡片与聊天产物复用；使用 `apiRequest`、原生按钮和 `Feedback`。单向导出到本机 AnkiConnect，页面离开不取消后端导出；不自动重试、不拉取复习记录。每张卡的成功/失败独立展示，不能用一张成功推断三张全部成功。再次导出复用既有笔记，不覆盖用户在 Anki 中编辑过的正文。
 
-## Navigation and responsive behavior
+## Navigation and desktop acceptance
+
+2026-09-09用户明确调整：本应用仅用于桌面网页使用、演示和测试，不再将窄屏/移动端适配作为开发或验收要求。保留已有响应式CSS，不为移动端继续增加工作；后续浏览器验收以桌面阅读、公式、来源与交互为重点。
 
 知识库/学习为工作区导航，浏览器标题为“资料库 / 学习 — StudyPilot”。已提交资源 ID 可进入 URL，学习目标和消息正文不能进入 URL。会话切换前保留或提示未发送草稿；工作区切换若组件仍挂载并保留草稿则无需反复确认。页面刷新依已保存会话 ID 恢复，不能在刷新时自动发起新模型请求。
 
