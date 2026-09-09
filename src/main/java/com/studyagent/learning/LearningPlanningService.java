@@ -94,7 +94,8 @@ public class LearningPlanningService {
                         "evidence":[{"sourceChunkId":"...","quote":"原文摘录"}]}],
                         "uncovered":[{"sourceChunkId":"...","reason":"该片段仅含目录等，无可提取知识点"}]}。
                         每个输入 chunkId 至少被一个知识点引用或列入 uncovered；只使用本批次 ID。
-                        每个知识点为每个引用来源提供1–2条简短原文依据，每条不超过400字，保留原文和标点，不能改写。
+                        每个知识点为每个引用来源提供1–2条简短原文依据，每条建议40–150字，硬上限400字符（含空格和换行）。
+                        不要整段复制长例题或代码；选择连续的核心定义或关键语句，保留原文和标点，不能改写。
                         摘录覆盖该知识点的核心定义、机制或区别，用于后续判断习题是否直接考察该知识点。
                         目标：%s
                         课件片段：%s
@@ -112,11 +113,15 @@ public class LearningPlanningService {
                     格式：{"points":[{"chapterTitle":"...","topic":"...","subtopics":["..."],
                     "candidateIds":["输入候选id"]}]}。不要嵌套 chapters 数组，服务端按 chapterTitle 分组。
                     先将全部候选分配到要求数量的最终知识点，再填写子主题，不能把每个候选都独立输出。
+                    主题相近的候选也必须把各自 ID 写入同一个 candidateIds，不能因语义已覆盖而省略 ID。
+                    输出前核对所有 candidateIds 的并集等于待分配 ID 清单，且没有重复。
                     不要输出自己的教学 ID 或来源 ID，服务端会分配及汇总。
                     目标：%s
+                    待分配 ID 清单：%s
                     候选：%s
                     """.formatted(input.targetPointCount() == null ? "按资料内容合理确定" : "必须恰好 " + input.targetPointCount(),
-                    run.getLearningGoal(), json(candidates));
+                    run.getLearningGoal(), json(candidates.stream().map(Candidate::id).toList()),
+                    json(candidates.stream().map(c -> Map.of("id", c.id(), "topic", c.topic(), "subtopics", c.subtopics())).toList()));
             Outline outline = stage(run, token, "OUTLINE", mergePrompt, Outline.class,
                     node -> PlanningValidation.outline(node, candidates, input.targetPointCount()));
             List<Importance> matches = new ArrayList<>();

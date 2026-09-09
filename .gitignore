@@ -49,6 +49,9 @@ scripts/*
 !scripts/verify-asr-recovery.py
 !scripts/run-authored-learning-smoke.py
 !scripts/run-learning-conversation-smoke.py
+!scripts/report-learning-usage.py
+!scripts/test-learning-usage.py
+!scripts/prepare-learning-replicas.py
 .agentscope/workspace/state/
 .eval/
 config/local-secrets.properties

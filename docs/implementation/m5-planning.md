@@ -30,3 +30,12 @@ V10 新增 run 和 stage-attempt 表，保留每次尝试的输入指纹、原�
 可复现入口为 `scripts/run-planning-smoke.py`，进程中断注入入口为 `scripts/verify-planning-recovery.py`。v2 已验证失败阶段恢复与成功提取复用，但重点语义仍不合格、TASKS 因代码围栏失败，详见 `docs/evidence/m5/planning-development-review.json`。当前 v3 使用 [DeepSeek JSON Output](https://api-docs.deepseek.com/guides/json_mode/) 的 `json_object` 模式并强化直接依据规则；13 项定向回归与独立打包通过。
 
 v3 真实模型测试被自动审批拒绝，两次复核均要求用户明确确认课程内容发送至 DeepSeek。现有用户已授权资料测试和 provider 使用，但工具审批未接受该授权范围；未通过其它命令、工具或 provider 绕过。v3 尚无真实模型验收，进程中断注入未成功实施，不能声称规划进程恢复已实测。待审批问题解决后从 `.eval/runs/m5-planning-smoke-v3/` 创建新版本任务验收。自然对话、摘要策略与 SSE 的本地实现进展见 [m5-conversation.md](m5-conversation.md)，真实模型及前端完整学习验收仍待完成；已有核心界面改进见m6-core-ui.md，规划接口通过不代表整个 M5 完成。
+
+
+授权更新：用户随后明确授权这些下载课程内容外传至DeepSeek用于项目测试。此前审批拒绝保留为历史事实；不再将缺少该授权列为当前阻塞。
+
+2026-09-09 Docker 恢复后，复用 v1 三份已索引资料，按 `corpus-v2.json` 补充《编译的多个阶段》。v3 任务 `2097521725136814081` 实际调用六次：EXTRACT/2 第一次输出含542字符摘录，超过400字符上限；显式重试复用前两批，第三批成功。OUTLINE 两次均把15个候选中的14个分配到五个最终知识点，遗漏“分析阶段与中间代码生成”，因此均被完整性校验拒绝。原始HTTP、阶段输出及摘录长度核对保留在 `.eval/runs/m5-planning-smoke-v3/`。这六次 provider 请求成功，但业务规划失败，不能混为成功验收。
+
+v4 将提取摘录建议设为40–150字符并明确空格/换行计入400上限；大纲合并只接收候选ID、主题和子主题，已验证证据仍由服务端保存并在合并后归集。增加显式待分配ID清单，提醒语义重复也必须保留各自ID。因prompt版本变化，新建任务验收，保留v3失败记录，不改写旧阶段产物。
+
+v4定向验证10项通过（PlanningValidationTest 8、PlanningPersistenceTest 2），离线package成功，日志`.eval/m5-planning-v4-tests-r2.log`。首次构建在Docker约3.8GiB上限下出现Cannot allocate memory；临时停止本项目eval-app、broker与namesrv后构建通过。用户正在讨论提高WSL内存，目前这三个容器仍停止，其他项目未操作；下一步恢复它们并创建v4真实规划任务。尚无v4真实模型成功证据。

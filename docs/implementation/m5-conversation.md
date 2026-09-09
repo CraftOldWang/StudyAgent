@@ -1,6 +1,6 @@
 # M5 自然对话、持久化回合与上下文
 
-当前为本地实现与自动化验证，尚未完成真实课程模型验收。规划 v3 的课程资料→DeepSeek 调用被自动审批拒绝，本模块没有绕过该限制。正式 18 会话压缩实验、生产 API 故障恢复与 SSE 断线验收仍待执行。
+当前为本地实现与自动化验证，尚未完成真实课程模型验收。此前课程资料→DeepSeek 调用被自动审批拒绝；用户随后明确授权这些资料外传用于项目测试。2026-09-09 Docker 恢复后已恢复真实规划调用。正式 18 会话压缩实验、真实模型故障恢复与 SSE 生成中断验收仍待执行。
 
 ## 入口与业务提交
 
@@ -59,3 +59,10 @@ SSE 事件为 accepted、text、progress、result、failure。accepted 只代表
 真实数据库/API 阶段测试已通过，证据见 `docs/evidence/m5/local-conversation-recovery.json`，脚本 `scripts/verify-learning-local-recovery.py`。预置的是人工编写的 ARTIFACTS_COMMITTED 合成夹具，不含下载课件；阈值策略下无需额外摘要模型调用。两个并发恢复分别返回 SUCCEEDED/RUNNING，最终三卡数量为 3、attemptCount 为 2、会话和知识点 COMPLETED、两个活跃指针均 NULL。重复相同请求没有新增回合，不同内容同 ID 的业务码为 409、跨用户查询为 404（项目现有异常处理器的 HTTP 状态均为 400）。SSE 对已完成请求返回 accepted/result，未测生成中断线。模型账本 394→394。
 
 首次夹具使用 MySQL 的本地 NOW，而应用 JVM 为 UTC，导致设置的“过期”租约仍在应用时间之后；这是夹具时间错误，已改用 UTC_TIMESTAMP 在隔离 v2 数据上通过。重复知识库名称也触发了现有唯一性校验，后改为运行目录命名。失败日志保留，不将这次测试写成进程崩溃或真实模型恢复验收。
+
+
+用量统计新增`scripts/report-learning-usage.py`：从真实账本按`LEARNING/sessionId/turnId`和关联`COMPACTION/turnId/kind`汇总学习、摘要及其失败/重试，排除其它会话和规划调用。可用`--turn-id`补充仅恢复摘要的回合。缺失usage保留未知，缓存输入不重复相加；三项自编事件回归覆盖会话隔离、失败重试、未终结调用和异常账本。该工具尚未产出正式18会话实验报告，不能据记账测试宣称压缩收益。
+
+正式实验准备脚本为`scripts/prepare-learning-replicas.py`：要求一份真实成功的五知识点规划，冻结其目标、顺序、主题、来源、时间与重点；每门课程创建三策略×三次的九个初始会话，轮换策略执行顺序。默认只生成本地初始SQL和清单，`--apply`只在`study_agent_eval`中插入NEW状态计划，再通过实际API核对计划、设置压缩策略。副本使用独立业务ID，不复制回合、答案、卡片或上下文；这些是实验初始条件，不代表九次规划成功。后续学习仍全部通过生产API和真实provider执行。
+
+`run-learning-conversation-smoke.py --script`支持固定每个知识点的六条用户消息，按主题匹配计划，保存文件SHA-256；已开始的实验拒绝更换或遗漏原脚本。由此可以在相同输入中加入错误理解与跨知识点回忆检查。新增脚本通过语法/CLI检查，初始副本SQL在隔离MySQL事务内插入人工五点夹具：检查5知识点/1计划后回滚，会话残留为0，证据`.eval/m5-replica-sql-validation.json`。API配置与正式18会话尚未执行，不能计入完成数量。

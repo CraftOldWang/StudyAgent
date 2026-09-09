@@ -16,6 +16,7 @@ def main():
     parser.add_argument("--run-dir", type=Path, required=True)
     parser.add_argument("--corpus-run", type=Path, default=Path(".eval/runs/m5-planning-corpus-v1"))
     parser.add_argument("--manifest", type=Path, default=Path("eval/planning/corpus-v1.json"))
+    parser.add_argument("--course", choices=["compiler", "algorithms", "os"], default="compiler")
     parser.add_argument("--goal", default="面向编译原理期末考试，把所选课件归纳为五个循序渐进的知识点，参考习题安排重点和练习时间，保留基础概念。")
     args = parser.parse_args()
     args.run_dir.mkdir(parents=True, exist_ok=True)
@@ -48,9 +49,11 @@ def main():
             raise RuntimeError("Run already exists; execute or inspect the recorded ID")
         corpus = json.loads((args.corpus_run / "ingest-state.json").read_text(encoding="utf-8"))
         manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
-        payload = {"knowledgeBaseId": corpus["knowledgeBases"]["compiler"], "learningGoal": args.goal, "targetPointCount": 5,
-                   "lessonDocumentIds": [corpus["documents"][f["id"]]["documentId"] for f in manifest["files"] if f["planningRole"] == "LESSON"],
-                   "exerciseDocumentIds": [corpus["documents"][f["id"]]["documentId"] for f in manifest["files"] if f["planningRole"] == "EXERCISE"]}
+        sources = [f for f in manifest["files"] if f["course"] == args.course]
+        assert sources and any(f["planningRole"] == "LESSON" for f in sources)
+        payload = {"knowledgeBaseId": corpus["knowledgeBases"][args.course], "learningGoal": args.goal, "targetPointCount": 5,
+                   "lessonDocumentIds": [corpus["documents"][f["id"]]["documentId"] for f in sources if f["planningRole"] == "LESSON"],
+                   "exerciseDocumentIds": [corpus["documents"][f["id"]]["documentId"] for f in sources if f["planningRole"] == "EXERCISE"]}
         result = request("POST", "/api/learning/plans", "create", json=payload)
         state.update(runId=result["id"], input=payload)
     elif args.stage in {"view", "execute"}:
@@ -62,6 +65,7 @@ def main():
             assert result["status"] == "SUCCEEDED"
             points = [p for c in result["result"]["outline"]["chapters"] for p in c["points"]]
             tasks = result["result"]["tasks"]
+            assert len(points) == state["input"]["targetPointCount"]
             assert {p["id"] for p in points} == {t["knowledgePointId"] for t in tasks}
             assert len(tasks) == len(points)
     else:

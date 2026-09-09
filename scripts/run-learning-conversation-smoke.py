@@ -5,6 +5,7 @@ inject quiz answers, alter state in SQL, or replace a failed request with a new 
 """
 import argparse
 from datetime import datetime, timezone
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -23,6 +24,7 @@ def main():
     parser.add_argument("--max-points", type=int, default=1)
     parser.add_argument("--disconnect-first-text", action="store_true")
     parser.add_argument("--retry-failed", action="store_true")
+    parser.add_argument("--script", type=Path, help="Frozen per-point messages; topic must match the selected plan")
     args = parser.parse_args()
     root = args.run_dir; root.mkdir(parents=True, exist_ok=True)
     state_path = root / "state.json"
@@ -52,6 +54,20 @@ def main():
         assert all(p["status"] == "NEW" for p in initial["plan"]), "Start with a fresh session; resume uses its original state file"
         state["plan"] = initial["plan"]; save()
     assert 1 <= args.max_points <= len(state["plan"])
+    script = None
+    if args.script:
+        raw = args.script.read_bytes()
+        script = json.loads(raw)
+        assert len(script["points"]) == len(state["plan"])
+        for expected, actual in zip(script["points"], state["plan"]):
+            assert expected["topic"] == actual["topic"], "Frozen script belongs to another plan"
+            assert set(expected["messages"]) == {"explain", "question", "quiz", "partial", "grade", "cards"}
+            assert all(isinstance(v, str) and v.strip() for v in expected["messages"].values())
+        fingerprint = hashlib.sha256(raw).hexdigest()
+        assert not state.get("steps") or state.get("scriptSha256") == fingerprint, "Cannot change user script after starting"
+        state["scriptSha256"] = fingerprint; save()
+    else:
+        assert not state.get("scriptSha256"), "Resume must supply the original frozen script"
 
     def turn(point, name, message, expected_status, artifact_type, disconnect=False):
         key = str(point["id"]) + "/" + name
@@ -112,12 +128,19 @@ def main():
         return found
 
     for i, point in enumerate(state["plan"][:args.max_points]):
-        turn(point, "explain", "请从当前知识点开始，结合资料讲清规则、一个例子和一个容易误解的地方。", "EXPLAINING", "EXPLANATION", args.disconnect_first_text and i == 0)
-        turn(point, "question", "请再用一个边界情况解释当前知识点，暂时不要出题，也不要进入下一个知识点。", "EXPLAINING", "QUESTION")
-        turn(point, "quiz", "我准备好了，请针对当前知识点给我五道选择题进行测验。", "QUIZZING", "QUIZ")
-        turn(point, "partial", "我先回答第1题，选A，其他四题暂时没决定。", "QUIZZING", "QUESTION")
-        turn(point, "grade", "现在完整提交五题答案：1.A 2.A 3.A 4.A 5.A。", "CARD_GENERATING", "GRADE")
-        turn(point, "cards", "请结合本次答题反馈生成当前知识点的三张复习卡，并完成这个知识点。", "COMPLETED", "CARDS")
+        messages = script["points"][i]["messages"] if script else {
+            "explain": "请从当前知识点开始，结合资料讲清规则、一个例子和一个容易误解的地方。",
+            "question": "请再用一个边界情况解释当前知识点，暂时不要出题，也不要进入下一个知识点。",
+            "quiz": "我准备好了，请针对当前知识点给我五道选择题进行测验。",
+            "partial": "我先回答第1题，选A，其他四题暂时没决定。",
+            "grade": "现在完整提交五题答案：1.A 2.A 3.A 4.A 5.A。",
+            "cards": "请结合本次答题反馈生成当前知识点的三张复习卡，并完成这个知识点。"}
+        turn(point, "explain", messages["explain"], "EXPLAINING", "EXPLANATION", args.disconnect_first_text and i == 0)
+        turn(point, "question", messages["question"], "EXPLAINING", "QUESTION")
+        turn(point, "quiz", messages["quiz"], "QUIZZING", "QUIZ")
+        turn(point, "partial", messages["partial"], "QUIZZING", "QUESTION")
+        turn(point, "grade", messages["grade"], "CARD_GENERATING", "GRADE")
+        turn(point, "cards", messages["cards"], "COMPLETED", "CARDS")
     final = session()
     assert all(p["status"] == "COMPLETED" for p in final["plan"][:args.max_points])
     if args.disconnect_first_text: assert next(iter(state["steps"].values())).get("disconnectedAfterText"), "No actual text disconnect was observed"

@@ -1,0 +1,38 @@
+{
+  "runId": "2097521725136814081",
+  "status": "FAILED_VALIDATION",
+  "providerAttempts": 6,
+  "pointCountRequested": 5,
+  "outlineCandidateCount": 15,
+  "outlineAssignedCount": 14,
+  "failures": [
+    "EXTRACT/2: one evidence quote 542 characters exceeds 400",
+    "OUTLINE: two attempts omit one candidate"
+  ],
+  "rawFiles": [
+    {
+      "path": ".eval/runs/m5-planning-smoke-v3/execute-1788923126797272700.json",
+      "sha256": "548bd36d09efb3ed7f0cbe41bc475e209de93cf888b58d4e7392577d9f0d3694"
+    },
+    {
+      "path": ".eval/runs/m5-planning-smoke-v3/execute-1788923271588400100.json",
+      "sha256": "61f3cd804496d7ea5b5b6eab4b53583cd4054ce9e8eddc31b6cc5d31855d0ed8"
+    },
+    {
+      "path": ".eval/runs/m5-planning-smoke-v3/execute-1788923323122429400.json",
+      "sha256": "7e67b7e19d35235c39966523ebaf7bc607845b8d9ec3cae27c25732255969eb2"
+    },
+    {
+      "path": ".eval/runs/m5-planning-smoke-v3/failed-extract-2.json",
+      "sha256": "ddad17c112e4b51c475f64c9dc541f1faf27af56648a4721ba9f96057d703534"
+    },
+    {
+      "path": ".eval/runs/m5-planning-smoke-v3/outline-attempt-1.json",
+      "sha256": "417a01d6d52b668eac931706732ccd29447f9fff79baa5066310ed78f9257e34"
+    },
+    {
+      "path": ".eval/runs/m5-planning-smoke-v3/outline-attempt-2.json",
+      "sha256": "1d593fe94a1de87cab887c0bf61e7984c7eb6ddfb00e5ac12597c0176c670394"
+    }
+  ]
+}
