@@ -32,17 +32,31 @@ export function LearningPanel({ knowledgeBase, onSessionKnowledgeBase }: Props) 
   const mounted = useRef(true)
   const transport = useRef<AbortController>()
   const sessionId = useRef('')
-  const end = useRef<HTMLDivElement>(null)
+  const chatScroll = useRef<HTMLDivElement>(null)
+  const [showLatest, setShowLatest] = useState(false)
+  const [planVisible, setPlanVisible] = useState(false)
   const follow = useRef(true)
   const draft = useRef(new Map<string, string>())
   const pendingBySession = useRef(new Map<string, Pending>())
   useEffect(() => {
     mounted.current = true
-    const onScroll = () => { follow.current = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 140 }
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => { mounted.current = false; transport.current?.abort(); window.removeEventListener('scroll', onScroll) }
+    return () => { mounted.current = false; transport.current?.abort() }
   }, [])
-  useEffect(() => { if (follow.current && (partial || history.length)) end.current?.scrollIntoView({ block: 'nearest' }) }, [partial, history.length])
+  useEffect(() => {
+    const viewport = chatScroll.current
+    if (!viewport) return
+    const scroll = () => { if (follow.current) viewport.scrollTop = viewport.scrollHeight }
+    scroll()
+    // Saved tool blocks arrive after the conversation, so follow their content updates too.
+    const observer = new MutationObserver(scroll)
+    observer.observe(viewport, { childList: true, subtree: true, characterData: true })
+    return () => observer.disconnect()
+  }, [session?.id])
+
+  function jumpToLatest() {
+    follow.current = true; setShowLatest(false)
+    if (chatScroll.current) chatScroll.current.scrollTop = chatScroll.current.scrollHeight
+  }
 
   function clearSentDraft(id: string, sent: string) {
     setMessage(current => current.trim() === sent ? '' : current)
@@ -52,6 +66,7 @@ export function LearningPanel({ knowledgeBase, onSessionKnowledgeBase }: Props) 
   async function loadSession(value: LearningSession) {
     const turns = await learningApi.history(value.id)
     if (!mounted.current) return
+    if (sessionId.current !== value.id) { follow.current = true; setShowLatest(false) }
     sessionId.current = value.id
     setMessage(draft.current.get(value.id) || '')
     const savedPending = pendingBySession.current.get(value.id)
@@ -84,6 +99,7 @@ export function LearningPanel({ knowledgeBase, onSessionKnowledgeBase }: Props) 
     setTools([])
     const request = retry || { message: text.trim(), requestId: crypto.randomUUID() }
     const id = session.id
+    follow.current = true; setShowLatest(false)
     pendingBySession.current.set(id, request)
     lock.current = true; setBusy(true); setError(''); setPartial(''); setProgress('正在连接…'); setPending(request)
     transport.current = new AbortController()
@@ -152,13 +168,21 @@ export function LearningPanel({ knowledgeBase, onSessionKnowledgeBase }: Props) 
   return <SourceProvider knowledgeBaseId={session.knowledgeBaseId}><div className="learning-workspace">
     <section className="panel learning-summary"><div><span className="eyebrow">{session.status === 'COMPLETED' ? '本次学习已完成' : '02 / 学习与练习'}</span><h1>{session.learningGoal}</h1>
       <details className="resource-reference"><summary>会话信息与恢复编号</summary><p>会话：{session.id}<br />绑定资料库：{session.knowledgeBaseId}</p></details></div>
-      <div className="action-row"><button className="secondary" disabled={busy} onClick={() => void refresh()} type="button">查询已保存结果</button>
+      <div className="action-row"><button className="secondary" type="button" aria-expanded={planVisible} aria-controls="learning-outline" onClick={() => setPlanVisible(visible => !visible)}>学习计划</button>
+        <button className="secondary" disabled={busy} onClick={() => void refresh()} type="button">查询已保存结果</button>
         <button className="secondary" disabled={busy} onClick={() => { sessionId.current = ''; setSession(null); setHistory([]); setMessage(''); setError('') }} type="button">返回学习准备</button></div></section>
     {session.knowledgeBaseId !== knowledgeBase.id && <Feedback>当前会话仍绑定原资料库。<button className="text-button" type="button" onClick={() => onSessionKnowledgeBase(session.knowledgeBaseId)}>切回会话资料库</button></Feedback>}
     {(error || session.errorMessage) && <Feedback error>{error || session.errorMessage}</Feedback>}
-    <div className="learning-columns"><LearningPlan activeKnowledgePointId={active?.id || null} points={session.plan} />
+    <div className={`learning-columns${planVisible ? ' with-plan' : ''}`}>
+      {planVisible && <div id="learning-outline" className="learning-outline"><LearningPlan activeKnowledgePointId={active?.id || null} points={session.plan} /></div>}
       <section className="learning-focus" aria-label="学习对话">
         <div className="focus-heading"><span className="eyebrow">{active ? `当前知识点 · ${active.sequenceNo}` : '学习记录'}</span><h2>{active?.topic || '讲解、测验与卡片已保存'}</h2><p>完成流程不代表已经掌握，之后可用卡片继续复习。</p></div>
+        <div className="chat-scroll-wrapper">
+        <div className="chat-scroll" ref={chatScroll} role="region" aria-label="对话记录" tabIndex={0} onScroll={event => {
+          const node = event.currentTarget
+          follow.current = node.scrollHeight - node.scrollTop - node.clientHeight < 100
+          setShowLatest(!follow.current)
+        }}>
         {history.length === 0 && <Feedback>{session.status === 'COMPLETED' ? '本次学习已完成，可以查看保存的卡片与资料来源。' : active?.explanation ? '此会话来自旧版本，早期对话未存为聊天记录；现有讲解与测验仍可查看。' : '发送一条消息开始学习，也可以先提问。'}</Feedback>}
         {history.length === 0 && active?.explanation && <article className="chat-answer"><MessageContent text={active.explanation} /></article>}
         <div className="conversation-history">{history.map(turn => <article className="conversation-turn" key={turn.id}>
@@ -182,6 +206,9 @@ export function LearningPanel({ knowledgeBase, onSessionKnowledgeBase }: Props) 
               onSave={cards => saveCards(cards)} onConfirm={cards => saveCards(cards, true)}
               onRewrite={() => { setMessage('请重写这些卡片：'); document.getElementById('learning-message')?.focus() }} />
           : <ReviewCards cards={session.cards} />}
+        </div>
+        {showLatest && <button className="jump-latest secondary" type="button" onClick={jumpToLatest}>↓ 返回最新消息</button>}
+        </div>
         {active && <form noValidate className="learning-message-form" onSubmit={e => { e.preventDefault(); void send(message) }}>
           <Field id="learning-message" label="继续学习或提问" hint="可自然提问、请求测验或生成卡片。Ctrl + Enter 发送。">
             <MultilineInput id="learning-message" rows={3} value={message} maxLength={12000} onChange={e => { setMessage(e.target.value); draft.current.set(session.id, e.target.value) }} aria-describedby="learning-message-hint" onKeyDown={e => {
@@ -189,6 +216,6 @@ export function LearningPanel({ knowledgeBase, onSessionKnowledgeBase }: Props) 
             }} placeholder="例如：先用一个例子解释，再带我做题" /></Field>
           <div className="action-row"><button disabled={!canSend || !message.trim()} type="submit">{busy ? '处理中…' : '发送消息'}</button>
             {hint && <button className="secondary" disabled={!canSend} onClick={() => void send(hint)} type="button">{active.status === 'NEW' ? '开始讲解' : active.status === 'EXPLAINING' ? '进入测验' : '生成复习卡'}</button>}</div>
-        </form>}<div ref={end} />
+        </form>}
       </section></div></div></SourceProvider>
 }

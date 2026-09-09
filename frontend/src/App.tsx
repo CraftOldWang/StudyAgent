@@ -159,7 +159,7 @@ export default function App() {
         onSelect={selectKnowledgeBase}
         selectedId={selectedId}
       />
-      <main>
+      <main className="app-main">
         {error && (
           <div className="error-banner" role="alert">
             <span>{error}</span>
@@ -203,7 +203,7 @@ export default function App() {
                 result={searchResult}
               />
             </div>
-            <div hidden={view !== 'learning'}>
+            <div className="learning-view" hidden={view !== 'learning'}>
               {learningVisited && <LearningPanel
                 knowledgeBase={selectedKnowledgeBase}
                 onSessionKnowledgeBase={(knowledgeBaseId) => {
