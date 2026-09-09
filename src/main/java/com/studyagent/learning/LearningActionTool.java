@@ -43,10 +43,14 @@ public final class LearningActionTool implements AgentTool {
                 case EXPLANATION -> intent.explanationDone();
                 case QUIZ -> intent.publishQuiz(mapper.convertValue(input.get("questions"), new TypeReference<List<QuizQuestionDraft>>() { }));
                 case GRADE -> intent.submitQuiz();
+                case PREPARE_CARDS -> intent.beginCards();
                 case CARDS -> intent.publishCards(mapper.convertValue(input.get("cards"), new TypeReference<List<GeneratedCard>>() { }));
             }
+            String response = action == LearningTurnIntent.Action.GRADE
+                    ? mapper.writeValueAsString(Map.of("accepted", true, "score", intent.score(), "feedback", intent.feedback()))
+                    : mapper.writeValueAsString(Map.of("accepted", true, "pendingCommit", true, "action", action));
             return ToolResultBlock.of(param.getToolUseBlock() == null ? null : param.getToolUseBlock().getId(), name,
-                    TextBlock.builder().text("{\"accepted\":true,\"pendingCommit\":true,\"action\":\"" + action + "\"}").build());
+                    TextBlock.builder().text(response).build());
         });
     }
 }

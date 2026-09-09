@@ -41,7 +41,7 @@ class LearningPersistenceServiceTest {
         point.setId(20L);
         point.setSessionId(10L);
         point.setSequenceNo(1);
-        point.setStatus(KnowledgePointStatus.CARD_GENERATING.name());
+        point.setStatus(KnowledgePointStatus.CARD_CONFIRMING.name());
         when(pointMapper.selectList(any())).thenReturn(List.of(point));
 
         service.completePoint(session, point);

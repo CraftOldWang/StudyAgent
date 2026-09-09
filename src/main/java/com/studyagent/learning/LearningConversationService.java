@@ -31,7 +31,7 @@ public class LearningConversationService {
             if ("MODEL".equals(turn.getPhase())) {
                 var point = learning.requireActivePoint(session);
                 List<QuizQuestionDraft> quiz = List.of();
-                if (KnowledgePointStatus.QUIZZING.name().equals(point.getStatus()) || KnowledgePointStatus.CARD_GENERATING.name().equals(point.getStatus())) {
+                if (KnowledgePointStatus.QUIZZING.name().equals(point.getStatus()) || KnowledgePointStatus.CARD_GENERATING.name().equals(point.getStatus()) || KnowledgePointStatus.FEEDBACK.name().equals(point.getStatus())) {
                     quiz = questions(learning.requireQuiz(point).getQuestionsJson());
                 }
                 var result = gateway.respond(session, point, turn, turns.context(userId, sessionId), quiz, progress);

@@ -16,5 +16,11 @@ public class LearningContext {
     @com.fasterxml.jackson.annotation.JsonIgnore
     private String agentStateJson;
     private String compressionStrategy;
+    private Long pendingPointId;
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private String pendingSummaryInput;
+    private String pendingSummaryText;
+    private String pendingSummaryStatus;
+    private String pendingSummaryError;
     private LocalDateTime updatedAt;
 }

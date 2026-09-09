@@ -55,13 +55,8 @@ public class LearningConversationCompactor {
         int before = LearningCompactionPolicy.tokens(messages);
         String strategy = context.getCompressionStrategy();
         if (!List.of("THRESHOLD", "WHOLE_HISTORY", "LOCAL").contains(strategy)) { throw new BusinessException("未知压缩策略"); }
-        if (turns.isCards(turn) && "LOCAL".equals(strategy)) {
-            List<Msg> selected = LearningCompactionPolicy.point(messages, turn.getKnowledgePointId());
-            if (selected.isEmpty()) { throw new BusinessException("当前知识点缺少可归档上下文"); }
-            messages = LearningCompactionPolicy.replacePoint(messages, turn.getKnowledgePointId(),
-                    summarize(session, turn, "POINT", selected, turn.getKnowledgePointId()));
-        } else if (turns.isCards(turn) && "WHOLE_HISTORY".equals(strategy)) {
-            messages = List.of(summarize(session, turn, "WHOLE", messages, null));
+        if (context.getPendingPointId() != null && context.getPendingPointId().equals(turn.getKnowledgePointId())) {
+            return turn.getPreparedContextJson();
         }
         if (LearningCompactionPolicy.tokens(messages) > properties.thresholdTokens()) {
             var selection = LearningCompactionPolicy.threshold(messages, turn.getKnowledgePointId(), turn.getId(), properties.thresholdTokens());
@@ -76,6 +71,27 @@ public class LearningConversationCompactor {
                 "回合末上下文已校验", "SUCCEEDED", json(Map.of("strategy", strategy, "beforeEstimatedTokens", before,
                         "afterEstimatedTokens", LearningCompactionPolicy.tokens(messages), "messages", messages.size())), null, null);
         return LearningContextMessages.stateJson(state.getUserId(), state.getSessionId(), messages);
+    }
+
+    public String summarizePoint(LearningSession session, Long pointId, String input) {
+        var selected = LearningCompactionPolicy.point(AgentState.fromJsonString(input).getContext(), pointId);
+        LearningContextMessages.requirePaired(selected);
+        if (selected.isEmpty()) { throw new BusinessException("当前知识点没有可摘要的学习记录"); }
+        String traceId = traces.start();
+        String prompt = "学习目标：" + session.getLearningGoal() + "\n待摘要学习过程：\n" + json(selected.stream()
+                .map(m -> Map.of("role", m.getRole().name(), "content", m.getContent())).toList());
+        var responses = model.stream(List.of(Msg.builder().role(MsgRole.SYSTEM).textContent(SYSTEM).build(),
+                        Msg.builder().role(MsgRole.USER).textContent(prompt).build()), List.of(),
+                        GenerateOptions.builder().temperature(0.0).maxTokens(properties.summaryTokens()).stream(false).build())
+                .contextWrite(c -> c.put(ModelCallScope.class, new ModelCallScope(traceId, "COMPACTION/POINT/" + pointId)))
+                .collectList().block(Duration.ofSeconds(properties.leaseSeconds() - 20L));
+        if (responses == null) { throw new BusinessException("摘要未返回，原上下文已保留"); }
+        String text = responses.stream().filter(r -> r.getContent() != null).flatMap(r -> r.getContent().stream())
+                .filter(TextBlock.class::isInstance).map(TextBlock.class::cast).map(TextBlock::getText).collect(Collectors.joining()).trim();
+        if (text.isBlank()) { throw new BusinessException("摘要为空，原上下文已保留"); }
+        traces.recordDetail(session.getUserId(), traceId, session.getId(), "COMPACTION", "POINT_SUMMARY_READY",
+                "学习摘要已生成，等待卡片确认后生效", "SUCCEEDED", json(Map.of("pointId", pointId, "summary", text)), null, null);
+        return text;
     }
 
     private Msg summarize(LearningSession session, LearningTurn turn, String kind, List<Msg> selected, Long pointId) {

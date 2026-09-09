@@ -34,8 +34,8 @@ public class ReviewCardService {
             List<Draft> drafts
     ) {
         validateScope(userId, knowledgePointId, knowledgeBaseId);
-        if (drafts == null || drafts.isEmpty()) {
-            throw new BusinessException("复习卡草稿不能为空");
+        if (drafts == null || drafts.isEmpty() || drafts.size() > 10) {
+            throw new BusinessException("复习卡草稿必须为1–10张");
         }
 
         List<ReviewCard> cards = drafts.stream()
@@ -43,6 +43,17 @@ public class ReviewCardService {
                 .toList();
         cards.forEach(reviewCardMapper::insert);
         return cards;
+    }
+
+    @Transactional
+    public List<ReviewCard> replaceDrafts(Long userId, Long pointId, Long kbId, List<Draft> drafts) {
+        var scope = new LambdaQueryWrapper<ReviewCard>().eq(ReviewCard::getUserId, userId)
+                .eq(ReviewCard::getKnowledgePointId, pointId);
+        if (reviewCardMapper.selectList(scope).stream().anyMatch(c -> Boolean.TRUE.equals(c.getExportedToAnki()))) {
+            throw new BusinessException("已写入Anki的卡片不能作为草稿重写");
+        }
+        reviewCardMapper.delete(scope);
+        return writeBatch(userId, pointId, kbId, drafts);
     }
 
     private ReviewCard toReviewCard(

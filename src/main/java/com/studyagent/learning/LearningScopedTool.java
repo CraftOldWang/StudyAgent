@@ -20,11 +20,19 @@ public final class LearningScopedTool implements AgentTool {
     private final IdentityScope identity;
     private final LearningTraceService traces;
     private final ObjectMapper mapper;
+    private final java.util.function.Consumer<LearningConversationGateway.Progress> progress;
 
     public LearningScopedTool(AgentTool delegate, Long userId, Long sessionId, ModelCallScope scope,
                               IdentityScope identity, LearningTraceService traces, ObjectMapper mapper) {
+        this(delegate, userId, sessionId, scope, identity, traces, mapper, event -> { });
+    }
+
+    public LearningScopedTool(AgentTool delegate, Long userId, Long sessionId, ModelCallScope scope,
+                              IdentityScope identity, LearningTraceService traces, ObjectMapper mapper,
+                              java.util.function.Consumer<LearningConversationGateway.Progress> progress) {
         this.delegate = delegate; this.userId = userId; this.sessionId = sessionId;
         this.scope = scope; this.identity = identity; this.traces = traces; this.mapper = mapper;
+        this.progress = progress;
     }
     @Override public String getName() { return delegate.getName(); }
     @Override public String getDescription() { return delegate.getDescription(); }
@@ -40,13 +48,16 @@ public final class LearningScopedTool implements AgentTool {
                 traces.recordDetail(userId, scope.traceId(), sessionId, "TOOL", "TOOL_CALL", getName(), "STARTED",
                         json(param.getInput()), null, toolCallId);
                 long started = System.nanoTime();
+                display(toolCallId, "STARTED", param.getInput(), null, null);
                 try {
                     ToolResultBlock result = delegate.callAsync(param).contextWrite(c -> c.put(ModelCallScope.class, scope)).block();
                     if (result == null) { throw new IllegalStateException("学习工具未返回结果"); }
                     traces.recordDetail(userId, scope.traceId(), sessionId, "TOOL", "TOOL_RESULT", getName(), "SUCCEEDED",
                             json(result), (System.nanoTime() - started) / 1_000_000, toolCallId);
+                    display(toolCallId, "SUCCEEDED", param.getInput(), result, null);
                     return result;
                 } catch (RuntimeException error) {
+                    display(toolCallId, "FAILED", param.getInput(), null, error.getMessage());
                     traces.recordDetail(userId, scope.traceId(), sessionId, "TOOL", "TOOL_RESULT", getName() + ": " + error.getMessage(), "FAILED",
                             null, (System.nanoTime() - started) / 1_000_000, toolCallId);
                     throw error;
@@ -56,6 +67,13 @@ public final class LearningScopedTool implements AgentTool {
             }
         }).subscribeOn(Schedulers.boundedElastic());
     }
+    private void display(String id, String status, Object input, Object output, String error) {
+        Map<String, Object> data = new java.util.LinkedHashMap<>();
+        data.put("id", id); data.put("name", getName()); data.put("status", status);
+        data.put("input", LearningToolDisplay.input(mapper, getName(), input)); data.put("output", output); data.put("error", error);
+        progress.accept(new LearningConversationGateway.Progress("tool", json(data)));
+    }
+
     private String json(Object value) {
         try { return mapper.writeValueAsString(value); }
         catch (JsonProcessingException e) { throw new IllegalStateException("工具 trace 序列化失败", e); }

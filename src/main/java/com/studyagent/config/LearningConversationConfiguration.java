@@ -28,17 +28,20 @@ public class LearningConversationConfiguration {
                 "用户要求开始且当前NEW时，先读取或检索资料、输出完整讲解，再必须调用本工具提交讲解完成并请求NEW→EXPLAINING；漏调会导致讲解未保存且不能进入测验。普通追问不调用。",
                 object(Map.of(), List.of()), Action.EXPLANATION, mapper));
         register.accept(new LearningActionTool("learning_quiz_publish",
-                "用户希望测验且当前为EXPLAINING时，先读取或检索资料，再一次提交五道四选一题。correctAnswer必须原样复制某个完整选项文本，不填A/B/C/D位置编号。正确答案仅交给此工具，不在普通回复透露。成功后结束本轮。",
-                object(Map.of("questions", Map.of("type", "array", "minItems", 5, "maxItems", 5, "items", object(
+                "用户希望测验且当前为EXPLAINING时，先读取或检索资料，再提交适合当前知识点的四选一题。correctAnswer必须原样复制某个完整选项文本，不填A/B/C/D位置编号。正确答案仅交给此工具，不在普通回复透露。成功后结束本轮。",
+                object(Map.of("questions", Map.of("type", "array", "minItems", 1, "maxItems", 10, "items", object(
                         Map.of("question", text(), "options", Map.of("type", "array", "minItems", 4, "maxItems", 4, "items", text()),
                                 "correctAnswer", Map.of("type", "string", "description", "原样复制options数组中正确选项的完整字符串，不使用选项位置字母或数字。"), "explanation", text(), "sourceChunkId", text()),
                         List.of("question", "options", "correctAnswer", "explanation", "sourceChunkId")))), List.of("questions")), Action.QUIZ, mapper));
         register.accept(new LearningActionTool("learning_quiz_submit",
-                "用户明确完整提交五题选择答案且当前为QUIZZING时调用。服务端读取原始用户消息中的1.A等编号答案，确定性评分；模型不能代填或改分。成功后结束本轮。",
+                "用户明确完整提交当前测验的全部选择答案且当前为QUIZZING时调用。服务端读取原始用户消息中的1.A等编号答案，确定性评分；模型不能代填或改分。成功后结束本轮。",
                 object(Map.of(), List.of()), Action.GRADE, mapper));
+        register.accept(new LearningActionTool("learning_cards_begin",
+                "当前为FEEDBACK且用户表示没有疑问、继续或要求卡片时调用，进入卡片阶段，并行准备此前学习内容的摘要。随后继续生成卡片并调用learning_cards_publish。",
+                object(Map.of(), List.of()), Action.PREPARE_CARDS, mapper));
         register.accept(new LearningActionTool("learning_cards_publish",
-                "用户希望生成复习卡且当前为CARD_GENERATING时，先读取或检索资料，再一次提交三张带来源的卡片。服务端会保存、摘要并完成知识点；成功后结束本轮。",
-                object(Map.of("cards", Map.of("type", "array", "minItems", 3, "maxItems", 3, "items", object(
+                "当前为CARD_GENERATING，或本轮已调用learning_cards_begin时，读取资料后写入带来源的卡片草稿。重写使用同一工具替换整组草稿；不会确认卡片、写入Anki或完成知识点。成功后结束本轮。",
+                object(Map.of("cards", Map.of("type", "array", "minItems", 1, "maxItems", 10, "items", object(
                         Map.of("front", text(), "back", text(), "sourceChunkId", text()), List.of("front", "back", "sourceChunkId")))),
                         List.of("cards")), Action.CARDS, mapper));
         return toolkit;

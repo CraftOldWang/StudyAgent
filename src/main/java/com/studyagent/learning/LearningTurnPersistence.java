@@ -53,6 +53,9 @@ public class LearningTurnPersistence {
             return new Claim(turn, false);
         }
         KnowledgePoint point = learning.requireActivePoint(session);
+        if (KnowledgePointStatus.CARD_CONFIRMING.name().equals(point.getStatus())) {
+            throw new BusinessException("卡片已确认，正在写入Anki或整理摘要，请完成或重试确认操作");
+        }
         if (turn != null && !point.getId().equals(turn.getKnowledgePointId())) {
             throw new BusinessException(409, "原回合所属知识点已结束，不能在新知识点重放");
         }
@@ -142,7 +145,7 @@ public class LearningTurnPersistence {
                 case QUIZ -> {
                     Quiz quiz = learning.saveQuizAndAdvance(session, point, json(intent.questions()));
                     artifact = Map.of("type", "QUIZ", "quizId", quiz.getId(), "knowledgePointId", point.getId(),
-                            "questions", java.util.stream.IntStream.range(0,5).mapToObj(i -> {
+                            "questions", java.util.stream.IntStream.range(0,intent.questions().size()).mapToObj(i -> {
                                 QuizQuestionDraft q = intent.questions().get(i);
                                 return Map.of("questionIndex", i, "question", q.question(), "options", q.options(), "sourceChunkId", q.sourceChunkId());
                             }).toList());
@@ -153,11 +156,12 @@ public class LearningTurnPersistence {
                     artifact = Map.of("type", "GRADE", "quizId", quiz.getId(), "score", intent.score(), "feedback", intent.feedback());
                 }
                 case CARDS -> {
-                    List<ReviewCard> written = cards.writeBatch(session.getUserId(), point.getId(), session.getKnowledgeBaseId(),
+                    List<ReviewCard> written = cards.replaceDrafts(session.getUserId(), point.getId(), session.getKnowledgeBaseId(),
                             intent.cards().stream().map(c -> new ReviewCardService.Draft(c.front(), c.back(), c.sourceChunkId())).toList());
                     artifact = Map.of("type", "CARDS", "knowledgePointId", point.getId(), "cards", written.stream().map(c ->
                             Map.of("id", c.getId(), "front", c.getFront(), "back", c.getBack(), "sourceChunkId", c.getSourceChunkId())).toList());
                 }
+                case PREPARE_CARDS -> artifact = Map.of("type", "PREPARE_CARDS");
             }
         }
         turn.setAssistantMessage(result.answer()); turn.setArtifactJson(json(artifact));
@@ -172,13 +176,6 @@ public class LearningTurnPersistence {
         LearningSession session = fence(expected);
         LearningTurn turn = turns.selectById(expected.getId());
         if (!"ARTIFACTS_COMMITTED".equals(turn.getPhase())) { throw new BusinessException("回合产物尚未提交"); }
-        boolean completedPoint = isCards(turn);
-        if (completedPoint) {
-            KnowledgePoint point = learning.requireActivePoint(session);
-            learning.completePoint(session, point);
-            turn.setAssistantMessage("三张复习卡和学习上下文已保存，当前知识点已完成。" +
-                    (session.getActiveKnowledgePointId() == null ? "本次计划已全部完成。" : "准备好后可以开始下一个知识点。"));
-        }
         saveContext(turn, compactedContext);
         turns.update(null, Wrappers.<LearningTurn>update().eq("id", turn.getId()).set("status", "SUCCEEDED")
                 .set("phase", "COMPLETED").set("assistant_message", turn.getAssistantMessage()).set("error_message", null)

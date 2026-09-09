@@ -16,9 +16,13 @@ class KnowledgePointLifecycleTest {
                 .isEqualTo(KnowledgePointStatus.EXPLAINING);
         assertThat(lifecycle.advance(KnowledgePointStatus.EXPLAINING, KnowledgePointStatus.QUIZZING))
                 .isEqualTo(KnowledgePointStatus.QUIZZING);
-        assertThat(lifecycle.advance(KnowledgePointStatus.QUIZZING, KnowledgePointStatus.CARD_GENERATING))
+        assertThat(lifecycle.advance(KnowledgePointStatus.QUIZZING, KnowledgePointStatus.FEEDBACK))
+                .isEqualTo(KnowledgePointStatus.FEEDBACK);
+        assertThat(lifecycle.advance(KnowledgePointStatus.FEEDBACK, KnowledgePointStatus.CARD_GENERATING))
                 .isEqualTo(KnowledgePointStatus.CARD_GENERATING);
-        assertThat(lifecycle.advance(KnowledgePointStatus.CARD_GENERATING, KnowledgePointStatus.COMPLETED))
+        assertThat(lifecycle.advance(KnowledgePointStatus.CARD_GENERATING, KnowledgePointStatus.CARD_CONFIRMING))
+                .isEqualTo(KnowledgePointStatus.CARD_CONFIRMING);
+        assertThat(lifecycle.advance(KnowledgePointStatus.CARD_CONFIRMING, KnowledgePointStatus.COMPLETED))
                 .isEqualTo(KnowledgePointStatus.COMPLETED);
     }
 

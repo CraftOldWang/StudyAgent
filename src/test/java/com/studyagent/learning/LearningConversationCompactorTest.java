@@ -22,23 +22,27 @@ class LearningConversationCompactorTest {
     private final LearningTraceService traces = mock(LearningTraceService.class);
 
     @Test
-    void localBoundaryDoesNotResummarizePreviousPointsAndRetryReusesCache() {
+    void pendingCardStageKeepsOriginalContextAndSummaryExcludesEarlierPoints() {
         var calls = new AtomicInteger();
-        Model model = model((messages) -> {
+        Model model = model(messages -> {
             calls.incrementAndGet();
-            assertThat(messages.getLast().getTextContent()).contains("current fact").doesNotContain("earlier fact");
+            assertThat(messages.getLast().getTextContent()).contains("current fact").doesNotContain("earlier fact", "card rewrite");
             return answer("current summary");
         });
-        cache();
-        var turn = turn(List.of(LearningContextMessages.summary("earlier fact", 1L, "POINT"), message("current fact", 2L, 30L)));
-        when(turns.isCards(turn)).thenReturn(true);
+        var beforeCards = List.of(LearningContextMessages.summary("earlier fact", 1L, "POINT"), message("current fact", 2L, 30L));
+        var input = LearningContextMessages.stateJson("1", "s", beforeCards);
+        var duringCards = new java.util.ArrayList<>(beforeCards);
+        duringCards.add(message("card rewrite ".repeat(6000), 2L, 31L));
+        var turn = turn(duringCards);
+        var pending = context("LOCAL"); pending.setPendingPointId(2L);
         var compactor = compactor(model);
-        var first = AgentState.fromJsonString(compactor.compact(session(), turn, context("LOCAL"))).getContext();
-        compactor.compact(session(), turn, context("LOCAL"));
+        String summary = compactor.summarizePoint(session(), 2L, input);
+        assertThat(compactor.compact(session(), turn, pending)).isEqualTo(turn.getPreparedContextJson());
         assertThat(calls.get()).isEqualTo(1);
-        assertThat(first).hasSize(2);
-        assertThat(first.getFirst().getTextContent()).contains("earlier fact");
-        assertThat(first.getLast().getTextContent()).contains("current summary");
+        var applied = LearningCompactionPolicy.replacePoint(duringCards, 2L, LearningContextMessages.summary(summary, 2L, "POINT"));
+        assertThat(applied).hasSize(2);
+        assertThat(applied.getFirst().getTextContent()).contains("earlier fact");
+        assertThat(applied.getLast().getTextContent()).contains("current summary").doesNotContain("card rewrite");
     }
 
     @Test

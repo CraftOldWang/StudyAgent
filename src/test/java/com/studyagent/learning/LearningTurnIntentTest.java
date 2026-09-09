@@ -27,7 +27,7 @@ class LearningTurnIntentTest {
         assertThatThrownBy(() -> intent.publishQuiz(quiz)).hasMessageContaining("先检索");
         assertThat(intent.action()).isNull();
         searched();
-        assertThatThrownBy(() -> intent.publishQuiz(quiz.subList(0,4))).hasMessageContaining("五道");
+        assertThatThrownBy(() -> intent.publishQuiz(java.util.Collections.nCopies(11, quiz.getFirst()))).hasMessageContaining("1–10");
         assertThat(intent.action()).isNull();
         intent.publishQuiz(quiz);
         assertThat(intent.questions()).hasSize(5);
@@ -45,7 +45,7 @@ class LearningTurnIntentTest {
 
     @Test void modelCannotChooseAnswersAndServerGradesNumberedUserChoices() {
         var incomplete = new LearningTurnIntent(KnowledgePointStatus.QUIZZING,search,"1.A 2.B",quiz);
-        assertThatThrownBy(incomplete::submitQuiz).hasMessageContaining("不完整或有歧义");
+        assertThatThrownBy(incomplete::submitQuiz).hasMessageContaining("完整提交");
         assertThat(incomplete.action()).isNull();
         var intent = new LearningTurnIntent(KnowledgePointStatus.QUIZZING,search,"我的答案是1.A 2.B 3.C 4.D 5.A",quiz);
         intent.submitQuiz();

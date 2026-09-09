@@ -10,8 +10,10 @@ public final class KnowledgePointLifecycle {
         KnowledgePointStatus expected = switch (current) {
             case NEW -> KnowledgePointStatus.EXPLAINING;
             case EXPLAINING -> KnowledgePointStatus.QUIZZING;
-            case QUIZZING -> KnowledgePointStatus.CARD_GENERATING;
-            case CARD_GENERATING -> KnowledgePointStatus.COMPLETED;
+            case QUIZZING -> KnowledgePointStatus.FEEDBACK;
+            case FEEDBACK -> KnowledgePointStatus.CARD_GENERATING;
+            case CARD_GENERATING -> KnowledgePointStatus.CARD_CONFIRMING;
+            case CARD_CONFIRMING -> KnowledgePointStatus.COMPLETED;
             case COMPLETED -> throw new IllegalStateException("COMPLETED is a terminal knowledge point state");
         };
 

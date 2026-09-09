@@ -22,6 +22,27 @@ public class LearningController {
     private final CurrentUserContext currentUserContext;
     private final com.studyagent.learning.LearningConversationService conversation;
     private final com.studyagent.learning.LearningTurnPersistence turns;
+    private final com.studyagent.learning.LearningCardStageService cardStage;
+    private final com.studyagent.learning.LearningToolDisplay toolDisplay;
+
+    @GetMapping("/{sessionId}/turns/{turnId}/tools")
+    public ApiResponse<?> tools(@PathVariable Long sessionId, @PathVariable Long turnId) {
+        var turn = turns.require(currentUserContext.userId(), sessionId, turnId);
+        return ApiResponse.ok(toolDisplay.history(currentUserContext.userId(), turn.getTraceId()));
+    }
+
+    @org.springframework.web.bind.annotation.PutMapping("/{sessionId}/points/{pointId}/cards")
+    public ApiResponse<LearningSessionResponse> editCards(@PathVariable Long sessionId, @PathVariable Long pointId,
+            @RequestBody java.util.List<com.studyagent.learning.LearningCardStageService.Edit> edits) {
+        cardStage.edit(currentUserContext.userId(), sessionId, pointId, edits);
+        return ApiResponse.ok(assembler.session(currentUserContext.userId(), sessionId));
+    }
+
+    @PostMapping("/{sessionId}/points/{pointId}/cards/confirm")
+    public ApiResponse<LearningSessionResponse> confirmCards(@PathVariable Long sessionId, @PathVariable Long pointId) {
+        cardStage.confirm(currentUserContext.userId(), sessionId, pointId);
+        return ApiResponse.ok(assembler.session(currentUserContext.userId(), sessionId));
+    }
 
     @PostMapping
     public ApiResponse<LearningMutationResponse.Created> create(

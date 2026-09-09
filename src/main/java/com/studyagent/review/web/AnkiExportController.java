@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class AnkiExportController {
     private final AnkiExportService service;
     private final CurrentUserContext user;
+    private final com.studyagent.mapper.ReviewCardMapper cards;
+    private final com.studyagent.mapper.KnowledgePointMapper points;
 
     @GetMapping
     public ApiResponse<AnkiExportService.ExportStatus> status(@PathVariable Long cardId) {
@@ -24,6 +26,14 @@ public class AnkiExportController {
 
     @PostMapping
     public ApiResponse<AnkiExportService.ExportStatus> export(@PathVariable Long cardId) {
+        var card = cards.selectById(cardId);
+        if (card == null || !user.userId().equals(card.getUserId())) {
+            throw new com.studyagent.common.exception.BusinessException(404, "卡片不存在");
+        }
+        var point = points.selectById(card.getKnowledgePointId());
+        if (point == null || !"COMPLETED".equals(point.getStatus())) {
+            throw new com.studyagent.common.exception.BusinessException("请在学习页面确认全部卡片后再写入Anki");
+        }
         return ApiResponse.ok(service.export(user.userId(), cardId));
     }
 }

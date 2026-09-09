@@ -193,13 +193,13 @@ public class LearningPersistenceService {
         quiz.setFeedbackJson(feedbackJson);
         quiz.setAnsweredAt(LocalDateTime.now());
         quizMapper.updateById(quiz);
-        advance(point, KnowledgePointStatus.CARD_GENERATING);
+        advance(point, KnowledgePointStatus.FEEDBACK);
         clearSessionFailure(session);
     }
 
     @Transactional
     public void completePoint(LearningSession session, KnowledgePoint point) {
-        requireStatus(point, KnowledgePointStatus.CARD_GENERATING);
+        requireStatus(point, KnowledgePointStatus.CARD_CONFIRMING);
         advance(point, KnowledgePointStatus.COMPLETED);
         List<KnowledgePoint> points = listPoints(session.getId());
         KnowledgePoint next = points.stream()

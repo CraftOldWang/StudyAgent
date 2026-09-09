@@ -5,5 +5,5 @@ import jakarta.validation.constraints.Size;
 import java.util.List;
 
 public record QuizSubmissionRequest(
-        @NotNull @Size(min = 5, max = 5) List<@NotNull String> answers) {
+        @NotNull @Size(min = 1, max = 10) List<@NotNull String> answers) {
 }

@@ -9,7 +9,7 @@ public final class LearningArtifactValidator {
     private LearningArtifactValidator() { }
 
     public static List<QuizQuestionDraft> quiz(List<QuizQuestionDraft> drafts, Set<String> retrievedSources) {
-        require(drafts != null && drafts.size() == 5, "必须一次提交恰好五道测验题");
+        require(drafts != null && !drafts.isEmpty() && drafts.size() <= 10, "测验题数量必须为1–10道");
         Set<String> questions = new HashSet<>();
         for (QuizQuestionDraft q : drafts) {
             require(q != null && text(q.question()) && questions.add(q.question().trim()), "测验题目不可为空或重复");
@@ -23,7 +23,7 @@ public final class LearningArtifactValidator {
     }
 
     public static List<GeneratedCard> cards(List<GeneratedCard> drafts, Set<String> retrievedSources) {
-        require(drafts != null && drafts.size() == 3, "必须一次提交恰好三张复习卡");
+        require(drafts != null && !drafts.isEmpty() && drafts.size() <= 10, "复习卡数量必须为1–10张");
         Set<String> fronts = new HashSet<>();
         for (GeneratedCard c : drafts) {
             require(c != null && text(c.front()) && text(c.back()) && fronts.add(c.front().trim()), "卡片正反面不可为空，正面不可重复");

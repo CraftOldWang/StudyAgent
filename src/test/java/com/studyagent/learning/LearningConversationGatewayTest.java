@@ -33,7 +33,7 @@ class LearningConversationGatewayTest {
             public Flux<ChatResponse> stream(List<Msg> messages, List<ToolSchema> tools, GenerateOptions options) {
                 assertThat(options.getToolChoice()).isNull();
                 assertThat(tools).extracting(ToolSchema::getName).containsExactlyInAnyOrder("knowledge_search", "learning_explanation_done",
-                        "learning_quiz_publish", "learning_quiz_submit", "learning_cards_publish");
+                        "learning_quiz_publish", "learning_quiz_submit", "learning_cards_begin", "learning_cards_publish");
                 if (calls.getAndIncrement() == 0) {
                     return Flux.just(ChatResponse.builder().id("search").content(List.of(ToolUseBlock.builder().id("search-call")
                             .name("knowledge_search").input(Map.of("query", "synthetic topic")).content("{\"query\":\"synthetic topic\"}").build())).finishReason("tool_calls").build());
@@ -117,7 +117,8 @@ class LearningConversationGatewayTest {
         when(retrieval.search(1L, 2L, "synthetic topic")).thenReturn(new KnowledgeSearchResponse("synthetic topic", null,
                 List.of(new KnowledgeSearchResponse.Result("source-1", "synthetic fact", null, 1))));
         var search = new KnowledgeSearchTool(retrieval, new KnowledgeSearchRetryExecutor(), mapper);
-        return new LearningConversationGateway(model, search, reader, scopes, properties, mock(LearningTraceService.class), new IdentityScope(), mapper);
+        return new LearningConversationGateway(model, search, reader, scopes, properties, mock(LearningTraceService.class), new IdentityScope(), mapper,
+                mock(LearningCardStageService.class), mock(LearningPersistenceService.class));
     }
     private LearningSession session() {
         var s = new LearningSession(); s.setId(10L); s.setUserId(1L); s.setKnowledgeBaseId(2L); s.setAgentscopeSessionId("s"); s.setLearningGoal("synthetic goal"); return s;

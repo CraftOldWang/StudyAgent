@@ -70,9 +70,9 @@ public class LearningFlowService {
         var point = persistence.requireActivePoint(persistence.requireSession(userId, sessionId));
         var quiz = persistence.requireQuiz(point);
         var questions = readQuestions(quiz.getQuestionsJson());
-        if (answers == null || answers.size() != 5) { throw new BusinessException("必须一次提交五个答案"); }
+        if (answers == null || answers.size() != questions.size()) { throw new BusinessException("请完整提交当前测验的全部答案"); }
         StringBuilder message = new StringBuilder("提交答案：");
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < questions.size(); i++) {
             int index = questions.get(i).options().indexOf(answers.get(i));
             if (index < 0) { throw new BusinessException("答案必须是对应题目的选项"); }
             message.append(i + 1).append('.').append((char) ('A' + index)).append(' ');
@@ -83,7 +83,7 @@ public class LearningFlowService {
     }
 
     public GeneratedCards generateCardsAndComplete(Long userId, Long sessionId) {
-        var turn = shortcut(userId, sessionId, "请为当前知识点生成三张复习卡并完成本知识点。", "CARDS");
+        var turn = shortcut(userId, sessionId, "我没有疑问了，请为当前知识点生成复习卡草稿。", "CARDS");
         return new GeneratedCards(turn.getTraceId(), turn.getKnowledgePointId(), existingCards(turn.getKnowledgePointId()));
     }
 

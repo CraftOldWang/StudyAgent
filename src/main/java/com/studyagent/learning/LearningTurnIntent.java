@@ -8,7 +8,7 @@ import java.util.Optional;
 
 /** Model tools stage one validated business effect; the application commits it with the completed turn. */
 public final class LearningTurnIntent {
-    public enum Action { EXPLANATION, QUIZ, GRADE, CARDS }
+    public enum Action { EXPLANATION, QUIZ, GRADE, PREPARE_CARDS, CARDS }
     private final KnowledgePointStatus current;
     private final KnowledgeSearchExecution search;
     private final Optional<List<Integer>> submittedChoices;
@@ -19,13 +19,14 @@ public final class LearningTurnIntent {
     private List<String> answers;
     private List<QuizFeedback> feedback;
     private int score;
+    private Runnable onBeginCards = () -> { };
 
     public LearningTurnIntent(KnowledgePointStatus current, KnowledgeSearchExecution search,
                               String userMessage, List<QuizQuestionDraft> currentQuiz) {
         this.current = current;
         this.search = search;
-        this.submittedChoices = QuizAnswerParser.parse(userMessage);
         this.currentQuiz = currentQuiz == null ? List.of() : List.copyOf(currentQuiz);
+        this.submittedChoices = QuizAnswerParser.parse(userMessage, this.currentQuiz.size());
     }
 
     public synchronized void explanationDone() {
@@ -41,14 +42,14 @@ public final class LearningTurnIntent {
     }
 
     public synchronized void submitQuiz() {
-        if (submittedChoices.isEmpty() || currentQuiz.size() != 5) {
-            throw new BusinessException("答案不完整或有歧义，请用户按 1.A 2.B 3.C 4.D 5.A 一次明确提交五题答案");
+        if (submittedChoices.isEmpty()) {
+            throw new BusinessException("请用户按1.A、2.B这样的编号格式，完整提交当前测验的全部答案");
         }
-        reserve(Action.GRADE, KnowledgePointStatus.CARD_GENERATING);
+        reserve(Action.GRADE, KnowledgePointStatus.FEEDBACK);
         List<String> received = new ArrayList<>();
         List<QuizFeedback> evaluated = new ArrayList<>();
         int correct = 0;
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < currentQuiz.size(); i++) {
             QuizQuestionDraft question = currentQuiz.get(i);
             String answer = question.options().get(submittedChoices.get().get(i));
             boolean accepted = answer.equals(question.correctAnswer());
@@ -58,13 +59,27 @@ public final class LearningTurnIntent {
         }
         answers = List.copyOf(received);
         feedback = List.copyOf(evaluated);
-        score = correct * 20;
+        score = (int) Math.round(correct * 100.0 / currentQuiz.size());
+    }
+
+    public void onBeginCards(Runnable callback) { this.onBeginCards = callback; }
+
+    public synchronized void beginCards() {
+        if (current != KnowledgePointStatus.FEEDBACK || action != null) {
+            throw new BusinessException("请在练习后答疑完成、用户要求继续时进入卡片阶段");
+        }
+        onBeginCards.run();
+        action = Action.PREPARE_CARDS;
     }
 
     public synchronized void publishCards(List<GeneratedCard> drafts) {
         requireSearch();
         List<GeneratedCard> validated = LearningArtifactValidator.cards(drafts, search.retrievedChunkIds());
-        reserve(Action.CARDS, KnowledgePointStatus.COMPLETED);
+        if (current != KnowledgePointStatus.CARD_GENERATING && action != Action.PREPARE_CARDS) {
+            throw new BusinessException("请先调用learning_cards_begin进入卡片阶段");
+        }
+        if (action != null && action != Action.PREPARE_CARDS) { throw new BusinessException("本轮已写入学习产物"); }
+        action = Action.CARDS;
         cards = validated;
     }
 
