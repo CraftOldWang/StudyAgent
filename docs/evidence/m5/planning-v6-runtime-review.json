@@ -1,0 +1,23 @@
+{
+  "runId": "2097544226330099714",
+  "sessionId": "2097590166741041154",
+  "structuralStatus": "SUCCEEDED",
+  "concurrentSessionCreationDeduplicated": true,
+  "pointCount": 5,
+  "qualityAccepted": false,
+  "matches": 0,
+  "unmatched": 16,
+  "findings": [
+    "Independent review rejected eight proposed matches whose quoted lesson evidence was too broad.",
+    "Proposals quoted entire multi-part questions; review consequently evaluated all subquestions, losing partial support.",
+    "Zero matches does not establish successful emphasis capability. Follow-up changes mapping granularity to individual subquestions and preserves original question context for option labels."
+  ],
+  "evidence": {
+    "path": ".eval/runs/m5-planning-smoke-v6/state.json",
+    "sha256": "d629d46f89088477959992d56a30f3e114ecbc5c9311e96e6c6744d2d758c39e"
+  },
+  "rawReview": {
+    "path": ".eval/planning-v6-emphasis-review.json",
+    "sha256": "453735f9d0a5b88e384c09c1e2bbe48a0368fd5d26f5210cb9825fb2ef4ca317"
+  }
+}

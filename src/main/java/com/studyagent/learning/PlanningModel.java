@@ -39,7 +39,7 @@ public class PlanningModel {
     }
 
     boolean useReasoning(String stage) {
-        return reasoning.enabled() && ("OUTLINE".equals(stage) || stage.startsWith("EMPHASIS_REVIEW/"));
+        return reasoning.enabled() && ("OUTLINE".equals(stage) || stage.startsWith("EMPHASIS/") || stage.startsWith("EMPHASIS_REVIEW/"));
     }
 
     GenerateOptions options(String stage) {

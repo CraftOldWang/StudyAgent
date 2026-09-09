@@ -22,7 +22,9 @@ V10 新增 run 和 stage-attempt 表，保留每次尝试的输入指纹、原�
 
 单次模型输入上限 28000 本地 token、输出上限 6000 token；超限保留已完成阶段并明确失败，不截断资料或静默少读。重点判断复用短摘录，避免重复送入整门课程全文。参数统一放在 `LearningPlanningProperties`，当前没有逐课程配置。
 
-在编译原理及操作系统真实合并中，非推理模式多次遗漏候选或输出错误数量。因此仅OUTLINE和EMPHASIS_REVIEW启用推理模式，输出总预算16000、effort=high，配置位于`LearningPlanningReasoningProperties`；普通提取、匹配和任务编排维持6000。推理配置只加入相关阶段指纹，未受影响的成功提取结果继续复用；失败保留原尝试。这是显式阶段配置，不是失败后隐藏切换provider。学习/压缩实验继续使用原学习模型选项。参数参考[DeepSeek Chat Completions API](https://api-docs.deepseek.com/api/create-chat-completion/)，2026-09-09核对。
+在编译原理及操作系统真实合并中，非推理模式多次遗漏候选或输出错误数量。当前OUTLINE、EMPHASIS及EMPHASIS_REVIEW启用推理模式，输出总预算16000、effort=low，配置位于`LearningPlanningReasoningProperties`；普通提取和任务编排维持6000。此前high配置在操作系统大纲耗尽15998个输出token且正文为空，失败保留；low配置随后复用13批提取并完成原任务。推理配置只加入相关阶段指纹，未受影响的成功提取结果继续复用。这是显式阶段配置，不是失败后隐藏切换provider。学习/压缩实验继续使用原学习模型选项。
+
+复核曾将一道编号题的多个子问作为一个整体，导致部分有依据的子问也被全部拒绝。当前匹配以单一子问为单位引用；复核获得原习题上下文以解释选项编号，但只判断所引用子问，不要求同一编号下其它子问也有课件覆盖。原提议和拒绝理由继续保留，修正后的语义效果仍须实际抽查。
 
 ## 已发现的问题与验收边界
 

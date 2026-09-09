@@ -1,0 +1,76 @@
+{
+  "runId": "2097595157816868866",
+  "sessionId": "2097595961948831745",
+  "status": "SUCCEEDED",
+  "structuralAccepted": true,
+  "boundedSemanticReviewAccepted": true,
+  "pointCount": 5,
+  "matchedAtomicQuestions": 2,
+  "unmatchedEntries": 10,
+  "reviewNotes": [
+    "Two accepted atomic subquestions verified against full lesson context: three-address code at intermediate-code generation; symbol-table entry creation during lexical analysis.",
+    "Both references opened through the production source API; lesson quotes are exact substrings.",
+    "Five base topics retained; two HIGH topics each receive 10 additional practice minutes; three NORMAL topics retained.",
+    "Ten unmatched entries retain reasons; conservative omissions may remain, and this small review is not a precision/recall benchmark.",
+    "Real browser restored this plan, displayed all seven saved stages including emphasis review, expanded atomic evidence and ten unmatched reasons.",
+    "Concurrent plan-to-session API calls returned the same session ID."
+  ],
+  "stages": [
+    {
+      "stage": "EXTRACT/0",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "c93336fe-e7cb-40a4-8669-021aae32590f"
+    },
+    {
+      "stage": "EXTRACT/1",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "4b0a301c-8928-43cd-b2c3-295257d910ac"
+    },
+    {
+      "stage": "EXTRACT/2",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "55a83e3f-b101-499c-9075-8f112fc323f3"
+    },
+    {
+      "stage": "OUTLINE",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "cd848066-55f6-43e6-b124-c8f62fdbee92"
+    },
+    {
+      "stage": "EMPHASIS/0",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "ad5d1a34-122b-4beb-b59c-4f38235307c9"
+    },
+    {
+      "stage": "EMPHASIS_REVIEW/0",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "e302fed7-18d8-453c-abf1-51514f3f05d4"
+    },
+    {
+      "stage": "TASKS",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "1c33fd60-28b8-4e53-97f4-4bb87cb17e79"
+    }
+  ],
+  "evidence": [
+    {
+      "path": ".eval/runs/m5-planning-smoke-v7/state.json",
+      "sha256": "252fdcdf3a7dbfb30a7a5a24f467962a098c5b93b76e005b7a649bd55148c1b9"
+    },
+    {
+      "path": ".eval/runs/m5-planning-smoke-v7/match-0-lesson-source.json",
+      "sha256": "628df9510a0d52d05fc3953b98b241af518dda559bbba7d298c02371ae0e9b88"
+    },
+    {
+      "path": ".eval/runs/m5-planning-smoke-v7/match-1-lesson-source.json",
+      "sha256": "628df9510a0d52d05fc3953b98b241af518dda559bbba7d298c02371ae0e9b88"
+    }
+  ]
+}

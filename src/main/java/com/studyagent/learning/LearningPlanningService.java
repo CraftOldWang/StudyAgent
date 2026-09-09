@@ -136,6 +136,9 @@ public class LearningPlanningService {
                         把当前批次往年习题的考察内容映射到既有大纲知识点，可一题关联多个点。
                         逐段处理，不能只看前几题。重点 HIGH 或 MEDIUM 仅代表这批资料给出的复习建议，不是未来考试概率。
                         reason 解释题目考察的概念与知识点关系；quote 必须原样摘录习题文字，禁止自行修正标点或公式。
+                        一道题有多个空或小问时，每条匹配只引用一个小问的连续原文，不要把其它小问和全部选项一起放进quote。
+                        可直接选“生成三地址码程序是在 D 阶段”这样的原文分句，单独寻找支持该分句的课件摘录；
+                        其它小问分别匹配或列入unmatched。有直接依据的部分不能因整题包含未覆盖内容而全部放弃。
                         每个匹配还必须提供 lessonSourceChunkId 和 lessonQuote，摘录课件中直接支持该知识点解题的具体内容。
                         lessonQuote 只能取大纲该知识点 evidence 中已提供的原文或其子串，没有直接依据的题目保留未匹配。
                         不得仅凭“都属于编译器”或“都会报告错误”将细分阶段问题笼统映射到编译器基本概念。
@@ -163,10 +166,13 @@ public class LearningPlanningService {
                     List<Map<String, Object>> pairs = new ArrayList<>();
                     for (int i = 0; i < proposed.matches().size(); i++) {
                         Importance match = proposed.matches().get(i);
-                        pairs.add(Map.of("matchIndex", i, "exerciseQuote", match.quote(), "lessonQuote", match.lessonQuote()));
+                        pairs.add(Map.of("matchIndex", i, "exerciseSourceChunkId", match.sourceChunkId(),
+                                "exerciseQuote", match.quote(), "lessonQuote", match.lessonQuote()));
                     }
                     String reviewPrompt = """
                             独立复核每组习题摘录和课件摘录能否形成直接的解题依据。只使用这两段文字，不补充外部知识。
+                            仅判断exerciseQuote指定的小问。原始习题上下文只用于解释选项代号和指代，
+                            不把同一道题的其它小问加入本条支持性要求；有依据的小问可以匹配，其它部分另行未匹配。
                             先写testedClaim（题目实际要求判断的具体命题），再写lessonClaim（课件明确支持的命题），
                             只有后者足以处理前者时supported=true；相关背景、上位概念、阶段名称列表都不足以证明具体职责。
                             一般的“语义检查”定义不能证明某种转换、类型规则或具体错误归属。题目选项不当作已证实的事实。
@@ -175,7 +181,8 @@ public class LearningPlanningService {
                             格式：{"decisions":[{"matchIndex":0,"testedClaim":"...","lessonClaim":"...",
                             "supported":false,"reason":"..."}]}。
                             待复核资料：%s
-                            """.formatted(json(pairs));
+                            原始习题上下文：%s
+                            """.formatted(json(pairs), json(batch));
                     emphasis = stage(run, token, "EMPHASIS_REVIEW/" + batchIndex, reviewPrompt, Emphasis.class,
                             node -> PlanningValidation.reviewEmphasis(node, proposed));
                 }
@@ -305,6 +312,7 @@ public class LearningPlanningService {
     }
 
     private JsonNode strictObject(String raw) {
+        if (raw.isBlank()) { throw new BusinessException("规划模型未返回JSON正文，请检查输出预算和trace；已有阶段保留"); }
         try {
             JsonNode value = mapper.reader().with(DeserializationFeature.FAIL_ON_TRAILING_TOKENS).readTree(raw);
             if (value == null || !value.isObject()) { throw new BusinessException("规划输出必须为 JSON 对象"); }

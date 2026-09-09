@@ -1,0 +1,127 @@
+{
+  "status": "ACCEPTED_BOUNDED_REAL_MEDIA_QA",
+  "cases": [
+    {
+      "case": "audio",
+      "runId": "2097599151651287042",
+      "sessionId": "2097599275307757570",
+      "knowledgeBaseId": "2097501531286913026",
+      "documentId": "2097501536244580353",
+      "jarSha256": "ec77dd744d0c150560bed8041e12ccb38ac3ecf8c625b2fa811b146858e2bec5",
+      "learningAndSummaryUsage": {
+        "attempts": 6,
+        "statuses": {
+          "SUCCEEDED": 6
+        },
+        "attemptsWithoutUsage": 0,
+        "usageComplete": true,
+        "knownInputTokens": 39862,
+        "knownOutputTokens": 3916,
+        "knownTotalTokens": 43778,
+        "knownCachedInputTokens": 4352
+      },
+      "turns": [
+        {
+          "name": "explain",
+          "turnId": "2097599275873988609",
+          "traceId": "9ea62253-9f38-49e8-b7d1-f3cc24d30921",
+          "status": "SUCCEEDED",
+          "sourceChunkIds": [
+            "9da38c8db0b24ce1c409ffcb90868a4b402a3f615a173b4c00dd554adf0a60a7",
+            "b26e419850ff0f07c22543b2cfd7584ac7f14de6c671ae6d55389e2bc5974421",
+            "f6ce72c5972eecb495bfa2bff1cd965717bfc2f9874b2a6b2fd6545f1e469323"
+          ],
+          "verified": true
+        },
+        {
+          "name": "question",
+          "turnId": "2097599367154626562",
+          "traceId": "4e45a4e4-5c28-46b9-b0fe-c621b971ce59",
+          "status": "SUCCEEDED",
+          "sourceChunkIds": [
+            "b26e419850ff0f07c22543b2cfd7584ac7f14de6c671ae6d55389e2bc5974421"
+          ],
+          "verified": true
+        }
+      ],
+      "evidence": [
+        {
+          "path": ".eval/runs/m8-audio-learning-v2/state.json",
+          "sha256": "7dbc5213a56dd00d3a64d0c7f0da25405b6ed1d3f8ba63c420383dd95c4a1cd3"
+        },
+        {
+          "path": ".eval/runs/m8-audio-learning-v2/usage.json",
+          "sha256": "a9790572a8fc26ebf3709e56538906ecb38894bb6dde2d2b871bf1a5f48d709d"
+        },
+        {
+          "path": ".eval/runs/m8-audio-learning-v2/persisted-evidence/manifest.json",
+          "sha256": "1d193661186e579d580546a16133589b49074ccbcab9f0eef0ca4539d88a107c"
+        }
+      ]
+    },
+    {
+      "case": "video",
+      "runId": "2097599209159389185",
+      "sessionId": "2097599248690704385",
+      "knowledgeBaseId": "2097504440811696129",
+      "documentId": "2097504990227771393",
+      "jarSha256": "ec77dd744d0c150560bed8041e12ccb38ac3ecf8c625b2fa811b146858e2bec5",
+      "learningAndSummaryUsage": {
+        "attempts": 6,
+        "statuses": {
+          "SUCCEEDED": 6
+        },
+        "attemptsWithoutUsage": 0,
+        "usageComplete": true,
+        "knownInputTokens": 19372,
+        "knownOutputTokens": 1831,
+        "knownTotalTokens": 21203,
+        "knownCachedInputTokens": 7168
+      },
+      "turns": [
+        {
+          "name": "explain",
+          "turnId": "2097599249349210114",
+          "traceId": "d88befbf-5843-4675-b166-a2ffca46b169",
+          "status": "SUCCEEDED",
+          "sourceChunkIds": [
+            "ccd8d00d5bbc1ea7121b3aabc7470cffe4987fdf0f5d5ff9f02a64d25fb7eff5"
+          ],
+          "verified": true
+        },
+        {
+          "name": "question",
+          "turnId": "2097599332677447682",
+          "traceId": "bc17f6ad-c9c0-4d5c-b6c2-6c34f8dcdc12",
+          "status": "SUCCEEDED",
+          "sourceChunkIds": [
+            "ccd8d00d5bbc1ea7121b3aabc7470cffe4987fdf0f5d5ff9f02a64d25fb7eff5"
+          ],
+          "verified": true
+        }
+      ],
+      "evidence": [
+        {
+          "path": ".eval/runs/m8-video-learning-v2/state.json",
+          "sha256": "6d8e5d088e5727f9923c574869c75f62847a51c90942b7256d39bd5825cf89ec"
+        },
+        {
+          "path": ".eval/runs/m8-video-learning-v2/usage.json",
+          "sha256": "8a0a1ef7d2e69c8ac4d2d99d2553414eb4f449445e1f842179dc326b0bdb858d"
+        },
+        {
+          "path": ".eval/runs/m8-video-learning-v2/persisted-evidence/manifest.json",
+          "sha256": "6e4946d51f0cb0874e89a199299ab55ed586bcec2c0e051d6a227a043c06bef1"
+        }
+      ]
+    }
+  ],
+  "reviewNotes": [
+    "Audio Q&A distinguishes must-pass dominance from nearest immediate dominator; the recorded graph example and transcription typo explanation are source-linked.",
+    "Video Q&A identifies diminishing-increment sorting and interval grouping; constructed numerical examples are explicitly labelled supplementary.",
+    "Every cited full chunk ID resolved in its own knowledge base and source content retained media timestamps.",
+    "Video session restored in the actual browser with both turns; source drawer opened the original MP4 transcript.",
+    "This accepts two actual media Q&A paths, not overall ASR accuracy or complete lesson correctness."
+  ],
+  "priorFailure": "docs/evidence/m8/learning-v1-citation-failure.json"
+}

@@ -39,6 +39,8 @@ def main():
     frozen_paths = [args.config, Path("target/study-agent-0.0.1-SNAPSHOT.jar"),
                     Path("scripts/run-learning-conversation-smoke.py"), Path(__file__),
                     Path("scripts/report-learning-usage.py"), Path("scripts/collect-learning-evidence.py"),
+                    Path("scripts/report-compaction-experiment.py"),
+                    Path("eval/planning/compaction-quality-v1.json"),
                     *[args.scripts / (course + ".json") for course in roots],
                     *[root / "replicas.json" for root in roots.values()]]
     fingerprints = {p.as_posix(): digest(p) for p in frozen_paths}
@@ -68,6 +70,7 @@ def main():
                 schedule.append({**replica, "course": course, "knowledgeBaseId": str(inputs[course]["blueprint"]["knowledgeBaseId"]),
                                  "status": "PENDING"})
         state = {"version": "compaction-experiment-v1", "fingerprints": fingerprints, "runtimeSettings": observed,
+                 "gitSha": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
                  "createdAt": datetime.now(timezone.utc).isoformat(), "schedule": schedule,
                  "scope": "18 sessions, two frozen five-point plans, three strategies, three repetitions; real API calls only"}
 

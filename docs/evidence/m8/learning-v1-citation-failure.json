@@ -1,0 +1,27 @@
+{
+  "status": "FAILED_CITATION_ACCEPTANCE",
+  "cases": [
+    {
+      "case": "audio",
+      "runId": "2097597282993385474",
+      "sessionId": "2097597338932817921",
+      "turnId": "2097597339549380610",
+      "traceId": "740fb85d-1125-410d-ad6e-4a6da0443027",
+      "providerBusinessStatus": "SUCCEEDED",
+      "path": ".eval/runs/m8-audio-learning-v1/state.json",
+      "sha256": "eb6d4f9096d390705b9f7ce7497f585cc892794cab334f5c77e984d12f0c5179"
+    },
+    {
+      "case": "video",
+      "runId": "2097597349833814017",
+      "sessionId": "2097597374747979778",
+      "turnId": "2097597375272267778",
+      "traceId": "08a7abde-83cf-47cf-8f0e-ac428075b88f",
+      "providerBusinessStatus": "SUCCEEDED",
+      "path": ".eval/runs/m8-video-learning-v1/state.json",
+      "sha256": "0b4e9f29f23fe64546f72bba47f4d89cc004d3c57806649b2108b83f0dfd6c45"
+    }
+  ],
+  "finding": "Both real explanations and EXPLANATION state commits succeeded, but citations were shortened to prefixes plus ellipses; exact source API lookup could not be verified from those identifiers.",
+  "action": "Keep original runs and outputs; require full chunk identifiers in the learning system prompt and verify fresh sessions."
+}

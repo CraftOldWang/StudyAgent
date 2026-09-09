@@ -1,0 +1,12 @@
+{
+  "scope": "Linux offline clean package after atomic question planning and full source identifier prompt",
+  "counts": {
+    "tests": 26,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "log": ".eval/m5-m8-citation-build.log",
+  "logSha256": "d4db44814c820d804c1cf229bebb199f56270c3f8f005e48e91f5ccf447844c7",
+  "jarSha256": "ec77dd744d0c150560bed8041e12ccb38ac3ecf8c625b2fa811b146858e2bec5"
+}

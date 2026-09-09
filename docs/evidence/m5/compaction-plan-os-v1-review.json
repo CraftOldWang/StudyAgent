@@ -1,0 +1,130 @@
+{
+  "runId": "2097546438468911105",
+  "course": "os",
+  "status": "SUCCEEDED",
+  "pointCount": 5,
+  "sourceDocuments": 6,
+  "exerciseDocuments": 0,
+  "reviewAcceptedForCompactionTask": true,
+  "reviewNotes": [
+    "All six selected documents represented in five teaching units: processes, scheduling, memory, concurrency and deadlock.",
+    "Prerequisite order is reasonable; all units retain verified references and NORMAL priority.",
+    "Thirteen successful extraction stages reused; failed outline attempts retained; third outline attempt with low reasoning succeeded.",
+    "Grouped teaching units support the fixed experiment, not proof every subtopic was taught."
+  ],
+  "topics": [
+    "进程的描述与控制",
+    "处理器调度算法",
+    "内存管理技术",
+    "并发控制与同步机制",
+    "死锁的预防与处理"
+  ],
+  "stages": [
+    {
+      "stage": "EXTRACT/0",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "53f3c01f-2118-4680-93b1-01e42e2d8091"
+    },
+    {
+      "stage": "EXTRACT/1",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "b7cbf8f4-19c9-4be0-8386-e2d5f5cc41fc"
+    },
+    {
+      "stage": "EXTRACT/2",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "c2fdf4ba-13ce-4fd9-bfb9-a2c73a6fd24a"
+    },
+    {
+      "stage": "EXTRACT/3",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "a936477b-2240-4695-bc6c-f2ed091a3a0e"
+    },
+    {
+      "stage": "EXTRACT/4",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "2cd2a8a9-3336-427b-9510-104a87f5f9b3"
+    },
+    {
+      "stage": "EXTRACT/5",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "7d363667-0491-4b97-afc7-098cf8ae751f"
+    },
+    {
+      "stage": "EXTRACT/6",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "5ea5ee74-4e78-4ca2-ae87-4e61ddbf84b8"
+    },
+    {
+      "stage": "EXTRACT/7",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "e2aba236-377e-4173-9628-96c242744da6"
+    },
+    {
+      "stage": "EXTRACT/8",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "9325c9f7-6b6e-4e78-95d7-e86a10472c81"
+    },
+    {
+      "stage": "EXTRACT/9",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "49d283a7-85df-4cb5-87c8-221667d7fdb9"
+    },
+    {
+      "stage": "EXTRACT/10",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "73d9901b-2450-4aa3-81c4-067dea5139d0"
+    },
+    {
+      "stage": "EXTRACT/11",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "305ea959-619a-4b69-9e90-f7e3efe06742"
+    },
+    {
+      "stage": "EXTRACT/12",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "e88a3123-2ec1-40a8-b680-dfa12e028c46"
+    },
+    {
+      "stage": "OUTLINE",
+      "status": "FAILED",
+      "attempt": 1,
+      "traceId": "7d15d7ef-cce4-4a9b-9660-f621f8e9bd36"
+    },
+    {
+      "stage": "OUTLINE",
+      "status": "FAILED",
+      "attempt": 2,
+      "traceId": "cc7a6239-efad-4cf9-9ada-a3d7fa07ac2f"
+    },
+    {
+      "stage": "OUTLINE",
+      "status": "SUCCEEDED",
+      "attempt": 3,
+      "traceId": "30341d81-2e55-4a98-8449-d3f11eaefbc2"
+    },
+    {
+      "stage": "TASKS",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "cbd66139-dd3c-4d76-95c9-ce9b8a5b86ca"
+    }
+  ],
+  "evidence": {
+    "path": ".eval/runs/m5-compaction-plan-os-v1/state.json",
+    "sha256": "2abba07608866f85798f1cf1041c75ef4a29d4c3d28e025c0bd2609abd40ea32"
+  }
+}

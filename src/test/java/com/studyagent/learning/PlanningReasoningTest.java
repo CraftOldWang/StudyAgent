@@ -16,11 +16,11 @@ class PlanningReasoningTest {
         var budgets = new LearningPlanningProperties(4800,28000,6000,600);
         var enabled = new PlanningModel(model, budgets, new LearningPlanningReasoningProperties(true,16000,"high"));
         var disabled = new PlanningModel(model, budgets, new LearningPlanningReasoningProperties(false,16000,"high"));
-        for (String stage : new String[]{"EXTRACT/0", "EMPHASIS/0", "TASKS"}) {
+        for (String stage : new String[]{"EXTRACT/0", "TASKS"}) {
             assertThat(enabled.fingerprintConfiguration(stage)).isEqualTo(disabled.fingerprintConfiguration(stage));
             assertThat(enabled.options(stage).getMaxTokens()).isEqualTo(6000);
         }
-        for (String stage : new String[]{"OUTLINE", "EMPHASIS_REVIEW/0"}) {
+        for (String stage : new String[]{"OUTLINE", "EMPHASIS/0", "EMPHASIS_REVIEW/0"}) {
             assertThat(enabled.fingerprintConfiguration(stage)).isNotEqualTo(disabled.fingerprintConfiguration(stage));
             assertThat(enabled.options(stage).getMaxTokens()).isEqualTo(16000);
             assertThat(enabled.options(stage).getAdditionalBodyParams()).containsEntry("thinking", Map.of("type", "enabled"));

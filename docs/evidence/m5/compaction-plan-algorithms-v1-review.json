@@ -1,0 +1,130 @@
+{
+  "runId": "2097544275474759681",
+  "course": "algorithms",
+  "status": "SUCCEEDED",
+  "pointCount": 5,
+  "sourceDocuments": 6,
+  "exerciseDocuments": 0,
+  "reviewAcceptedForCompactionTask": true,
+  "reviewNotes": [
+    "Six selected course documents represented: stable matching/complexity, graphs, greedy design, divide-and-conquer and dynamic programming.",
+    "Five units follow foundations before design techniques; all units retain verified source references.",
+    "No exercises selected; all priorities NORMAL and no exercise-based added time.",
+    "These are grouped teaching units for a fixed five-point evaluation, not evidence that every subtopic has been taught."
+  ],
+  "topics": [
+    "稳定匹配问题与算法效率度量",
+    "图的基本表示及连通性求解",
+    "贪心选择性质、最优性证明与竞争分析",
+    "分解-递归-合并的算法设计与递推分析",
+    "消除冗余递归与最优子结构设计"
+  ],
+  "stages": [
+    {
+      "stage": "EXTRACT/0",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "d1f130fd-d205-4281-b45f-6644a5eb3ef9"
+    },
+    {
+      "stage": "EXTRACT/1",
+      "status": "FAILED",
+      "attempt": 1,
+      "traceId": "829f87fa-ec58-4b2b-b17c-b4db45bb70df"
+    },
+    {
+      "stage": "EXTRACT/1",
+      "status": "FAILED",
+      "attempt": 2,
+      "traceId": "709c65ea-b6de-4064-ae94-ec85e72bfd08"
+    },
+    {
+      "stage": "EXTRACT/1",
+      "status": "FAILED",
+      "attempt": 3,
+      "traceId": "623ffe0e-7d73-422f-b58f-69ff21dd557a"
+    },
+    {
+      "stage": "EXTRACT/1",
+      "status": "SUCCEEDED",
+      "attempt": 4,
+      "traceId": "7980beda-625f-4fae-b691-8d273ce6eedc"
+    },
+    {
+      "stage": "EXTRACT/2",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "e0c303a0-a2be-4db3-85cb-c35c07306e77"
+    },
+    {
+      "stage": "EXTRACT/3",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "e2869ec3-3edb-4627-b527-d32e6fa3a984"
+    },
+    {
+      "stage": "EXTRACT/4",
+      "status": "FAILED",
+      "attempt": 1,
+      "traceId": "4839832d-629b-46c2-adb4-55a4dcf11cfb"
+    },
+    {
+      "stage": "EXTRACT/4",
+      "status": "FAILED",
+      "attempt": 2,
+      "traceId": "1c05dfe3-44f2-4c5c-a250-bb15b7d6b701"
+    },
+    {
+      "stage": "EXTRACT/4",
+      "status": "SUCCEEDED",
+      "attempt": 3,
+      "traceId": "77f5891d-57f4-452c-a605-f965871b64cc"
+    },
+    {
+      "stage": "EXTRACT/5",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "d5fc8413-9248-458c-b7b8-79df6c5bdb2f"
+    },
+    {
+      "stage": "EXTRACT/6",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "51483593-309f-42f4-aa8f-68ebba5dd46c"
+    },
+    {
+      "stage": "EXTRACT/7",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "e9bb4639-b20e-4718-b854-d19b2cc6bcaa"
+    },
+    {
+      "stage": "EXTRACT/8",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "3e26e63f-645b-476c-8569-d462d9f0389c"
+    },
+    {
+      "stage": "EXTRACT/9",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "c5c79492-478e-4e80-8e25-84e30aca7ab3"
+    },
+    {
+      "stage": "OUTLINE",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "4224af77-b95c-4c6c-8579-0ceaf22c3d96"
+    },
+    {
+      "stage": "TASKS",
+      "status": "SUCCEEDED",
+      "attempt": 1,
+      "traceId": "0715a039-ed49-4159-9c19-045b9777e4dd"
+    }
+  ],
+  "evidence": {
+    "path": ".eval/runs/m5-compaction-plan-algorithms-v2/state.json",
+    "sha256": "2207ad87d79ad972966e33200b58623c6b7f7ecc804a7292b4d8f1b47589e984"
+  }
+}

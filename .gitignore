@@ -54,6 +54,10 @@ scripts/*
 !scripts/prepare-learning-replicas.py
 !scripts/run-compaction-experiment.py
 !scripts/collect-learning-evidence.py
+!scripts/freeze-compaction-scripts.py
+!scripts/verify-asr-learning.py
+!scripts/report-compaction-experiment.py
+!scripts/test-compaction-report.py
 .agentscope/workspace/state/
 .eval/
 config/local-secrets.properties

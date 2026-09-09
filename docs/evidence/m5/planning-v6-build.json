@@ -61,5 +61,16 @@
       "errors": 0,
       "skipped": 0
     }
+  },
+  "atomicQuestionFollowup": {
+    "log": ".eval/m5-v6-atomic-final-build.log",
+    "logSha256": "624bf6a8d22c4acebfd1d3dd5e856e32b338bfbf06c70866ebe82fe16b81a5cb",
+    "jarSha256": "b22c7ada84aae5aa762d6fd64cef70bd392b5085ff57de7d277fa8a76a5e7cd4",
+    "counts": {
+      "tests": 18,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
   }
 }
