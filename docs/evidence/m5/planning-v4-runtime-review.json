@@ -1,0 +1,77 @@
+{
+  "runId": "2097527145970585601",
+  "sessionId": "2097529021508513794",
+  "structuralStatus": "SUCCEEDED",
+  "pointCount": 5,
+  "matches": 8,
+  "unmatched": 8,
+  "stages": [
+    {
+      "stage": "EXTRACT/0",
+      "status": "SUCCEEDED",
+      "attemptCount": 1,
+      "inputHash": "b53f4c7296cc3259719ca9dc44b73a337c83895ae5410755fe29295eb2f1a2b4",
+      "traceId": "f38db088-04aa-4ba4-a127-de96ec411bb8"
+    },
+    {
+      "stage": "EXTRACT/1",
+      "status": "SUCCEEDED",
+      "attemptCount": 1,
+      "inputHash": "f5ab8db726ca061acb2cd05eee45f283936e74299c841c1ab79de6e0b1359510",
+      "traceId": "950de864-857d-4509-8a22-536b164ef458"
+    },
+    {
+      "stage": "EXTRACT/2",
+      "status": "FAILED",
+      "attemptCount": 1,
+      "inputHash": "c8eb112368e9e8be2aa1abfa97032eb3057b3a04aa46bb21e0c89fbc49c763e4",
+      "traceId": "3525b685-a062-4d3d-8b60-00a87d01f06a"
+    },
+    {
+      "stage": "EXTRACT/2",
+      "status": "FAILED",
+      "attemptCount": 2,
+      "inputHash": "c8eb112368e9e8be2aa1abfa97032eb3057b3a04aa46bb21e0c89fbc49c763e4",
+      "traceId": "b4620f87-6905-4639-b698-5f3290f68f3e"
+    },
+    {
+      "stage": "EXTRACT/2",
+      "status": "SUCCEEDED",
+      "attemptCount": 3,
+      "inputHash": "c8eb112368e9e8be2aa1abfa97032eb3057b3a04aa46bb21e0c89fbc49c763e4",
+      "traceId": "2ca105c3-a4fb-47d1-a70a-be164d1a1394"
+    },
+    {
+      "stage": "OUTLINE",
+      "status": "SUCCEEDED",
+      "attemptCount": 1,
+      "inputHash": "8b8b5a241e27bfc186eb7475ba3089eaeb47f33dbecc1ccd7923dc237a505858",
+      "traceId": "716c4401-720d-4413-9359-81399fdb8f7a"
+    },
+    {
+      "stage": "EMPHASIS/0",
+      "status": "SUCCEEDED",
+      "attemptCount": 1,
+      "inputHash": "fec2144e274f297cd4cbabbfb66e1e4aa3a6353aa7450010e03eb739222c4afa",
+      "traceId": "4a4d9ef5-91c3-445f-a9df-97f7d92d8add"
+    },
+    {
+      "stage": "TASKS",
+      "status": "SUCCEEDED",
+      "attemptCount": 1,
+      "inputHash": "84f56e7d8bdce699b5f0d3e25322b5b716b317fb9d3e38921d9de5362f879157",
+      "traceId": "82bdbe28-b66e-499d-9c22-aebd03a68f76"
+    }
+  ],
+  "concurrentSessionCreationDeduplicated": true,
+  "qualityAccepted": false,
+  "qualityFindings": [
+    "First mapping cites a stage list which supports existence/order but not the tested operations.",
+    "Several mappings infer concrete type checking/conversion from a generic semantic-analysis definition.",
+    "Task reasons mention exercise emphasis for NORMAL tasks without accepted direct matches."
+  ],
+  "evidence": {
+    "path": ".eval/runs/m5-planning-smoke-v4/state.json",
+    "sha256": "b23d9ccf2213be71cab472d7179146841a910d164e8e054e185595247eadca09"
+  }
+}

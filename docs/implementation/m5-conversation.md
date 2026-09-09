@@ -1,6 +1,6 @@
 # M5 自然对话、持久化回合与上下文
 
-当前为本地实现与自动化验证，尚未完成真实课程模型验收。此前课程资料→DeepSeek 调用被自动审批拒绝；用户随后明确授权这些资料外传用于项目测试。2026-09-09 Docker 恢复后已恢复真实规划调用。正式 18 会话压缩实验、真实模型故障恢复与 SSE 生成中断验收仍待执行。
+真实编译原理五知识点功能链路已通过：30个自然语言回合、25道测验题、15张有来源卡片，包含实际SSE文本断线后的持久化和同requestId去重。正式18会话压缩对照仍待完成。用户已明确授权课程资料外传至DeepSeek用于测试，当前无此前授权阻塞。
 
 ## 入口与业务提交
 
@@ -66,3 +66,13 @@ SSE 事件为 accepted、text、progress、result、failure。accepted 只代表
 正式实验准备脚本为`scripts/prepare-learning-replicas.py`：要求一份真实成功的五知识点规划，冻结其目标、顺序、主题、来源、时间与重点；每门课程创建三策略×三次的九个初始会话，轮换策略执行顺序。默认只生成本地初始SQL和清单，`--apply`只在`study_agent_eval`中插入NEW状态计划，再通过实际API核对计划、设置压缩策略。副本使用独立业务ID，不复制回合、答案、卡片或上下文；这些是实验初始条件，不代表九次规划成功。后续学习仍全部通过生产API和真实provider执行。
 
 `run-learning-conversation-smoke.py --script`支持固定每个知识点的六条用户消息，按主题匹配计划，保存文件SHA-256；已开始的实验拒绝更换或遗漏原脚本。由此可以在相同输入中加入错误理解与跨知识点回忆检查。新增脚本通过语法/CLI检查，初始副本SQL在隔离MySQL事务内插入人工五点夹具：检查5知识点/1计划后回滚，会话残留为0，证据`.eval/m5-replica-sql-validation.json`。API配置与正式18会话尚未执行，不能计入完成数量。
+
+## 2026-09-09 真实首轮与重启检查点
+
+真实v4规划创建会话2097529021508513794。脚本收到实际text事件后关闭SSE，后台仍完成原回合2097529179709272065，持久化讲解文本并完成阈值摘要；但模型漏调learning_explanation_done，产物为QUESTION，未推进到EXPLAINING，因此完整学习流程失败。已强化NEW状态下的明确提交要求，保留模型自主选择与服务端校验，没有手动补写业务状态。证据`docs/evidence/m5/conversation-pilot-v1-review.json`；实际2次学习调用+1次摘要，总输入39355、总token41148，usage完整，见`conversation-pilot-v1-usage.json`。这是单轮功能证据，不能计算压缩节省比例。
+
+副本工具增加`--pilot`，可对编译原理创建一个LOCAL功能会话，不计入两主课程正式实验。会话6200002417100118000已完成五点实测：89次provider尝试全部成功，包含32次摘要；累计输入904141、总token954821，usage完整。566条trace、32份摘要和最终持久上下文通过只读导出保存，脚本`collect-learning-evidence.py`；结果见`docs/evidence/m5/conversation-pilot-v2-review.json`及同目录usage文件。该数字仅是单策略功能试跑用量，不能计算压缩收益。
+
+Windows全量测试曾遇到本机JDK UnixDomainSockets.connect错误；用户重启后WSL的8GiB配置生效，Linux clean package通过225项、0失败、0错误、3跳过，证据`docs/evidence/m5/linux-8gb-build.json`。后续规划改动另做定向回归，不混记为同一版全量测试。
+
+正式对照脚本`run-compaction-experiment.py`按轮换策略、交错课程执行18个已准备副本，默认先跑两个会话供检查。冻结JAR、RAG配置、用户脚本、初始计划及执行/导出脚本哈希；任何更改都拒绝混入同一实验。每点必须包含讲解、五题、评分、三卡，追问及不完整提交可以在冻结脚本中选择出现。正式设计使用指定点位的错误纠正和跨点回忆，不重复全功能试跑的每点不完整答案测试。失败保留同requestId与全部usage，明确恢复前不启动后续会话。

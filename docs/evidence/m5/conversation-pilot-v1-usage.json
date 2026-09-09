@@ -1,0 +1,53 @@
+{
+  "sessionId": "2097529021508513794",
+  "turnIds": [
+    "2097529179709272065"
+  ],
+  "combined": {
+    "attempts": 3,
+    "statuses": {
+      "SUCCEEDED": 3
+    },
+    "attemptsWithoutUsage": 0,
+    "usageComplete": true,
+    "knownInputTokens": 39355,
+    "knownOutputTokens": 1793,
+    "knownTotalTokens": 41148,
+    "knownCachedInputTokens": 1280
+  },
+  "learning": {
+    "attempts": 2,
+    "statuses": {
+      "SUCCEEDED": 2
+    },
+    "attemptsWithoutUsage": 0,
+    "usageComplete": true,
+    "knownInputTokens": 18534,
+    "knownOutputTokens": 1114,
+    "knownTotalTokens": 19648,
+    "knownCachedInputTokens": 1280
+  },
+  "compaction": {
+    "attempts": 1,
+    "statuses": {
+      "SUCCEEDED": 1
+    },
+    "attemptsWithoutUsage": 0,
+    "usageComplete": true,
+    "knownInputTokens": 20821,
+    "knownOutputTokens": 679,
+    "knownTotalTokens": 21500,
+    "knownCachedInputTokens": 0
+  },
+  "callIds": [
+    "3745d116-9e95-4c3f-99e2-859c65ebde78",
+    "7c1fb227-4cf2-4857-a3ee-ca05e92215a6",
+    "3e4deed7-36d7-4a7a-877e-24da584ff60f"
+  ],
+  "limits": [
+    "Known sums are lower bounds if any usage is missing.",
+    "Cached input is already part of input, not an additional token charge.",
+    "Zero selected attempts do not establish a completed experiment.",
+    "No quality or compression-reduction claim is inferred from usage alone."
+  ]
+}

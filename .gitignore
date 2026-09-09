@@ -52,6 +52,8 @@ scripts/*
 !scripts/report-learning-usage.py
 !scripts/test-learning-usage.py
 !scripts/prepare-learning-replicas.py
+!scripts/run-compaction-experiment.py
+!scripts/collect-learning-evidence.py
 .agentscope/workspace/state/
 .eval/
 config/local-secrets.properties

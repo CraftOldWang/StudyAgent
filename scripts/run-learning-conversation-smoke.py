@@ -61,7 +61,8 @@ def main():
         assert len(script["points"]) == len(state["plan"])
         for expected, actual in zip(script["points"], state["plan"]):
             assert expected["topic"] == actual["topic"], "Frozen script belongs to another plan"
-            assert set(expected["messages"]) == {"explain", "question", "quiz", "partial", "grade", "cards"}
+            required = {"explain", "quiz", "grade", "cards"}
+            assert required <= set(expected["messages"]) <= required | {"question", "partial"}
             assert all(isinstance(v, str) and v.strip() for v in expected["messages"].values())
         fingerprint = hashlib.sha256(raw).hexdigest()
         assert not state.get("steps") or state.get("scriptSha256") == fingerprint, "Cannot change user script after starting"
@@ -136,9 +137,11 @@ def main():
             "grade": "现在完整提交五题答案：1.A 2.A 3.A 4.A 5.A。",
             "cards": "请结合本次答题反馈生成当前知识点的三张复习卡，并完成这个知识点。"}
         turn(point, "explain", messages["explain"], "EXPLAINING", "EXPLANATION", args.disconnect_first_text and i == 0)
-        turn(point, "question", messages["question"], "EXPLAINING", "QUESTION")
+        if "question" in messages:
+            turn(point, "question", messages["question"], "EXPLAINING", "QUESTION")
         turn(point, "quiz", messages["quiz"], "QUIZZING", "QUIZ")
-        turn(point, "partial", messages["partial"], "QUIZZING", "QUESTION")
+        if "partial" in messages:
+            turn(point, "partial", messages["partial"], "QUIZZING", "QUESTION")
         turn(point, "grade", messages["grade"], "CARD_GENERATING", "GRADE")
         turn(point, "cards", messages["cards"], "COMPLETED", "CARDS")
     final = session()

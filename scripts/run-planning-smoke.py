@@ -33,6 +33,8 @@ def main():
         try:
             response = requests.request(method, base + path, headers=headers, timeout=(10, 900), **kwargs)
             event.update(status=response.status_code, traceId=response.headers.get("X-Trace-Id"), response=response.json())
+            if response.status_code >= 400:
+                print(json.dumps({"httpStatus": response.status_code, "failure": event["response"]}, ensure_ascii=False), flush=True)
             response.raise_for_status()
             if event["response"]["code"] != 0:
                 raise RuntimeError("Planning API failure; raw response preserved")

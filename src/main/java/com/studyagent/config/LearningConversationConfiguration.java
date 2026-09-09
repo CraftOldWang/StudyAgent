@@ -25,7 +25,7 @@ public class LearningConversationConfiguration {
         java.util.function.Consumer<io.agentscope.core.tool.AgentTool> register = tool -> toolkit.registerAgentTool(decorate.apply(tool));
         register.accept(search);
         register.accept(new LearningActionTool("learning_explanation_done",
-                "用户希望开始学习时，先检索并用自然语言完成讲解，再调用本工具结束本轮并请求 NEW→EXPLAINING。普通答疑无需调用。",
+                "用户要求开始且当前NEW时，先检索、输出完整讲解，再必须调用本工具提交讲解完成并请求NEW→EXPLAINING；漏调会导致讲解未保存且不能进入测验。普通追问不调用。",
                 object(Map.of(), List.of()), Action.EXPLANATION, mapper));
         register.accept(new LearningActionTool("learning_quiz_publish",
                 "用户希望测验且当前为EXPLAINING时，先检索，再一次提交五道四选一题。正确答案仅交给此工具，不在普通回复透露。成功后结束本轮。",

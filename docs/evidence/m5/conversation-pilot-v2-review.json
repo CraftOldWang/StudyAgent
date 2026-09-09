@@ -1,0 +1,333 @@
+{
+  "sessionId": "6200002417100118000",
+  "status": "PASSED_REQUESTED_POINT_FLOW",
+  "completedPoints": 5,
+  "steps": [
+    {
+      "step": "6200002417100118001/explain",
+      "requestId": "7acb1349-92fd-4b99-8bdc-be1f7ab3c8c2",
+      "turnId": "2097534934883946497",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": true
+    },
+    {
+      "step": "6200002417100118001/question",
+      "requestId": "a7807cec-3c18-4902-9b7c-d30c9392bc06",
+      "turnId": "2097535031109668866",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    },
+    {
+      "step": "6200002417100118001/quiz",
+      "requestId": "dacc69a3-edfc-4899-8657-259e1f5084ce",
+      "turnId": "2097535102022766594",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    },
+    {
+      "step": "6200002417100118001/partial",
+      "requestId": "0c891e91-b0e5-4800-9dd9-45e77b91e056",
+      "turnId": "2097535171186839554",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    },
+    {
+      "step": "6200002417100118001/grade",
+      "requestId": "45d23152-ebef-4611-af5b-e04203ea1c63",
+      "turnId": "2097535180108124161",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    },
+    {
+      "step": "6200002417100118001/cards",
+      "requestId": "45c3fc1e-5201-4562-94a5-d5ff4ef026ac",
+      "turnId": "2097535186483466241",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    },
+    {
+      "step": "6200002417100118002/explain",
+      "requestId": "6db3f5ff-09f6-426f-9d4e-36a6a5af575f",
+      "turnId": "2097537868736679937",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    },
+    {
+      "step": "6200002417100118002/question",
+      "requestId": "f54a43b8-62b0-43e1-9ea7-0d3bff99ee2d",
+      "turnId": "2097537977432068097",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    },
+    {
+      "step": "6200002417100118002/quiz",
+      "requestId": "fb9563b4-bced-482a-b0b4-44b127c46711",
+      "turnId": "2097538064866529282",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    },
+    {
+      "step": "6200002417100118002/partial",
+      "requestId": "5dc3f74e-0a46-48ce-9807-32c7a81050f2",
+      "turnId": "2097538185800896513",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    },
+    {
+      "step": "6200002417100118002/grade",
+      "requestId": "9aff54a7-daf6-4e8c-b42d-5ab63ffd8124",
+      "turnId": "2097538193937846273",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    },
+    {
+      "step": "6200002417100118002/cards",
+      "requestId": "67757f56-b98e-4e03-8baf-4564bbe875a9",
+      "turnId": "2097538199310749697",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    },
+    {
+      "step": "6200002417100118003/explain",
+      "requestId": "59651884-a3ba-4890-9234-c9e380c66197",
+      "turnId": "2097538245695557633",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    },
+    {
+      "step": "6200002417100118003/question",
+      "requestId": "668e7274-e0e3-4275-82dd-8db3471cc05b",
+      "turnId": "2097538323973853186",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    },
+    {
+      "step": "6200002417100118003/quiz",
+      "requestId": "5f8a8d24-42c8-4d77-ad59-f6fd0d3dd018",
+      "turnId": "2097538406534533121",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    },
+    {
+      "step": "6200002417100118003/partial",
+      "requestId": "f5cf5db3-fe18-415b-9815-52ea212c8373",
+      "turnId": "2097538488432513025",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    },
+    {
+      "step": "6200002417100118003/grade",
+      "requestId": "7270b49b-6eff-4562-8884-b31a136fc583",
+      "turnId": "2097538500713435137",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    },
+    {
+      "step": "6200002417100118003/cards",
+      "requestId": "59c6bb8a-2464-45e4-a195-285824912b1c",
+      "turnId": "2097538507780837377",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    },
+    {
+      "step": "6200002417100118004/explain",
+      "requestId": "ba507f9d-a7c7-49a6-852e-4da2b9fff973",
+      "turnId": "2097538554681544706",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    },
+    {
+      "step": "6200002417100118004/question",
+      "requestId": "7d818cf1-6ad9-4a24-a60d-befb84a552fc",
+      "turnId": "2097538641440722945",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    },
+    {
+      "step": "6200002417100118004/quiz",
+      "requestId": "fd54eeb8-e56e-40c6-ad43-f6b445e04d95",
+      "turnId": "2097538714832654338",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    },
+    {
+      "step": "6200002417100118004/partial",
+      "requestId": "8bc42990-1be7-4b2d-9870-8e396b8de3f7",
+      "turnId": "2097538804712394754",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    },
+    {
+      "step": "6200002417100118004/grade",
+      "requestId": "48668a9e-6a5d-4069-8411-88cb2aba1d69",
+      "turnId": "2097538817744097281",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    },
+    {
+      "step": "6200002417100118004/cards",
+      "requestId": "8488f00b-18be-4ed2-b66d-0d0eeb17e4b5",
+      "turnId": "2097538823846809602",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    },
+    {
+      "step": "6200002417100118005/explain",
+      "requestId": "f087e48f-f731-40d8-9752-1ce2657f3fa3",
+      "turnId": "2097538869292093442",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    },
+    {
+      "step": "6200002417100118005/question",
+      "requestId": "5a208624-3138-4e03-9db1-c7dcd18d5aa1",
+      "turnId": "2097538976137793537",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    },
+    {
+      "step": "6200002417100118005/quiz",
+      "requestId": "b4bb5f48-aad0-42a5-8ff5-2ddce3f4f386",
+      "turnId": "2097539054021824514",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    },
+    {
+      "step": "6200002417100118005/partial",
+      "requestId": "3050e57d-1ee3-4866-864e-49fa416de57c",
+      "turnId": "2097539171202289665",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    },
+    {
+      "step": "6200002417100118005/grade",
+      "requestId": "c962e6fd-26f0-49ff-871d-5d67f325caea",
+      "turnId": "2097539179716726786",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    },
+    {
+      "step": "6200002417100118005/cards",
+      "requestId": "e181efc1-bfeb-4dcc-93a8-2ea19d675c97",
+      "turnId": "2097539186033348609",
+      "status": "SUCCEEDED",
+      "verified": true,
+      "disconnectedAfterText": false
+    }
+  ],
+  "sourceEvidence": {
+    "path": ".eval/runs/m5-real-conversation-v2/state.json",
+    "sha256": "476e7db81b875ecb19402a865307521b7dd7400b17f5d658da54eb4c3e77580e"
+  },
+  "browserObservation": "Restored session shows six turns, five-question quiz, score 20/100, three generated cards with source and Anki export buttons. Export was not tested in this run.",
+  "limits": [
+    "Functional API/state/source checks; not a learning effectiveness or compression benchmark.",
+    "Fixed A answers intentionally do not target a perfect score.",
+    "Five-point functional pilot; not a formal compaction comparison. Browser observation covers the first point only."
+  ],
+  "contextResumeEvidence": [
+    {
+      "pointId": "6200002417100118001",
+      "turnId": "2097534934883946497",
+      "messagesAtFirstModelCall": 1,
+      "summaryKinds": []
+    },
+    {
+      "pointId": "6200002417100118002",
+      "turnId": "2097537868736679937",
+      "messagesAtFirstModelCall": 2,
+      "summaryKinds": [
+        "POINT"
+      ]
+    },
+    {
+      "pointId": "6200002417100118003",
+      "turnId": "2097538245695557633",
+      "messagesAtFirstModelCall": 3,
+      "summaryKinds": [
+        "THRESHOLD_OLDER",
+        "POINT"
+      ]
+    },
+    {
+      "pointId": "6200002417100118004",
+      "turnId": "2097538554681544706",
+      "messagesAtFirstModelCall": 3,
+      "summaryKinds": [
+        "THRESHOLD_OLDER",
+        "POINT"
+      ]
+    },
+    {
+      "pointId": "6200002417100118005",
+      "turnId": "2097538869292093442",
+      "messagesAtFirstModelCall": 3,
+      "summaryKinds": [
+        "THRESHOLD_OLDER",
+        "POINT"
+      ]
+    }
+  ],
+  "persistedEvidence": {
+    "sessionId": "6200002417100118000",
+    "exportedAt": "2026-09-09T04:32:21.156937+00:00",
+    "traceEvents": 566,
+    "traceStages": {
+      "TURN": 90,
+      "MODEL": 228,
+      "TOOL": 154,
+      "COMPACTION": 94
+    },
+    "compactionKinds": {
+      "THRESHOLD_POINT": 15,
+      "POINT": 5,
+      "THRESHOLD_OLDER": 12
+    },
+    "files": [
+      {
+        "path": ".eval/runs/m5-real-conversation-v2/persisted-evidence/trace-events.json",
+        "sha256": "41f40f98e94e616683ffcc43d17d0ce8f0b11a036fa0470700536849c2a61d93"
+      },
+      {
+        "path": ".eval/runs/m5-real-conversation-v2/persisted-evidence/compactions.json",
+        "sha256": "c200d6dd4a095da78834a34921316902891a9f60beaa39f29bae6eab30d53dd1"
+      },
+      {
+        "path": ".eval/runs/m5-real-conversation-v2/persisted-evidence/context.json",
+        "sha256": "154851dd94c075c155f69ae8054b95386e805443b9fd2d142d010d751bc2f332"
+      }
+    ],
+    "limits": [
+      "State/trace export is observational evidence, not a quality or token-reduction score."
+    ]
+  }
+}

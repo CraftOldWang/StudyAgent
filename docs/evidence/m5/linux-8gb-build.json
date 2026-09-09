@@ -1,0 +1,21 @@
+{
+  "verifiedAt": "2026-09-09T03:57:41.321582+00:00",
+  "dockerMemTotalBytes": 8321204224,
+  "counts": {
+    "tests": 225,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 3
+  },
+  "buildExitCode": 0,
+  "environment": "maven:3.9.11-eclipse-temurin-21; Linux; offline clean package; WSL memory=8GiB",
+  "jarSha256": "db40a5631320b6de3c2acf0be2e02eb7530e4a0e20d76e1835dcef8931c7e024",
+  "log": {
+    "path": ".eval/m5-linux-8gb-full-tests.log",
+    "sha256": "3a9cfe9a5d786afdcdf2e4a8c99fee66f91f1fdca21f97a8347b3dda25e0374b"
+  },
+  "limits": [
+    "Does not establish completion of real learning or formal compaction experiments.",
+    "Windows JDK Unix domain socket failures remain an environment-specific issue."
+  ]
+}

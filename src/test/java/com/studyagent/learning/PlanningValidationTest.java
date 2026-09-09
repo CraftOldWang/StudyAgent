@@ -34,27 +34,27 @@ class PlanningValidationTest {
         var candidates = List.of(new Candidate(1L,"同步",List.of(),List.of("c1"),List.of(new Evidence("c1","同步"))),
                 new Candidate(2L,"同步机制",List.of(),List.of("c2"),List.of(new Evidence("c2","同步机制"))));
         var valid = PlanningValidation.outline(mapper.readTree("""
-                {"points":[{"chapterTitle":"并发","topic":"同步","subtopics":[],"candidateIds":["1","2"]}]}
+                {"points":[{"chapterTitle":"并发","topic":"同步","subtopics":[],"candidateIds":["C1","C2"]}]}
                 """), candidates, null);
         assertThat(valid.chapters().getFirst().points().getFirst().sourceChunkIds()).containsExactly("c1","c2");
         assertThatThrownBy(() -> PlanningValidation.outline(mapper.readTree("""
-                {"points":[{"chapterTitle":"并发","topic":"同步","subtopics":[],"candidateIds":["1"]}]}
+                {"points":[{"chapterTitle":"并发","topic":"同步","subtopics":[],"candidateIds":["C1"]}]}
                 """), candidates, null)).hasMessageContaining("全部候选");
     }
 
     @Test void requestedPointCountIsCheckedAcrossChapters() throws Exception {
         var candidates = List.of(new Candidate(1L,"同步",List.of(),List.of("c1"),List.of(new Evidence("c1","同步"))));
         assertThatThrownBy(() -> PlanningValidation.outline(mapper.readTree("""
-                {"points":[{"chapterTitle":"并发","topic":"同步","subtopics":[],"candidateIds":["1"]}]}
+                {"points":[{"chapterTitle":"并发","topic":"同步","subtopics":[],"candidateIds":["C1"]}]}
                 """), candidates, 5)).hasMessageContaining("数量");
     }
 
     @Test void extractionKeepsVerifiedQuotesForBoundedDownstreamMatching() throws Exception {
         var result = PlanningValidation.extraction(mapper.readTree("""
                 {"points":[{"topic":"同步","subtopics":[],"sourceChunkIds":["chunk-1"],
-                "evidence":[{"sourceChunkId":"chunk-1","quote":"进程同步"}]}],"uncovered":[]}
+                "evidence":[{"sourceChunkId":"chunk-1","excerptNo":1}]}],"uncovered":[]}
                 """), List.of(source));
-        assertThat(result.points().getFirst().evidence()).containsExactly(new Evidence("chunk-1","进程同步"));
+        assertThat(result.points().getFirst().evidence()).containsExactly(new Evidence("chunk-1","进程同步与互斥"));
         assertThatThrownBy(() -> PlanningValidation.emphasis(mapper.readTree("""
                 {"matches":[{"knowledgePointId":"20","sourceChunkId":"chunk-1","quote":"同步",
                 "lessonSourceChunkId":"foreign","lessonQuote":"同步","reason":"相关","priority":"HIGH"}],"unmatched":[]}
@@ -64,7 +64,7 @@ class PlanningValidationTest {
     @Test void parentMayContainTeachingTextAndUnparsedImageNotes() throws Exception {
         var result = PlanningValidation.extraction(mapper.readTree("""
                 {"points":[{"topic":"同步","subtopics":[],"sourceChunkIds":["chunk-1"],
-                "evidence":[{"sourceChunkId":"chunk-1","quote":"进程同步"}]}],
+                "evidence":[{"sourceChunkId":"chunk-1","excerptNo":1}]}],
                 "uncovered":[{"sourceChunkId":"chunk-1","reason":"图片占位内容未提取"}]}
                 """), List.of(source));
         assertThat(result.points()).hasSize(1);
@@ -92,9 +92,48 @@ class PlanningValidationTest {
                 """), outline, emphasis);
         assertThat(tasks).extracting(Task::estimatedMinutes).containsExactly(15,25);
         assertThat(tasks).extracting(Task::priority).containsExactly("NORMAL","HIGH");
+        assertThat(tasks.getFirst().reason()).contains("暂无直接匹配依据");
+        assertThat(tasks.get(1).reason()).contains("同步题", "追加练习10分钟");
         assertThat(emphasis.unmatched()).hasSize(1);
         assertThatThrownBy(() -> PlanningValidation.tasks(mapper.readTree("""
                 {"tasks":[{"knowledgePointId":"20","baseMinutes":15,"reason":"只学重点"}]}
                 """), outline, emphasis)).hasMessageContaining("基础知识点");
+    }
+
+    @Test void rejectedEvidenceRemainsVisibleAndCannotIncreasePriorityOrTime() throws Exception {
+        var proposed = new Emphasis(List.of(
+                new Importance(20L,"exercise","哪一阶段检查类型","chunk-1","语义分析阶段","仅相关", "HIGH"),
+                new Importance(21L,"exercise","列出阶段","chunk-1","语义分析阶段","列表", "MEDIUM")),
+                List.of(new Unmatched("exercise","其他题","课件未覆盖")));
+        var reviewed = PlanningValidation.reviewEmphasis(mapper.readTree("""
+                {"decisions":[
+                 {"matchIndex":1,"testedClaim":"列出阶段","lessonClaim":"包含语义分析阶段","supported":true,"reason":"列表直接支持"},
+                 {"matchIndex":0,"testedClaim":"类型检查职责","lessonClaim":"只有阶段名称","supported":false,"reason":"没有职责描述"}]}
+                """), proposed);
+        assertThat(reviewed.matches()).hasSize(1);
+        assertThat(reviewed.matches().getFirst().reason()).isEqualTo("列表直接支持");
+        assertThat(reviewed.unmatched()).hasSize(2);
+        assertThat(reviewed.unmatched().get(1).reason()).contains("复核未通过", "没有职责描述");
+        var tasks = PlanningValidation.tasks(mapper.readTree("""
+                {"tasks":[{"knowledgePointId":"20","baseMinutes":15,"reason":"先修"},
+                          {"knowledgePointId":"21","baseMinutes":15,"reason":"基础"}]}
+                """), outline, reviewed);
+        assertThat(tasks).extracting(Task::priority).containsExactly("NORMAL", "MEDIUM");
+        assertThat(tasks).extracting(Task::estimatedMinutes).containsExactly(15,20);
+    }
+
+    @Test void evidenceReviewMustCoverEveryMatchExactlyOnceWithTypedDecision() throws Exception {
+        var proposed = new Emphasis(List.of(new Importance(20L,"exercise","题目","chunk-1","摘录","关系","HIGH")), List.of());
+        assertThatThrownBy(() -> PlanningValidation.reviewEmphasis(mapper.readTree("{\"decisions\":[]}"), proposed))
+                .hasMessageContaining("覆盖全部");
+        String decision = """
+                {"matchIndex":0,"testedClaim":"问题","lessonClaim":"依据","supported":true,"reason":"直接支持"}
+                """;
+        assertThatThrownBy(() -> PlanningValidation.reviewEmphasis(mapper.readTree("{\"decisions\":[" + decision + "," + decision + "]}"), proposed))
+                .hasMessageContaining("不得重复");
+        assertThatThrownBy(() -> PlanningValidation.reviewEmphasis(mapper.readTree("{\"decisions\":[" + decision.replace("true", "\"true\"") + "]}"), proposed))
+                .hasMessageContaining("布尔值");
+        assertThatThrownBy(() -> PlanningValidation.reviewEmphasis(mapper.readTree("{\"decisions\":[" + decision.replace(":0", ":9") + "]}"), proposed))
+                .hasMessageContaining("未知匹配序号");
     }
 }

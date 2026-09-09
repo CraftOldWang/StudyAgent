@@ -47,17 +47,19 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--planning-run", type=Path, required=True)
     parser.add_argument("--run-dir", type=Path, required=True)
-    parser.add_argument("--course", choices=["algorithms", "os"], required=True)
+    parser.add_argument("--course", choices=["algorithms", "os", "compiler"], required=True)
+    parser.add_argument("--pilot", action="store_true", help="One LOCAL session for functional smoke; not a formal compaction sample")
     parser.add_argument("--expected-index", required=True)
     parser.add_argument("--apply", action="store_true", help="Insert fresh initial plans and configure their strategies through the API")
     args = parser.parse_args()
+    assert args.pilot or args.course in {"algorithms", "os"}, "Formal experiment uses the two main courses"
     source = json.loads((args.planning_run / "state.json").read_text(encoding="utf-8"))
     assert source["lastView"]["status"] == "SUCCEEDED", "Require an accepted real planning run"
     tasks = source["lastView"]["result"]["tasks"]
     assert len(tasks) == 5 and len({t["knowledgePointId"] for t in tasks}) == 5
     blueprint = {"sourceRunId": source["runId"], "knowledgeBaseId": source["input"]["knowledgeBaseId"],
                  "learningGoal": source["input"]["learningGoal"], "tasks": tasks, "course": args.course,
-                 "expectedIndex": args.expected_index}
+                 "expectedIndex": args.expected_index, "pilot": args.pilot}
     digest = hashlib.sha256(json.dumps(blueprint, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
     root = args.run_dir; root.mkdir(parents=True, exist_ok=True)
     state_file = root / "replicas.json"
@@ -66,9 +68,9 @@ def main():
         assert state["blueprintSha256"] == digest, "Frozen plan/config changed; never overwrite an experiment"
     else:
         # Rotated strategy order balances provider/time ordering across repeats.
-        strategies = ["THRESHOLD", "WHOLE_HISTORY", "LOCAL"]
+        strategies = ["LOCAL"] if args.pilot else ["THRESHOLD", "WHOLE_HISTORY", "LOCAL"]
         replicas = []
-        for repeat in range(3):
+        for repeat in range(1 if args.pilot else 3):
             for strategy in strategies[repeat:] + strategies[:repeat]:
                 sid = 6_200_000_000_000_000_000 + (uuid.uuid4().int % 100_000_000_000) * 100
                 replicas.append({"repeat": repeat + 1, "strategy": strategy, "sessionId": str(sid),
@@ -83,7 +85,7 @@ def main():
     for replica in state["replicas"]:
         (root / (replica["sessionId"] + "-initial-plan.sql")).write_text(seed_sql(replica, blueprint), encoding="utf-8")
     if not args.apply:
-        print("Prepared nine initial-plan fixtures; no database or provider calls executed"); return
+        print(f"Prepared {len(state['replicas'])} initial-plan fixtures; no database or provider calls executed"); return
     inspected = json.loads(subprocess.check_output(["docker", "inspect", "study-agent-eval-app-1"]))[0]
     env = dict(v.split("=", 1) for v in inspected["Config"]["Env"])
     assert inspected["State"]["Running"] and env.get("STUDY_AGENT_ELASTICSEARCH_PHYSICAL_INDEX") == args.expected_index

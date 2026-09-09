@@ -30,13 +30,18 @@ public final class PlanningValidation {
             List<Evidence> evidence = new ArrayList<>();
             for (JsonNode item : array(node, "evidence")) {
                 String source = text(item, "sourceChunkId");
-                String quote = text(item, "quote");
-                require(refs.contains(source) && quote.length() <= 400, "知识点依据必须使用引用来源且摘录不超过400字");
+                require(refs.contains(source), "知识点依据必须使用引用来源");
+                List<PlanningEvidence.Excerpt> excerpts = PlanningEvidence.excerpts(sourceMap.get(source).content());
+                JsonNode excerpt = item.get("excerptNo");
+                require(excerpt != null && excerpt.isIntegralNumber() && excerpt.canConvertToInt()
+                        && excerpt.intValue() >= 1 && excerpt.intValue() <= excerpts.size(), "知识点依据必须选择该来源已提供的摘录编号");
+                String quote = excerpts.get(excerpt.intValue() - 1).text();
                 quotedSource(sourceMap, source, quote);
                 evidence.add(new Evidence(source, quote));
             }
-            require(evidence.stream().map(Evidence::sourceChunkId).collect(Collectors.toSet()).equals(new HashSet<>(refs)),
-                    "知识点每个引用来源都需要原文依据");
+            Set<String> evidenced = evidence.stream().map(Evidence::sourceChunkId).collect(Collectors.toSet());
+            require(evidenced.equals(new HashSet<>(refs)), "知识点每个引用来源都需要原文依据；topic=" + text(node, "topic")
+                    + "；缺少依据的sourceChunkId=" + refs.stream().filter(ref -> !evidenced.contains(ref)).toList());
             covered.addAll(refs);
             points.add(new Candidate(IdWorker.getId(), text(node, "topic"), strings(node, "subtopics"), refs, List.copyOf(evidence)));
         }
@@ -64,8 +69,11 @@ public final class PlanningValidation {
             LinkedHashSet<String> refs = new LinkedHashSet<>();
             LinkedHashSet<Evidence> evidence = new LinkedHashSet<>();
             for (JsonNode value : array(point, "candidateIds")) {
-                Long id = id(value);
-                require(allowed.containsKey(id) && consumed.add(id), "大纲合并引用未知或重复候选知识点");
+                require(value.isTextual() && value.asText().matches("C[1-9][0-9]*"), "候选引用必须使用本次C编号");
+                Long number = id(new com.fasterxml.jackson.databind.node.TextNode(value.asText().substring(1)));
+                require(number <= candidates.size(), "大纲合并引用未知候选编号：" + value.asText());
+                Long id = candidates.get(number.intValue() - 1).id();
+                require(allowed.containsKey(id) && consumed.add(id), "大纲合并引用未知或重复候选知识点：" + id);
                 refs.addAll(allowed.get(id).sourceChunkIds());
                 evidence.addAll(allowed.get(id).evidence());
             }
@@ -73,7 +81,9 @@ public final class PlanningValidation {
             byChapter.computeIfAbsent(text(point, "chapterTitle"), key -> new ArrayList<>()).add(
                     new Point(IdWorker.getId(), text(point, "topic"), strings(point, "subtopics"), List.copyOf(refs), List.copyOf(evidence)));
         }
-        require(!byChapter.isEmpty() && consumed.equals(allowed.keySet()), "合并大纲必须保留全部候选知识点，可合并同义项");
+        require(!byChapter.isEmpty() && consumed.equals(allowed.keySet()), "合并大纲必须保留全部候选知识点，可合并同义项；遗漏候选ID："
+                + java.util.stream.IntStream.range(0, candidates.size()).filter(i -> !consumed.contains(candidates.get(i).id()))
+                        .mapToObj(i -> "C" + (i + 1)).toList());
         return new Outline(byChapter.entrySet().stream()
                 .map(entry -> new Chapter(IdWorker.getId(), entry.getKey(), List.copyOf(entry.getValue()))).toList());
     }
@@ -116,6 +126,39 @@ public final class PlanningValidation {
         return new Emphasis(List.copyOf(matches), List.copyOf(unmatched));
     }
 
+    public static Emphasis reviewEmphasis(JsonNode root, Emphasis proposed) {
+        Map<Integer, Importance> accepted = new HashMap<>();
+        Map<Integer, Unmatched> rejected = new HashMap<>();
+        Set<Integer> reviewed = new HashSet<>();
+        for (JsonNode node : array(root, "decisions")) {
+            JsonNode index = node.get("matchIndex");
+            require(index != null && index.isIntegralNumber() && index.canConvertToInt()
+                    && index.intValue() >= 0 && index.intValue() < proposed.matches().size(), "重点复核引用未知匹配序号");
+            int i = index.intValue();
+            require(reviewed.add(i), "重点复核不得重复同一匹配");
+            JsonNode supported = node.get("supported");
+            require(supported != null && supported.isBoolean(), "重点复核supported必须为布尔值");
+            text(node, "testedClaim");
+            text(node, "lessonClaim");
+            String reason = text(node, "reason");
+            Importance m = proposed.matches().get(i);
+            if (supported.booleanValue()) {
+                accepted.put(i, new Importance(m.knowledgePointId(), m.sourceChunkId(), m.quote(),
+                        m.lessonSourceChunkId(), m.lessonQuote(), reason, m.priority()));
+            } else {
+                rejected.put(i, new Unmatched(m.sourceChunkId(), m.quote(), "课件依据复核未通过：" + reason));
+            }
+        }
+        require(reviewed.size() == proposed.matches().size(), "重点复核必须覆盖全部候选匹配");
+        List<Importance> matches = new ArrayList<>();
+        List<Unmatched> unmatched = new ArrayList<>(proposed.unmatched());
+        for (int i = 0; i < proposed.matches().size(); i++) {
+            if (accepted.containsKey(i)) { matches.add(accepted.get(i)); }
+            else { unmatched.add(rejected.get(i)); }
+        }
+        return new Emphasis(List.copyOf(matches), List.copyOf(unmatched));
+    }
+
     public static List<Task> tasks(JsonNode root, Outline outline, Emphasis emphasis) {
         Map<Long, Point> points = new HashMap<>();
         Map<Long, Chapter> chapters = new HashMap<>();
@@ -135,16 +178,22 @@ public final class PlanningValidation {
             int allocated = minutes.intValue() + ("HIGH".equals(priority) ? 10 : "MEDIUM".equals(priority) ? 5 : 0);
             Point p = points.get(id);
             Chapter c = chapters.get(id);
+            String basis = emphasis.matches().stream().filter(m -> m.knowledgePointId().equals(id))
+                    .map(Importance::reason).distinct().collect(Collectors.joining("；"));
+            String reason = text(node, "reason") + (basis.isEmpty() ? " 本批习题暂无直接匹配依据，按基础内容安排。"
+                    : " 习题依据：" + basis + "；追加练习" + (allocated - minutes.intValue()) + "分钟。");
             tasks.add(new Task(id, c.id(), c.title(), p.topic(), p.subtopics(), p.sourceChunkIds(), priority,
-                    allocated, text(node, "reason")));
+                    allocated, reason));
         }
         require(used.equals(points.keySet()), "计划不能删除未被习题覆盖的基础知识点");
         return List.copyOf(tasks);
     }
 
     private static void quotedSource(Map<String, Source> sources, String id, String quote) {
-        require(sources.containsKey(id) && normalize(sources.get(id).content()).contains(normalize(quote)),
-                "习题引用必须是当前批次资料中的原文摘录");
+        require(sources.containsKey(id), "引用来源不属于当前批次: " + id);
+        require(normalize(sources.get(id).content()).contains(normalize(quote)),
+                "引用必须是当前批次资料中的连续原文摘录，sourceChunkId=" + id + "，不匹配摘录="
+                        + quote.substring(0, Math.min(quote.length(), 120)));
     }
     private static String normalize(String text) { return Normalizer.normalize(text, Normalizer.Form.NFKC).replaceAll("\\s+", ""); }
     private static Long id(JsonNode node) {

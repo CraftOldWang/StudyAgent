@@ -11,7 +11,7 @@ type Role = 'lesson' | 'exercise' | 'unused'
 interface Draft { roles: Record<string, Role>; goal: string; count: string; runId: string; plan: PlanningView | null }
 // Keep drafts across in-app navigation without storing course text in browser storage.
 const drafts = new Map<string, Draft>()
-const phaseLabel = (value: string) => ({ EXTRACT: '读取课件', OUTLINE: '整理大纲', EMPHASIS: '标注习题重点', TASKS: '安排学习任务' }[value.split('/')[0]] || value)
+const phaseLabel = (value: string) => ({ EXTRACT: '读取课件', OUTLINE: '整理大纲', EMPHASIS: '标注习题重点', EMPHASIS_REVIEW: '核对重点依据', TASKS: '安排学习任务' }[value.split('/')[0]] || value)
 export const priorityLabel = (value?: string | null) => value === 'HIGH' ? '重点' : value === 'MEDIUM' ? '关注' : '基础'
 
 export function PlanningStart({ knowledgeBase, onSession }: {

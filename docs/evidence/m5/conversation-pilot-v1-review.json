@@ -1,0 +1,22 @@
+{
+  "sessionId": "2097529021508513794",
+  "requestId": "abd57bbf-8cbf-481a-85e9-be3d0085af1b",
+  "turnId": "2097529179709272065",
+  "traceId": "9f5ddf2a-6b9b-474a-b497-cec83c2ae5ad",
+  "textDisconnectObserved": true,
+  "persistedStatusAfterDisconnect": "SUCCEEDED",
+  "artifactType": "QUESTION",
+  "fullLearningFlowPassed": false,
+  "reason": "Explicit start request produced an explanation but no explanation-completion tool; business state did not advance",
+  "freshPilotSessionPrepared": "6200002417100118000",
+  "rawEvidence": [
+    {
+      "path": ".eval/runs/m5-real-conversation-v1/state.json",
+      "sha256": "2ae0a01cb91b8ac39e98ff05cff362228e64b4aeea2c05d015670937b3c39845"
+    },
+    {
+      "path": ".eval/runs/m5-real-conversation-v1/first-disconnected.sse",
+      "sha256": "6885768d8e63a2b596e4a4817af16f494576bcc20ab53942ba20ec15c3368778"
+    }
+  ]
+}

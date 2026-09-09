@@ -1,0 +1,65 @@
+{
+  "backend": {
+    "tests": 17,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "backendScope": "PlanningValidationTest,PlanningEvidenceTest,PlanningRetryPromptTest,PlanningPersistenceTest; Linux clean package",
+  "frontend": {
+    "tests": 37,
+    "failures": 0,
+    "build": "passed",
+    "premiumAudit": {
+      "errors": 0,
+      "total": 0,
+      "unresolved": 0,
+      "violations": 0,
+      "warnings": 0
+    }
+  },
+  "artifacts": [
+    {
+      "path": ".eval/m5-v6-clean-build.log",
+      "sha256": "5a172c4a3b42d4d31f7035b5bb476e341319eaa744686c4810c17b70594ade24"
+    },
+    {
+      "path": ".eval/m5-v5-frontend-tests.log",
+      "sha256": "e91fafd4ae5e7d495daac60215af34f2520257d675a25bb4da057c1b38b70aae"
+    },
+    {
+      "path": ".eval/m5-v5-frontend-build.log",
+      "sha256": "839cf586deda85d307ec53d9bed567177f782bc2ff2d4d7e918f2038ca6860c0"
+    },
+    {
+      "path": ".eval/m5-v5-ui-audit.json",
+      "sha256": "2aafa915b2b103bca509edab7a41fb265bc1e6dc5974c0d32dbb17d5d89f40d2"
+    },
+    {
+      "path": "target/study-agent-0.0.1-SNAPSHOT.jar",
+      "sha256": "02316824863cb7bf70a94dd6bcb83b308830cd10ae7aca9b24cd395ec73f9902"
+    }
+  ],
+  "aliasFollowup": {
+    "log": ".eval/m5-v6-alias-build.log",
+    "logSha256": "f200e7624844aea8aa709b15141418bd82aea261c6794deaf412c9cb729d14e4",
+    "jarSha256": "255aafd4971a85e395dad6b5322e9effbacdfe50d57eb449e523c02eb66d720e",
+    "counts": {
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "reasoningFollowup": {
+    "log": ".eval/m5-v6-reasoning-build.log",
+    "logSha256": "0eb0156b6dbdd8f433f954bbf676436b9016afbd870faf3da95282a9df854e6f",
+    "jarSha256": "988fcf06209b88541b72d1932181fb4a0a0e19b0ad4d6c840529ffcd16fd5ce7",
+    "counts": {
+      "tests": 18,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  }
+}

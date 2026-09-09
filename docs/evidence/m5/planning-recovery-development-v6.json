@@ -1,0 +1,281 @@
+{
+  "scope": "Development failures before stage reasoning; not final acceptance",
+  "runs": [
+    {
+      "name": "m5-planning-smoke-v5",
+      "runId": "2097541253497167873",
+      "statusAtCheckpoint": "FAILED",
+      "lastError": "合并大纲必须保留全部候选知识点，可合并同义项",
+      "stages": [
+        {
+          "stage": "EXTRACT/0",
+          "status": "SUCCEEDED",
+          "attempt": 1,
+          "traceId": "0f206621-c8d3-47aa-8a62-6667eae808a2"
+        },
+        {
+          "stage": "EXTRACT/1",
+          "status": "SUCCEEDED",
+          "attempt": 1,
+          "traceId": "abb37f5f-f5d6-4274-80f7-81511dd89e06"
+        },
+        {
+          "stage": "EXTRACT/2",
+          "status": "FAILED",
+          "attempt": 1,
+          "traceId": "964402b9-329b-43b6-91d7-2af3ac832fab"
+        },
+        {
+          "stage": "EXTRACT/2",
+          "status": "SUCCEEDED",
+          "attempt": 2,
+          "traceId": "3a412dc4-f032-4e09-a1d2-a733b106a221"
+        },
+        {
+          "stage": "OUTLINE",
+          "status": "FAILED",
+          "attempt": 1,
+          "traceId": "7ce79fed-a5ed-4e21-8e46-a458334bf290"
+        },
+        {
+          "stage": "OUTLINE",
+          "status": "FAILED",
+          "attempt": 2,
+          "traceId": "6ea45f77-f400-4605-919a-06705572166b"
+        }
+      ],
+      "evidence": {
+        "path": ".eval/runs/m5-planning-smoke-v5/before-reasoning-state.json",
+        "sha256": "9ea2a915b9b1645b19f8ff223626e69c57ea75919d7ab078a8d4c50255654974"
+      }
+    },
+    {
+      "name": "m5-planning-smoke-v6",
+      "runId": "2097544226330099714",
+      "statusAtCheckpoint": "FAILED",
+      "lastError": "大纲知识点数量与用户指定数量不一致",
+      "stages": [
+        {
+          "stage": "EXTRACT/0",
+          "status": "SUCCEEDED",
+          "attempt": 1,
+          "traceId": "55ef71e1-8487-4536-85bd-d898c2da4cdc"
+        },
+        {
+          "stage": "EXTRACT/1",
+          "status": "SUCCEEDED",
+          "attempt": 1,
+          "traceId": "e80c4610-256b-4043-9fec-ed323aff997a"
+        },
+        {
+          "stage": "EXTRACT/2",
+          "status": "SUCCEEDED",
+          "attempt": 1,
+          "traceId": "a196ae50-3002-4741-8a09-0ca4b207942c"
+        },
+        {
+          "stage": "OUTLINE",
+          "status": "FAILED",
+          "attempt": 1,
+          "traceId": "a2f57aba-f1c2-41c1-9eba-d02b2ab70885"
+        },
+        {
+          "stage": "OUTLINE",
+          "status": "FAILED",
+          "attempt": 2,
+          "traceId": "e485de8a-58a3-4c28-abd0-d2ad47dfe440"
+        },
+        {
+          "stage": "OUTLINE",
+          "status": "FAILED",
+          "attempt": 3,
+          "traceId": "d7d42154-fef4-4f61-af41-33b97429a7cd"
+        },
+        {
+          "stage": "OUTLINE",
+          "status": "FAILED",
+          "attempt": 4,
+          "traceId": "bb28e9f7-2a24-424b-89b3-786bddc5c813"
+        }
+      ],
+      "evidence": {
+        "path": ".eval/runs/m5-planning-smoke-v6/before-reasoning-state.json",
+        "sha256": "930c546ebf4642f466cb4ed9f901df17a39c9c42fab2c66d3cb0ad8fdf3708f1"
+      }
+    },
+    {
+      "name": "m5-compaction-plan-algorithms-v1",
+      "runId": "2097541946614292481",
+      "statusAtCheckpoint": "FAILED",
+      "lastError": "引用必须是当前批次资料中的连续原文摘录，sourceChunkId=af12132cb8eea800ea829f3ef5c28de9511a0e949eedeec6d8f7f8f36da5d03b，不匹配摘录=Def.(1-1) A matching S is a set of ordered pairs, each from M × W s.t. Each man of M appears in at most one pair of S. E",
+      "stages": [
+        {
+          "stage": "EXTRACT/0",
+          "status": "FAILED",
+          "attempt": 1,
+          "traceId": "89a20afe-d03a-4365-a096-4921ece3e4d3"
+        }
+      ],
+      "evidence": {
+        "path": ".eval/runs/m5-compaction-plan-algorithms-v1/before-reasoning-state.json",
+        "sha256": "20b779c154ab87ef3d6f954592b90be5e32d50a562f54acff31cba37660ac1ca"
+      }
+    },
+    {
+      "name": "m5-compaction-plan-algorithms-v2",
+      "runId": "2097544275474759681",
+      "statusAtCheckpoint": "FAILED",
+      "lastError": "知识点每个引用来源都需要原文依据；topic=最小化最大延迟调度问题与最早截止时间优先算法；缺少依据的sourceChunkId=[027743a58d5617879b216057182d7b1d049fd601682f65f62cf3b00792b6c028]",
+      "stages": [
+        {
+          "stage": "EXTRACT/0",
+          "status": "SUCCEEDED",
+          "attempt": 1,
+          "traceId": "d1f130fd-d205-4281-b45f-6644a5eb3ef9"
+        },
+        {
+          "stage": "EXTRACT/1",
+          "status": "FAILED",
+          "attempt": 1,
+          "traceId": "829f87fa-ec58-4b2b-b17c-b4db45bb70df"
+        },
+        {
+          "stage": "EXTRACT/1",
+          "status": "FAILED",
+          "attempt": 2,
+          "traceId": "709c65ea-b6de-4064-ae94-ec85e72bfd08"
+        },
+        {
+          "stage": "EXTRACT/1",
+          "status": "FAILED",
+          "attempt": 3,
+          "traceId": "623ffe0e-7d73-422f-b58f-69ff21dd557a"
+        },
+        {
+          "stage": "EXTRACT/1",
+          "status": "SUCCEEDED",
+          "attempt": 4,
+          "traceId": "7980beda-625f-4fae-b691-8d273ce6eedc"
+        },
+        {
+          "stage": "EXTRACT/2",
+          "status": "SUCCEEDED",
+          "attempt": 1,
+          "traceId": "e0c303a0-a2be-4db3-85cb-c35c07306e77"
+        },
+        {
+          "stage": "EXTRACT/3",
+          "status": "SUCCEEDED",
+          "attempt": 1,
+          "traceId": "e2869ec3-3edb-4627-b527-d32e6fa3a984"
+        },
+        {
+          "stage": "EXTRACT/4",
+          "status": "FAILED",
+          "attempt": 1,
+          "traceId": "4839832d-629b-46c2-adb4-55a4dcf11cfb"
+        }
+      ],
+      "evidence": {
+        "path": ".eval/runs/m5-compaction-plan-algorithms-v2/before-reasoning-state.json",
+        "sha256": "df6033bbccbccf094af62aa61236ec0cdcfd3aa583e9fe18ca28c4b817792665"
+      }
+    },
+    {
+      "name": "m5-compaction-plan-os-v1",
+      "runId": "2097546438468911105",
+      "statusAtCheckpoint": "FAILED",
+      "lastError": "合并大纲必须保留全部候选知识点，可合并同义项；遗漏候选ID：[C24, C25, C26, C27, C28, C29]",
+      "stages": [
+        {
+          "stage": "EXTRACT/0",
+          "status": "SUCCEEDED",
+          "attempt": 1,
+          "traceId": "53f3c01f-2118-4680-93b1-01e42e2d8091"
+        },
+        {
+          "stage": "EXTRACT/1",
+          "status": "SUCCEEDED",
+          "attempt": 1,
+          "traceId": "b7cbf8f4-19c9-4be0-8386-e2d5f5cc41fc"
+        },
+        {
+          "stage": "EXTRACT/2",
+          "status": "SUCCEEDED",
+          "attempt": 1,
+          "traceId": "c2fdf4ba-13ce-4fd9-bfb9-a2c73a6fd24a"
+        },
+        {
+          "stage": "EXTRACT/3",
+          "status": "SUCCEEDED",
+          "attempt": 1,
+          "traceId": "a936477b-2240-4695-bc6c-f2ed091a3a0e"
+        },
+        {
+          "stage": "EXTRACT/4",
+          "status": "SUCCEEDED",
+          "attempt": 1,
+          "traceId": "2cd2a8a9-3336-427b-9510-104a87f5f9b3"
+        },
+        {
+          "stage": "EXTRACT/5",
+          "status": "SUCCEEDED",
+          "attempt": 1,
+          "traceId": "7d363667-0491-4b97-afc7-098cf8ae751f"
+        },
+        {
+          "stage": "EXTRACT/6",
+          "status": "SUCCEEDED",
+          "attempt": 1,
+          "traceId": "5ea5ee74-4e78-4ca2-ae87-4e61ddbf84b8"
+        },
+        {
+          "stage": "EXTRACT/7",
+          "status": "SUCCEEDED",
+          "attempt": 1,
+          "traceId": "e2aba236-377e-4173-9628-96c242744da6"
+        },
+        {
+          "stage": "EXTRACT/8",
+          "status": "SUCCEEDED",
+          "attempt": 1,
+          "traceId": "9325c9f7-6b6e-4e78-95d7-e86a10472c81"
+        },
+        {
+          "stage": "EXTRACT/9",
+          "status": "SUCCEEDED",
+          "attempt": 1,
+          "traceId": "49d283a7-85df-4cb5-87c8-221667d7fdb9"
+        },
+        {
+          "stage": "EXTRACT/10",
+          "status": "SUCCEEDED",
+          "attempt": 1,
+          "traceId": "73d9901b-2450-4aa3-81c4-067dea5139d0"
+        },
+        {
+          "stage": "EXTRACT/11",
+          "status": "SUCCEEDED",
+          "attempt": 1,
+          "traceId": "305ea959-619a-4b69-9e90-f7e3efe06742"
+        },
+        {
+          "stage": "EXTRACT/12",
+          "status": "SUCCEEDED",
+          "attempt": 1,
+          "traceId": "e88a3123-2ec1-40a8-b680-dfa12e028c46"
+        },
+        {
+          "stage": "OUTLINE",
+          "status": "FAILED",
+          "attempt": 1,
+          "traceId": "7d15d7ef-cce4-4a9b-9660-f621f8e9bd36"
+        }
+      ],
+      "evidence": {
+        "path": ".eval/runs/m5-compaction-plan-os-v1/before-reasoning-state.json",
+        "sha256": "fa3f3866b783e748e4957132693bf80d3ac6d76b56b1b6ed1f1d9da9cb2996ed"
+      }
+    }
+  ]
+}
