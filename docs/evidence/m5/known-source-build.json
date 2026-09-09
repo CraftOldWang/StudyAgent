@@ -1,0 +1,20 @@
+{
+  "counts": {
+    "tests": 21,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "suites": [
+    "TEST-com.studyagent.agent.integration.KnowledgeSearchToolTest.xml",
+    "TEST-com.studyagent.learning.LearningConversationCompactorTest.xml",
+    "TEST-com.studyagent.learning.LearningConversationGatewayTest.xml",
+    "TEST-com.studyagent.learning.LearningConversationServiceTest.xml",
+    "TEST-com.studyagent.learning.LearningSourceToolTest.xml",
+    "TEST-com.studyagent.learning.LearningTurnIntentTest.xml"
+  ],
+  "log": ".eval/m5-known-source-build.log",
+  "logSha256": "3d44b63a47ca48be9dd32c2b1faa5f347464e957daa7885334b117aeaadec279",
+  "jarSha256": "78103e7c704a4ff01ba1e74f246d37cfcd3b34b61a0a5c48d024edb321b7bf64",
+  "scope": "Planned-source ownership, actual read evidence, SDK read-then-explain, conversation state/compaction and existing search tool regressions; local model stubs are not provider acceptance."
+}

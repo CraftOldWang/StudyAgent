@@ -72,6 +72,43 @@ class LearningConversationGatewayTest {
     }
 
     private LearningConversationGateway gateway(Model model) {
+        return gateway(model, mock(SourceReader.class));
+    }
+
+    @Test
+    void confirmedSourceCanSupportExplanationWithoutSemanticSearch() {
+        var calls = new AtomicInteger();
+        var reader = mock(SourceReader.class);
+        when(reader.read(1L, 2L, "planned-source")).thenReturn(
+                new SourceReader.Source("planned-source", 3L, "Original lecture", "page 4", "Author-written source fact"));
+        Model model = new Model() {
+            public String getModelName() { return "local-sdk-test"; }
+            public Flux<ChatResponse> stream(List<Msg> messages, List<ToolSchema> tools, GenerateOptions options) {
+                assertThat(tools).extracting(ToolSchema::getName).contains("knowledge_read");
+                if (calls.getAndIncrement() == 0) {
+                    return Flux.just(ChatResponse.builder().id("read").content(List.of(ToolUseBlock.builder().id("read-call")
+                            .name("knowledge_read").input(Map.of("chunkId", "planned-source"))
+                            .content("{\"chunkId\":\"planned-source\"}").build())).finishReason("tool_calls").build());
+                }
+                assertThat(messages.stream().flatMap(m -> m.getContentBlocks(ToolResultBlock.class).stream())
+                        .flatMap(r -> r.getOutput().stream()).filter(TextBlock.class::isInstance)
+                        .map(TextBlock.class::cast).map(TextBlock::getText).toList())
+                        .anyMatch(t -> t.contains("Author-written source fact"));
+                return Flux.just(ChatResponse.builder().id("explanation").content(List.of(
+                        TextBlock.builder().text("This is a complete explanation of the author-written synthetic source fact [planned-source].").build(),
+                        ToolUseBlock.builder().id("done").name("learning_explanation_done").input(Map.of()).content("{}").build()))
+                        .finishReason("tool_calls").build());
+            }
+        };
+        var point = point("NEW"); point.setSourcesJson("[\"planned-source\"]");
+        var result = gateway(model, reader).respond(session(), point, turn(), saved(List.of()), List.of(), e -> { });
+        assertThat(result.intent().action()).isEqualTo(LearningTurnIntent.Action.EXPLANATION);
+        assertThat(calls.get()).isEqualTo(2);
+        verify(reader).read(1L, 2L, "planned-source");
+        LearningContextMessages.requirePaired(AgentState.fromJsonString(result.preparedContext()).getContext());
+    }
+
+    private LearningConversationGateway gateway(Model model, SourceReader reader) {
         var scopes = mock(AgentInvocationScopeFactory.class);
         when(scopes.createRuntimeContext("s", 1L, 2L, 20L)).thenAnswer(i -> RuntimeContext.builder().userId("1").sessionId("s")
                 .put(AgentInvocationScope.class, new AgentInvocationScope(1L, 2L, 20L))
@@ -80,7 +117,7 @@ class LearningConversationGatewayTest {
         when(retrieval.search(1L, 2L, "synthetic topic")).thenReturn(new KnowledgeSearchResponse("synthetic topic", null,
                 List.of(new KnowledgeSearchResponse.Result("source-1", "synthetic fact", null, 1))));
         var search = new KnowledgeSearchTool(retrieval, new KnowledgeSearchRetryExecutor(), mapper);
-        return new LearningConversationGateway(model, search, scopes, properties, mock(LearningTraceService.class), new IdentityScope(), mapper);
+        return new LearningConversationGateway(model, search, reader, scopes, properties, mock(LearningTraceService.class), new IdentityScope(), mapper);
     }
     private LearningSession session() {
         var s = new LearningSession(); s.setId(10L); s.setUserId(1L); s.setKnowledgeBaseId(2L); s.setAgentscopeSessionId("s"); s.setLearningGoal("synthetic goal"); return s;

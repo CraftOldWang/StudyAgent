@@ -1,0 +1,87 @@
+{
+  "version": "formal-v2-first-gate",
+  "status": "STOPPED_AFTER_GATE_FAILURE",
+  "scheduled": 18,
+  "startedSessions": 1,
+  "completedSessions": 0,
+  "frozenGitSha": "b00ca44f96d929b3c326d76314193750369c66d8",
+  "frozenJarSha256": "2c78e8d355fe76984a86ef49e6b759ab5772759cc1e7f97ad5839ac4fc1f62f9",
+  "usage": {
+    "attempts": 53,
+    "statuses": {
+      "SUCCEEDED": 53
+    },
+    "attemptsWithoutUsage": 0,
+    "usageComplete": true,
+    "knownInputTokens": 748360,
+    "knownOutputTokens": 29177,
+    "knownTotalTokens": 777537,
+    "knownCachedInputTokens": 254080
+  },
+  "processRestart": {
+    "sessionId": "6200005324668655000",
+    "beforeStartedAt": "2026-09-09T08:35:48.43091876Z",
+    "beforePid": 82447,
+    "completedTurns": 5,
+    "pendingProviderAttempts": 0,
+    "jarSha256": "2c78e8d355fe76984a86ef49e6b759ab5772759cc1e7f97ad5839ac4fc1f62f9",
+    "status": "RESTART_AND_MODEL_CONTEXT_VERIFIED",
+    "afterStartedAt": "2026-09-09T08:40:08.409038785Z",
+    "afterPid": 86560,
+    "pointStatuses": [
+      "COMPLETED",
+      "NEW",
+      "NEW",
+      "NEW",
+      "NEW"
+    ],
+    "resumedTurnId": "2097606225905680386",
+    "resumedTraceId": "1121c21a-ebf6-471c-a131-89c23af844d9",
+    "persistedMessages": 1,
+    "actualInputMessages": 2,
+    "samePersistedContentRoleMetadata": true
+  },
+  "qualityReview": {
+    "version": "compaction-quality-review-v2",
+    "reviews": [
+      {
+        "sessionId": "6200005324668655000",
+        "course": "algorithms",
+        "strategy": "THRESHOLD",
+        "repeat": 1,
+        "point": 1,
+        "turnId": "2097605661566177282",
+        "answerSha256": "518c49643c5e89c4b5466a2da0631143d3d0c36ee23df72f3b53100ff3045c7b",
+        "correctionAccepted": true,
+        "openQuestionRetainedWithoutAnswer": true,
+        "reviewNote": "Correctly states perfect matching plus absence of unstable pairs; pending unequal-participant question remains unanswered. The answer does not repeat the marker; the persisted summary does. The pair-not-in-matching wording is imprecise, but reference to both current partners disambiguates it.",
+        "markerEchoedInAnswer": false,
+        "markerRetainedInPersistedSummary": true
+      },
+      {
+        "sessionId": "6200005324668655000",
+        "course": "algorithms",
+        "strategy": "THRESHOLD",
+        "repeat": 1,
+        "point": 3,
+        "turnId": "2097606925586890753",
+        "answerSha256": "cf34868a10fb761930b4bd49f697ede1fa9531a72a7642fd661d4920fd34f92d",
+        "personalMarker": true,
+        "originalMisconception": true,
+        "correctedFact": true,
+        "unresolvedQuestion": true,
+        "reviewNote": "All four dimensions recalled accurately, including the pending unequal-participant question absent from the old strategy run."
+      }
+    ]
+  },
+  "failure": {
+    "turnId": "2097607280383066114",
+    "traceId": "93ca3fa7-7f6e-44fc-80a2-b38f0590a7da",
+    "reason": "Semantic searches returned unrelated dynamic-programming sources; quiz used planned divide-and-conquer source IDs not read in this turn. Actual-evidence validation correctly rejected publication. All five correctAnswer fields now matched complete option text.",
+    "businessStateRemained": "EXPLAINING"
+  },
+  "evidence": {
+    "path": ".eval/runs/m5-compaction-formal-v2/experiment.json",
+    "sha256": "46bb2fabe96e6283c06cfca0a1b7e1eaddbf86515267b3489cd05687753394a3"
+  }
+}

@@ -1,0 +1,168 @@
+{
+  "experiment": "formal-v2",
+  "gitSha": "b00ca44f96d929b3c326d76314193750369c66d8",
+  "fingerprints": {
+    "eval/rag/config-validation-selected.json": "0ed1a3c96eb5732fca296b6b244a0b89b73740163dfa079616a3813720fbdd2f",
+    "target/study-agent-0.0.1-SNAPSHOT.jar": "2c78e8d355fe76984a86ef49e6b759ab5772759cc1e7f97ad5839ac4fc1f62f9",
+    "scripts/run-learning-conversation-smoke.py": "b2c4dc6398ed4c15794db5b8c90b7c3270b9eaca5a1c9fcdb69c62b915af6417",
+    "D:/1Learningoutput/javabackend/StudyAgent/scripts/run-compaction-experiment.py": "b0e7e2507d58ba61e8983d178397ccf3f469f6034818d2a5993567dddbdf665d",
+    "scripts/report-learning-usage.py": "1b427f89f20839055cf057593eae936e75060beda9a0bb0fd9c64d883a5ca9c8",
+    "scripts/collect-learning-evidence.py": "dcc873c09bd0ecf3e116666924b458e4d075579a8364e2355c39c4e21777a45b",
+    "scripts/report-compaction-experiment.py": "4e06b65df69ff2e54348e04769c532b52916992f59686f958a33213ef9af7010",
+    "eval/planning/compaction-quality-v1.json": "85003f3aaa0db942a5a81a005e3d5066a701fda0ff661aa98b5b6b8c21f3ab4b",
+    "eval/planning/compaction-scripts-v1/algorithms.json": "2de8502cee2b635e0b4dd18349bc3b3ea5d399462a152a4e9d65b85be1d036e3",
+    "eval/planning/compaction-scripts-v1/os.json": "2ef4bd15acbe17a7ee5ffd1036666e38ce4103b02cca89491cd636b89ec0b094",
+    ".eval/runs/m5-compaction-replicas-algorithms-v2/replicas.json": "8bbb2c8ac656ba484825e086566f4ca171ba53f4bd1b743ca53fd16d53819a8d",
+    ".eval/runs/m5-compaction-replicas-os-v2/replicas.json": "f7cb2aae0323e89de2b0787ee768d32cf08d57957456f66aab75c43ffda51207"
+  },
+  "runtimeSettings": {
+    "STUDY_AGENT_RAG_CHUNK_STRATEGY": "STRUCTURED",
+    "STUDY_AGENT_RAG_CHUNK_SIZE": "800",
+    "STUDY_AGENT_RAG_CHUNK_OVERLAP": "0",
+    "STUDY_AGENT_RAG_PARENT_CHUNK_SIZE": "2400",
+    "STUDY_AGENT_RAG_PARENT_CHUNK_OVERLAP": "0",
+    "STUDY_AGENT_RAG_BM25_CANDIDATE_SIZE": "30",
+    "STUDY_AGENT_RAG_VECTOR_CANDIDATE_SIZE": "30",
+    "STUDY_AGENT_RAG_RRF_K": "60",
+    "STUDY_AGENT_RAG_CONTEXT_MAX_TOKENS": "4096"
+  },
+  "createdAt": "2026-09-09T08:38:23.331901+00:00",
+  "scheduled": 18,
+  "schedule": [
+    {
+      "sessionId": "6200005324668655000",
+      "course": "algorithms",
+      "repeat": 1,
+      "strategy": "THRESHOLD",
+      "knowledgeBaseId": "2097399516493463554"
+    },
+    {
+      "sessionId": "6200001775804004700",
+      "course": "os",
+      "repeat": 1,
+      "strategy": "THRESHOLD",
+      "knowledgeBaseId": "2097399583862374402"
+    },
+    {
+      "sessionId": "6200007441292091800",
+      "course": "os",
+      "repeat": 1,
+      "strategy": "WHOLE_HISTORY",
+      "knowledgeBaseId": "2097399583862374402"
+    },
+    {
+      "sessionId": "6200001192654687600",
+      "course": "algorithms",
+      "repeat": 1,
+      "strategy": "WHOLE_HISTORY",
+      "knowledgeBaseId": "2097399516493463554"
+    },
+    {
+      "sessionId": "6200003721937143500",
+      "course": "algorithms",
+      "repeat": 1,
+      "strategy": "LOCAL",
+      "knowledgeBaseId": "2097399516493463554"
+    },
+    {
+      "sessionId": "6200003869694754100",
+      "course": "os",
+      "repeat": 1,
+      "strategy": "LOCAL",
+      "knowledgeBaseId": "2097399583862374402"
+    },
+    {
+      "sessionId": "6200007391907781100",
+      "course": "os",
+      "repeat": 2,
+      "strategy": "WHOLE_HISTORY",
+      "knowledgeBaseId": "2097399583862374402"
+    },
+    {
+      "sessionId": "6200004616057713000",
+      "course": "algorithms",
+      "repeat": 2,
+      "strategy": "WHOLE_HISTORY",
+      "knowledgeBaseId": "2097399516493463554"
+    },
+    {
+      "sessionId": "6200007612748565600",
+      "course": "algorithms",
+      "repeat": 2,
+      "strategy": "LOCAL",
+      "knowledgeBaseId": "2097399516493463554"
+    },
+    {
+      "sessionId": "6200001636662202000",
+      "course": "os",
+      "repeat": 2,
+      "strategy": "LOCAL",
+      "knowledgeBaseId": "2097399583862374402"
+    },
+    {
+      "sessionId": "6200004118788419000",
+      "course": "os",
+      "repeat": 2,
+      "strategy": "THRESHOLD",
+      "knowledgeBaseId": "2097399583862374402"
+    },
+    {
+      "sessionId": "6200006168721233100",
+      "course": "algorithms",
+      "repeat": 2,
+      "strategy": "THRESHOLD",
+      "knowledgeBaseId": "2097399516493463554"
+    },
+    {
+      "sessionId": "6200007432783462000",
+      "course": "algorithms",
+      "repeat": 3,
+      "strategy": "LOCAL",
+      "knowledgeBaseId": "2097399516493463554"
+    },
+    {
+      "sessionId": "6200009297358135600",
+      "course": "os",
+      "repeat": 3,
+      "strategy": "LOCAL",
+      "knowledgeBaseId": "2097399583862374402"
+    },
+    {
+      "sessionId": "6200003064139952100",
+      "course": "os",
+      "repeat": 3,
+      "strategy": "THRESHOLD",
+      "knowledgeBaseId": "2097399583862374402"
+    },
+    {
+      "sessionId": "6200000620528408300",
+      "course": "algorithms",
+      "repeat": 3,
+      "strategy": "THRESHOLD",
+      "knowledgeBaseId": "2097399516493463554"
+    },
+    {
+      "sessionId": "6200009714200757400",
+      "course": "algorithms",
+      "repeat": 3,
+      "strategy": "WHOLE_HISTORY",
+      "knowledgeBaseId": "2097399516493463554"
+    },
+    {
+      "sessionId": "6200008301809700000",
+      "course": "os",
+      "repeat": 3,
+      "strategy": "WHOLE_HISTORY",
+      "knowledgeBaseId": "2097399583862374402"
+    }
+  ],
+  "priorFailedGate": "docs/evidence/m5/formal-v1-gate-review.json",
+  "semanticPromptVersion": "learning-compaction-v2",
+  "model": "deepseek-v4-flash",
+  "temperature": 0,
+  "thresholdTokens": 8000,
+  "summaryMaxTokens": 700,
+  "replyMaxTokens": 3000,
+  "maxIterations": 5,
+  "scope": "No outcome or token reduction is implied by this frozen manifest."
+}
