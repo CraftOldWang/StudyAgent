@@ -1,40 +1,38 @@
-# StudyAgent Frontend
+# StudyPilot 前端
 
-React 18 + TypeScript + Vite 的首个里程碑页面，覆盖知识库管理、PDF 上传状态、普通/Agent 检索，以及单知识点学习闭环。
+React + TypeScript + Vite，面向桌面浏览器演示。包括知识库、分片上传、检索与来源、重点计划、自然语言学习/SSE、测验、复习卡及 Anki 导出。完整后端、Docker 与 ASR 启动方式见 [项目 README](../README.md)。
 
 ## 环境要求
 
-- Node.js 18+
+- Node.js（使用满足当前锁文件依赖要求的版本）
 - StudyAgent 后端运行在 `http://localhost:8080`
 
 ## 本地启动
 
 ```powershell
-npm install
+npm ci
 npm run dev
 ```
 
-开发服务器监听 `5173`，并把 `/api` 代理到 `http://localhost:8080`。所有 API 请求由统一客户端添加 `X-User-Id: 1`，对应首个里程碑的默认用户身份。
+已安装依赖且锁文件未变化时跳过 `npm ci`。开发服务器监听 `5173`，并把 `/api` 代理到 `http://localhost:8080`。演示 API 使用默认用户 `X-User-Id: 1`。
 
 ## 使用流程
 
 1. 创建或选择知识库，可在侧边栏重命名。
-2. 上传 PDF，页面会自动刷新处理状态。
+2. 上传课件或音视频，页面自动刷新处理状态；新音视频需要启动 ASR worker。
 3. 文档进入 `INDEXED` 后，选择普通检索或 Agent 检索并提问。
 4. 结果区展示回答、命中片段及文档出处。
-5. 切换到“学习闭环”，输入学习目标生成计划；也可输入会话 ID 恢复。
-6. 依次完成当前知识点讲解/答疑、五题测验、反馈和三张复习卡片。
+5. 选择课件和可选习题，输入学习目标生成重点计划；也可输入会话 ID 恢复。
+6. 通过自然消息完成知识点讲解/答疑、测验、反馈和复习卡片，可将卡片导出到 Anki。
 
 ## 验证
 
 ```powershell
-npm test
-npm run typecheck
 npm run build
 ```
 
-当前仅允许上传 PDF。页面会轮询仍在处理中的文档，并在 `INDEXED` 或 `FAILED` 时停止；终态定义集中在 `src/status.ts`。
+构建包含 TypeScript 检查，不再单独重复 `typecheck`。改动交互逻辑时运行相关现有测试，例如 `npm test -- src/stream.test.ts`，不要求每次全量执行。页面只做桌面验收。
 
-“学习闭环”工作区支持创建或按 ID 恢复学习会话，并依次展示学习计划、讲解与答疑、五题测验和反馈、三张复习卡片。所有数据库 ID 在 JSON wire contract 中均按字符串处理，避免雪花 ID 超出 JavaScript 安全整数范围。
+页面会轮询处理中的文档，在 `INDEXED` 或 `FAILED` 时停止；终态集中在 `src/status.ts`。数据库 ID 按字符串传输，避免超出 JavaScript 安全整数范围。
 
-首个里程碑刻意保持单页、普通 HTTP 请求和轻量自定义样式，不引入 SSE、trace UI、路由框架或组件库。
+学习消息通过 SSE 流式展示，历史与产物从后端恢复。当前没有独立的 trace 管理页面。
