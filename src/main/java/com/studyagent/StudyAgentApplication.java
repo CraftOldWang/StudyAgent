@@ -24,6 +24,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
         RagProperties.class,
         StudyRocketMqProperties.class,
         UploadProperties.class,
+        com.studyagent.config.AnkiProperties.class,
         CanalProperties.class
 })
 public class StudyAgentApplication {

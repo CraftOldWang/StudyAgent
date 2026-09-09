@@ -1,0 +1,37 @@
+{
+  "kind": "observed real CUA browser acceptance",
+  "sessionId": "6100000805808704500",
+  "cardId": "6100000805808704510",
+  "offlineFailureVisible": true,
+  "otherTwoCardsRemainSuccessful": true,
+  "pageReloadThenManualSessionRestoreRetainsError": true,
+  "normalEndpointRestored": "http://host.docker.internal:8765",
+  "keyboardEnterRetrySucceeded": true,
+  "sameAnkiNoteVerified": [
+    1788915150700
+  ],
+  "postUiStatus": {
+    "cardId": "6100000805808704510",
+    "status": "SUCCEEDED",
+    "noteId": "1788915150700",
+    "attempts": 6,
+    "exportedAt": "2026-09-09T00:56:28"
+  },
+  "sourceDrawerShowsAuthoredText": true,
+  "sourceInitiallyFailedDuringAppRestartThenReopenedSuccessfully": true,
+  "escapeReturnsFocusToSourceButton": true,
+  "narrowViewport": {
+    "width": 390,
+    "height": 844,
+    "documentClientWidth": 380,
+    "documentScrollWidth": 380,
+    "cardWidth": 321.667
+  },
+  "screenshotsInspectedInTool": true,
+  "desktopViewportRestored": true,
+  "modelCallsAdded": 0,
+  "limitations": [
+    "Native Anki screenshots not taken; actual Anki review state is recorded separately.",
+    "Reload requires manual session ID restore; no automatic session restoration claim."
+  ]
+}

@@ -1,0 +1,252 @@
+{
+  "status": "PASSED",
+  "verifiedAt": "2026-09-09T00:52:33.876874+00:00",
+  "fixture": {
+    "kind": "authored SQL fixture, not generated learning or ingestion acceptance",
+    "knowledgeBaseId": "2097488273864929281",
+    "sessionId": "6100000805808704500",
+    "pointId": "6100000805808704501",
+    "documentId": "6100000805808704503",
+    "chunkId": "anki-eaa23298-2946-4037-ad76-83f0dd38d8b7",
+    "cards": [
+      {
+        "id": "6100000805808704510",
+        "front": "队列按什么顺序处理元素？",
+        "back": "先进先出（FIFO）。",
+        "sourceChunkId": "anki-eaa23298-2946-4037-ad76-83f0dd38d8b7"
+      },
+      {
+        "id": "6100000805808704511",
+        "front": "栈按什么顺序处理元素？",
+        "back": "后进先出（LIFO）。",
+        "sourceChunkId": "anki-eaa23298-2946-4037-ad76-83f0dd38d8b7"
+      },
+      {
+        "id": "6100000805808704512",
+        "front": "二分查找对数据有什么前提？",
+        "back": "数据必须有序。",
+        "sourceChunkId": "anki-eaa23298-2946-4037-ad76-83f0dd38d8b7"
+      }
+    ]
+  },
+  "ankiConnectVersion": 6,
+  "offline": {
+    "httpStatus": 400,
+    "body": {
+      "code": 400,
+      "message": "无法连接 AnkiConnect 或响应无效，请打开本机 Anki 后重试（modelNames）"
+    }
+  },
+  "offlineStatus": {
+    "httpStatus": 200,
+    "body": {
+      "code": 0,
+      "message": "ok",
+      "data": {
+        "cardId": "6100000805808704510",
+        "status": "FAILED",
+        "errorMessage": "无法连接 AnkiConnect 或响应无效，请打开本机 Anki 后重试（modelNames）",
+        "attempts": 1
+      }
+    }
+  },
+  "lostResponse": {
+    "httpStatus": 400,
+    "body": {
+      "code": 400,
+      "message": "无法连接 AnkiConnect 或响应无效，请打开本机 Anki 后重试（addNote）"
+    }
+  },
+  "retry": {
+    "httpStatus": 200,
+    "body": {
+      "code": 0,
+      "message": "ok",
+      "data": {
+        "cardId": "6100000805808704510",
+        "status": "SUCCEEDED",
+        "noteId": "1788915150700",
+        "attempts": 3,
+        "exportedAt": "2026-09-09T00:52:31"
+      }
+    }
+  },
+  "parallel": [
+    {
+      "httpStatus": 200,
+      "body": {
+        "code": 0,
+        "message": "ok",
+        "data": {
+          "cardId": "6100000805808704511",
+          "status": "SUCCEEDED",
+          "noteId": "1788915151299",
+          "attempts": 1,
+          "exportedAt": "2026-09-09T00:52:31"
+        }
+      }
+    },
+    {
+      "httpStatus": 200,
+      "body": {
+        "code": 0,
+        "message": "ok",
+        "data": {
+          "cardId": "6100000805808704511",
+          "status": "SUCCEEDED",
+          "noteId": "1788915151299",
+          "attempts": 2,
+          "exportedAt": "2026-09-09T00:52:32"
+        }
+      }
+    }
+  ],
+  "third": {
+    "httpStatus": 200,
+    "body": {
+      "code": 0,
+      "message": "ok",
+      "data": {
+        "cardId": "6100000805808704512",
+        "status": "SUCCEEDED",
+        "noteId": "1788915151854",
+        "attempts": 1,
+        "exportedAt": "2026-09-09T00:52:32"
+      }
+    }
+  },
+  "repeated": {
+    "httpStatus": 200,
+    "body": {
+      "code": 0,
+      "message": "ok",
+      "data": {
+        "cardId": "6100000805808704510",
+        "status": "SUCCEEDED",
+        "noteId": "1788915150700",
+        "attempts": 4,
+        "exportedAt": "2026-09-09T00:52:32"
+      }
+    }
+  },
+  "otherUserDenied": {
+    "httpStatus": 400,
+    "body": {
+      "code": 400,
+      "message": "复习卡不存在或不属于当前用户"
+    }
+  },
+  "notes": [
+    {
+      "noteId": 1788915150700,
+      "modelName": "StudyPilot v1",
+      "fields": {
+        "StudyPilotId": {
+          "value": "studypilot-u1-c6100000805808704510",
+          "order": 0
+        },
+        "Front": {
+          "value": "队列按什么顺序处理元素？",
+          "order": 1
+        },
+        "Back": {
+          "value": "先进先出（FIFO）。",
+          "order": 2
+        },
+        "Source": {
+          "value": "StudyPilot &middot; 知识库 2097488273864929281 &middot; 卡片 6100000805808704510<br>Anki合成验收.txt<br>chunk: anki-eaa23298-2946-4037-ad76-83f0dd38d8b7<br>{&quot;kind&quot;: &quot;authored-fixture&quot;, &quot;lineEnd&quot;: 1, &quot;lineStart&quot;: 1}",
+          "order": 3
+        }
+      },
+      "cards": [
+        1788915150702
+      ]
+    },
+    {
+      "noteId": 1788915151299,
+      "modelName": "StudyPilot v1",
+      "fields": {
+        "StudyPilotId": {
+          "value": "studypilot-u1-c6100000805808704511",
+          "order": 0
+        },
+        "Front": {
+          "value": "栈按什么顺序处理元素？",
+          "order": 1
+        },
+        "Back": {
+          "value": "后进先出（LIFO）。",
+          "order": 2
+        },
+        "Source": {
+          "value": "StudyPilot &middot; 知识库 2097488273864929281 &middot; 卡片 6100000805808704511<br>Anki合成验收.txt<br>chunk: anki-eaa23298-2946-4037-ad76-83f0dd38d8b7<br>{&quot;kind&quot;: &quot;authored-fixture&quot;, &quot;lineEnd&quot;: 1, &quot;lineStart&quot;: 1}",
+          "order": 3
+        }
+      },
+      "cards": [
+        1788915151303
+      ]
+    },
+    {
+      "noteId": 1788915151854,
+      "modelName": "StudyPilot v1",
+      "fields": {
+        "StudyPilotId": {
+          "value": "studypilot-u1-c6100000805808704512",
+          "order": 0
+        },
+        "Front": {
+          "value": "二分查找对数据有什么前提？",
+          "order": 1
+        },
+        "Back": {
+          "value": "数据必须有序。",
+          "order": 2
+        },
+        "Source": {
+          "value": "StudyPilot &middot; 知识库 2097488273864929281 &middot; 卡片 6100000805808704512<br>Anki合成验收.txt<br>chunk: anki-eaa23298-2946-4037-ad76-83f0dd38d8b7<br>{&quot;kind&quot;: &quot;authored-fixture&quot;, &quot;lineEnd&quot;: 1, &quot;lineStart&quot;: 1}",
+          "order": 3
+        }
+      },
+      "cards": [
+        1788915151856
+      ]
+    }
+  ],
+  "rendered": [
+    {
+      "cardId": 1788915150702,
+      "deckName": "StudyPilot::知识库 2097488273864929281",
+      "question": "<style>.card { font-family: sans-serif; font-size: 22px; text-align: left; line-height: 1.6; } .source { font-size: 14px; opacity: .7; margin-top: 24px; overflow-wrap: anywhere; }</style>队列按什么顺序处理元素？",
+      "answer": "<style>.card { font-family: sans-serif; font-size: 22px; text-align: left; line-height: 1.6; } .source { font-size: 14px; opacity: .7; margin-top: 24px; overflow-wrap: anywhere; }</style>队列按什么顺序处理元素？<hr id=answer>先进先出（FIFO）。<div class=source>StudyPilot &middot; 知识库 2097488273864929281 &middot; 卡片 6100000805808704510<br>Anki合成验收.txt<br>chunk: anki-eaa23298-2946-4037-ad76-83f0dd38d8b7<br>{&quot;kind&quot;: &quot;authored-fixture&quot;, &quot;lineEnd&quot;: 1, &quot;lineStart&quot;: 1}</div>"
+    },
+    {
+      "cardId": 1788915151303,
+      "deckName": "StudyPilot::知识库 2097488273864929281",
+      "question": "<style>.card { font-family: sans-serif; font-size: 22px; text-align: left; line-height: 1.6; } .source { font-size: 14px; opacity: .7; margin-top: 24px; overflow-wrap: anywhere; }</style>栈按什么顺序处理元素？",
+      "answer": "<style>.card { font-family: sans-serif; font-size: 22px; text-align: left; line-height: 1.6; } .source { font-size: 14px; opacity: .7; margin-top: 24px; overflow-wrap: anywhere; }</style>栈按什么顺序处理元素？<hr id=answer>后进先出（LIFO）。<div class=source>StudyPilot &middot; 知识库 2097488273864929281 &middot; 卡片 6100000805808704511<br>Anki合成验收.txt<br>chunk: anki-eaa23298-2946-4037-ad76-83f0dd38d8b7<br>{&quot;kind&quot;: &quot;authored-fixture&quot;, &quot;lineEnd&quot;: 1, &quot;lineStart&quot;: 1}</div>"
+    },
+    {
+      "cardId": 1788915151856,
+      "deckName": "StudyPilot::知识库 2097488273864929281",
+      "question": "<style>.card { font-family: sans-serif; font-size: 22px; text-align: left; line-height: 1.6; } .source { font-size: 14px; opacity: .7; margin-top: 24px; overflow-wrap: anywhere; }</style>二分查找对数据有什么前提？",
+      "answer": "<style>.card { font-family: sans-serif; font-size: 22px; text-align: left; line-height: 1.6; } .source { font-size: 14px; opacity: .7; margin-top: 24px; overflow-wrap: anywhere; }</style>二分查找对数据有什么前提？<hr id=answer>数据必须有序。<div class=source>StudyPilot &middot; 知识库 2097488273864929281 &middot; 卡片 6100000805808704512<br>Anki合成验收.txt<br>chunk: anki-eaa23298-2946-4037-ad76-83f0dd38d8b7<br>{&quot;kind&quot;: &quot;authored-fixture&quot;, &quot;lineEnd&quot;: 1, &quot;lineStart&quot;: 1}</div>"
+    }
+  ],
+  "database": "6100000805808704510\tSUCCEEDED\t1788915150700\t4\tNULL\n6100000805808704511\tSUCCEEDED\t1788915151299\t2\tNULL\n6100000805808704512\tSUCCEEDED\t1788915151854\t1\tNULL",
+  "guiReview": {
+    "cardId": 1788915150702,
+    "question": "<style>.card { font-family: sans-serif; font-size: 22px; text-align: left; line-height: 1.6; } .source { font-size: 14px; opacity: .7; margin-top: 24px; overflow-wrap: anywhere; }</style>队列按什么顺序处理元素？",
+    "answer": "<style>.card { font-family: sans-serif; font-size: 22px; text-align: left; line-height: 1.6; } .source { font-size: 14px; opacity: .7; margin-top: 24px; overflow-wrap: anywhere; }</style>队列按什么顺序处理元素？<hr id=answer>先进先出（FIFO）。<div class=source>StudyPilot &middot; 知识库 2097488273864929281 &middot; 卡片 6100000805808704510<br>Anki合成验收.txt<br>chunk: anki-eaa23298-2946-4037-ad76-83f0dd38d8b7<br>{&quot;kind&quot;: &quot;authored-fixture&quot;, &quot;lineEnd&quot;: 1, &quot;lineStart&quot;: 1}</div>",
+    "showAnswer": true,
+    "ratingSubmitted": false
+  },
+  "modelCallsBefore": 394,
+  "modelCallsAfter": 394,
+  "limitations": [
+    "Cards and source were authored SQL fixtures; no model/ingestion claim.",
+    "Offline was a closed test endpoint; user Anki stayed running.",
+    "Lost-response proxy forwarded creation to real Anki then closed the connection.",
+    "cardsInfo verifies Anki-rendered question/answer, not a native desktop screenshot."
+  ]
+}

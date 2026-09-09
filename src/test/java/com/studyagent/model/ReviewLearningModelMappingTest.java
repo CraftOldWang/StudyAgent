@@ -82,6 +82,10 @@ class ReviewLearningModelMappingTest {
                 field("sourceChunkId", "source_chunk_id", String.class),
                 field("exportedToAnki", "exported_to_anki", Boolean.class),
                 field("ankiNoteId", "anki_note_id", Long.class),
+                field("ankiExportStatus", "anki_export_status", String.class),
+                field("ankiExportError", "anki_export_error", String.class),
+                field("ankiExportAttempts", "anki_export_attempts", Integer.class),
+                field("ankiExportedAt", "anki_exported_at", LocalDateTime.class),
                 field("createdAt", "created_at", LocalDateTime.class)));
     }
 

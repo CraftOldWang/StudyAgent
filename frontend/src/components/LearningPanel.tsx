@@ -133,7 +133,7 @@ export function LearningPanel({ knowledgeBase, onSessionKnowledgeBase }: Props) 
     <div className="learning-columns"><LearningPlan activeKnowledgePointId={active?.id || null} points={session.plan} />
       <section className="learning-focus" aria-label="学习对话">
         <div className="focus-heading"><span className="eyebrow">{active ? `当前知识点 · ${active.sequenceNo}` : '学习记录'}</span><h2>{active?.topic || '讲解、测验与卡片已保存'}</h2><p>完成流程不代表已经掌握，之后可用卡片继续复习。</p></div>
-        {history.length === 0 && <Feedback>{active?.explanation ? '此会话来自旧版本，早期对话未存为聊天记录；现有讲解与测验仍可查看。' : '发送一条消息开始学习，也可以先提问。'}</Feedback>}
+        {history.length === 0 && <Feedback>{session.status === 'COMPLETED' ? '本次学习已完成，可以查看保存的卡片与资料来源。' : active?.explanation ? '此会话来自旧版本，早期对话未存为聊天记录；现有讲解与测验仍可查看。' : '发送一条消息开始学习，也可以先提问。'}</Feedback>}
         {history.length === 0 && active?.explanation && <article className="chat-answer"><MessageContent text={active.explanation} /></article>}
         <div className="conversation-history">{history.map(turn => <article className="conversation-turn" key={turn.id}>
           <div className="chat-user"><span>你</span><p>{turn.userMessage}</p></div>

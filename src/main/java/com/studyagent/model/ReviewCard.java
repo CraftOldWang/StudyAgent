@@ -39,6 +39,15 @@ public class ReviewCard {
     @TableField("anki_note_id")
     private Long ankiNoteId;
 
+    @TableField("anki_export_status")
+    private String ankiExportStatus;
+    @TableField("anki_export_error")
+    private String ankiExportError;
+    @TableField("anki_export_attempts")
+    private Integer ankiExportAttempts;
+    @TableField("anki_exported_at")
+    private LocalDateTime ankiExportedAt;
+
     @TableField("created_at")
     private LocalDateTime createdAt;
 }

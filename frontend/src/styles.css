@@ -281,3 +281,5 @@ td strong, .document-error { display: block; overflow-wrap: anywhere; }
   .upload-heading { align-items: flex-start; flex-direction: column; gap: .6rem; }
   .upload-actions button { flex: 1 1 auto; }
 }
+.anki-export { display: flex; flex-direction: column; align-items: flex-start; gap: .5rem; margin-top: 1rem; min-width: 0; }
+.anki-export .feedback { width: 100%; overflow-wrap: anywhere; }

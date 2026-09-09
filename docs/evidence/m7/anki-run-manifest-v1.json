@@ -1,0 +1,16 @@
+{
+  "jarSha256": "c24acb4b712114a65234e8c2c7ac8b618cdc1fa0d732f7b83cceb551822f7982",
+  "schemaVersion": 14,
+  "backendTests": {
+    "tests": 215,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 3
+  },
+  "frontendTests": 37,
+  "providerAttemptsBefore": 394,
+  "providerAttemptsAfter": 394,
+  "sourceBaseGit": "f9c298a",
+  "changes": "M7 tracked changes committed with this manifest",
+  "initialFullSuiteFailure": "Model mapping contract missing four new fields; fixed, full suite rerun passed."
+}
