@@ -43,6 +43,7 @@ scripts/*
 !scripts/benchmark-upload.py
 !scripts/summarize-upload-benchmark.py
 !scripts/verify-native-upload.py
+!scripts/verify-anki-export.py
 .agentscope/workspace/state/
 .eval/
 config/local-secrets.properties
