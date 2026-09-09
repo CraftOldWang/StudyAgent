@@ -2,6 +2,8 @@ server:
   port: 8080
 
 spring:
+  profiles:
+    default: local
   config:
     import: optional:file:./some_apiKey[.properties]
   application:

@@ -2,7 +2,18 @@
 
 面向桌面浏览器演示：资料入库 → 参考课件和习题生成重点计划 → 讲解、答疑、测验 → 复习卡与 Anki 导出。
 
-## 当前启动方式
+## IDEA / 本机开发启动（当前入口）
+
+1. 启动 Docker Desktop，在根目录执行 `docker compose up -d mysql redis elasticsearch rustfs rocketmq-namesrv rocketmq-broker`。
+2. 本机 hosts 已有 `127.0.0.1 rocketmq-broker`，供 Java 访问 MQ 返回的 broker 地址；新机器需配置同样映射。
+3. IDEA 导入 Maven 项目，选 JDK 21，工作目录为项目根目录，直接运行 `StudyAgentApplication`。无需设置 active profile，默认 `local`；命令行也可用 `mvn spring-boot:run`。
+4. `frontend` 中执行 `npm run dev`，访问 http://localhost:5173。
+
+默认 local 配置复用现有 `study_agent_eval` 数据库和选定索引，不连接旧项目的 `study_agent`。旧库保留，不关闭 Flyway、不执行 repair。Windows 启动入口使用 `.eval/sockets` 保存 JDK 临时 socket，避开本机系统 TEMP 的 AF_UNIX 连接错误。
+
+Java 在 Windows 运行，只有中间件在 Docker。不要同时启动下方历史 Docker 后端，以免争用 8080 和消息消费。IDEA 修改源码后重新运行应用即可，无需向容器同步项目。
+
+## 之前的 Docker 验收启动方式（历史说明）
 
 `eval` 是真实后端的配置名称，不是 mock。项目目前混合运行：
 

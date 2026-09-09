@@ -1,0 +1,12 @@
+# IDEA and command-line Java share the existing demo data; Docker supplies only infrastructure.
+spring:
+  config:
+    import: classpath:application-eval.yml
+
+study-agent:
+  elasticsearch:
+    physical-index: eval-validation-structured-800-0
+    read-alias: eval-validation-structured-800-0-read
+    write-alias: eval-validation-structured-800-0-write
+  rag:
+    chunk-overlap: 0

@@ -30,7 +30,12 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 })
 public class StudyAgentApplication {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws java.io.IOException {
+        // This Windows host cannot connect AF_UNIX sockets created in its system TEMP directory.
+        if (System.getProperty("os.name").startsWith("Windows") && System.getProperty("jdk.net.unixdomain.tmpdir") == null) {
+            var sockets = java.nio.file.Files.createDirectories(java.nio.file.Path.of(".eval", "sockets")).toAbsolutePath();
+            System.setProperty("jdk.net.unixdomain.tmpdir", sockets.toString());
+        }
         SpringApplication.run(StudyAgentApplication.class, args);
     }
 }
