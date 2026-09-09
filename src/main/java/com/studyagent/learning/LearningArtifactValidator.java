@@ -15,7 +15,7 @@ public final class LearningArtifactValidator {
             require(q != null && text(q.question()) && questions.add(q.question().trim()), "测验题目不可为空或重复");
             require(q.options() != null && q.options().size() == 4 && q.options().stream().allMatch(LearningArtifactValidator::text)
                     && q.options().stream().map(String::trim).distinct().count() == 4, "每题需要四个不同的非空选项");
-            require(q.options().contains(q.correctAnswer()), "正确答案必须精确等于一个选项");
+            require(q.options().contains(q.correctAnswer()), "correctAnswer必须原样复制options中的完整选项文本，不能填A/B/C/D位置编号");
             require(text(q.explanation()), "测验题需有解析");
             require(text(q.sourceChunkId()) && retrievedSources.contains(q.sourceChunkId()), "测验来源必须来自当前实际检索结果");
         }

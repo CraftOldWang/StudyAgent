@@ -25,7 +25,8 @@ def main():
         result = subprocess.run(["docker", "exec", "-i", "-e", "MYSQL_PWD=root", "study-agent-mysql", "mysql",
                                  "--default-character-set=utf8mb4", "--raw", "-uroot", "-D", "study_agent_eval", "-N"],
                                 input=query.encode("utf-8"), capture_output=True, check=True)
-        return [json.loads(line) for line in result.stdout.decode("utf-8").splitlines() if line.strip()]
+        # JSON text can contain U+2028 from course slides; only LF separates MySQL rows.
+        return [json.loads(line) for line in result.stdout.decode("utf-8").split("\n") if line.strip()]
 
     traces = rows("SELECT JSON_OBJECT('traceId',trace_id,'sequenceNo',sequence_no,'stage',stage,'eventType',event_type,"
                   "'status',status,'summary',summary,'payload',payload_json,'elapsedMillis',elapsed_millis,'toolCallId',tool_call_id) "

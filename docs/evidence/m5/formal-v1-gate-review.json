@@ -1,0 +1,98 @@
+{
+  "version": "formal-v1-first-gate",
+  "status": "STOPPED_AFTER_GATE_FAILURE",
+  "scheduled": 18,
+  "startedSessions": 1,
+  "completedSessions": 0,
+  "reason": "First session fourth-point quiz repeatedly used option letters rather than required full option text. Point-three recall also lost the unresolved question. No later sessions run; version retained, no provider attempts discarded.",
+  "frozenGitSha": "dfe752f2e4ec8f4d02008c2bebb5dd2ad017e1e2",
+  "frozenJarSha256": "ec77dd744d0c150560bed8041e12ccb38ac3ecf8c625b2fa811b146858e2bec5",
+  "usage": {
+    "attempts": 54,
+    "statuses": {
+      "SUCCEEDED": 54
+    },
+    "attemptsWithoutUsage": 0,
+    "usageComplete": true,
+    "knownInputTokens": 769715,
+    "knownOutputTokens": 36786,
+    "knownTotalTokens": 806501,
+    "knownCachedInputTokens": 275584
+  },
+  "processRestart": {
+    "sessionId": "6200001621173238900",
+    "beforeStartedAt": "2026-09-09T08:16:04.855083521Z",
+    "beforePid": 67465,
+    "completedTurns": 5,
+    "pendingProviderAttempts": 0,
+    "jarSha256": "ec77dd744d0c150560bed8041e12ccb38ac3ecf8c625b2fa811b146858e2bec5",
+    "status": "RESTART_AND_MODEL_CONTEXT_VERIFIED",
+    "afterStartedAt": "2026-09-09T08:22:00.572727146Z",
+    "afterPid": 72295,
+    "pointStatuses": [
+      "COMPLETED",
+      "NEW",
+      "NEW",
+      "NEW",
+      "NEW"
+    ],
+    "resumedTurnId": "2097601789799702529",
+    "resumedTraceId": "5f16de0b-2785-44d0-816f-e3c06307ed61",
+    "persistedMessages": 1,
+    "actualInputMessages": 2,
+    "samePersistedContentRoleMetadata": true,
+    "serializationNote": "Persisted SDK usage:null is omitted in trace JSON; all message identity, content, role, metadata and timestamp fields are equal."
+  },
+  "qualityReview": {
+    "version": "compaction-quality-review-v1",
+    "reviews": [
+      {
+        "sessionId": "6200001621173238900",
+        "course": "algorithms",
+        "strategy": "THRESHOLD",
+        "repeat": 1,
+        "point": 1,
+        "turnId": "2097600990200111105",
+        "answerSha256": "3ffb5795123d510e566995cc483d2cdb9f660b56c1d48fd791945690def1b8ec",
+        "correctionAccepted": true,
+        "markerRetained": true,
+        "openQuestionRetainedWithoutAnswer": true,
+        "reviewNote": "Correctly distinguishes perfect matching from stable matching using absence of unstable pairs; marker and unequal-participant open question retained."
+      },
+      {
+        "sessionId": "6200001621173238900",
+        "course": "algorithms",
+        "strategy": "THRESHOLD",
+        "repeat": 1,
+        "point": 3,
+        "turnId": "2097602267245715457",
+        "answerSha256": "2f22fa9de38d53a84c7af8223f4f0403847433ddc67b36d81375f45215ac559e",
+        "personalMarker": true,
+        "originalMisconception": true,
+        "correctedFact": true,
+        "unresolvedQuestion": false,
+        "reviewNote": "Three facts recalled correctly; explicitly reports no memory of the pending question. Do not count this as retained."
+      }
+    ]
+  },
+  "exportAmendment": {
+    "type": "OBSERVATIONAL_EXPORT_TRANSPORT_FIX",
+    "path": "scripts/collect-learning-evidence.py",
+    "beforeSha256": "33f3c2a1682ea93396bdc2b245af1d6b9956ad26bd2f6b3a5db6b4f11cb2efd6",
+    "afterSha256": "dcc873c09bd0ecf3e116666924b458e4d075579a8364e2355c39c4e21777a45b",
+    "finding": "83 U+2028 inside valid JSON strings caused splitlines() to produce 104 invalid fragments; LF-only splitting parsed 285 complete database rows.",
+    "scope": "One-line read-only export parser correction; no JAR, prompts, user scripts, strategy parameters, source corpus or learning requests changed. No samples excluded or replaced.",
+    "diagnosticSha256": "2c23a3590d048194d2dae4d0c91f40739464b1c9d99bb3352747a659073550df"
+  },
+  "evidence": {
+    "path": ".eval/runs/m5-compaction-formal-v1/experiment.json",
+    "sha256": "38a622038977519f1ee4b0f14be64f1d98ea2eb3b2a752be9a54e8e67e542137"
+  },
+  "quizFailure": {
+    "turnId": "2097602590165180418",
+    "traceId": "66ef9b74-be91-49ee-bd16-a393cde8da5b",
+    "publishAttempts": 3,
+    "allCorrectAnswersWerePositionLetters": true,
+    "businessStateRemained": "EXPLAINING"
+  }
+}

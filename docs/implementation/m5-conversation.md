@@ -76,3 +76,5 @@ SSE 事件为 accepted、text、progress、result、failure。accepted 只代表
 Windows全量测试曾遇到本机JDK UnixDomainSockets.connect错误；用户重启后WSL的8GiB配置生效，Linux clean package通过225项、0失败、0错误、3跳过，证据`docs/evidence/m5/linux-8gb-build.json`。后续规划改动另做定向回归，不混记为同一版全量测试。
 
 正式对照脚本`run-compaction-experiment.py`按轮换策略、交错课程执行18个已准备副本，默认先跑两个会话供检查。冻结JAR、RAG配置、用户脚本、初始计划及执行/导出脚本哈希；任何更改都拒绝混入同一实验。每点必须包含讲解、五题、评分、三卡，追问及不完整提交可以在冻结脚本中选择出现。正式设计使用指定点位的错误纠正和跨点回忆，不重复全功能试跑的每点不完整答案测试。失败保留同requestId与全部usage，明确恢复前不启动后续会话。
+
+formal-v1先行会话在第四点连续三次发布测验时，将位置字母填入要求完整选项文本的correctAnswer，达到步骤上限后保留EXPLAINING。工具说明与字段schema已明确该契约，服务端仍严格校验，不自动猜测答案。第三点回忆丢失待解决问题，因此`learning-compaction-v2`明确先保留用户误区/标记和未解决问题，再概括课程知识与进度；700上限保持不变。13项相关回归通过，正式v2须用新初始会话运行，不能混入v1数据。完整失败、实际进程恢复和观察性导出修订见`docs/evidence/m5/formal-v1-gate-review.json`。

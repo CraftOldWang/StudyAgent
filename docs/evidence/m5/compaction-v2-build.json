@@ -1,0 +1,17 @@
+{
+  "counts": {
+    "tests": 13,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "suites": [
+    "TEST-com.studyagent.learning.LearningConversationCompactorTest.xml",
+    "TEST-com.studyagent.learning.LearningConversationGatewayTest.xml",
+    "TEST-com.studyagent.learning.LearningConversationServiceTest.xml",
+    "TEST-com.studyagent.learning.LearningTurnIntentTest.xml"
+  ],
+  "log": ".eval/m5-compaction-v2-build.log",
+  "logSha256": "76ae41526bd3d78969bcfa266287d3dab90fb795dd4a37d084494ba8acfee0c8",
+  "jarSha256": "2c78e8d355fe76984a86ef49e6b759ab5772759cc1e7f97ad5839ac4fc1f62f9"
+}

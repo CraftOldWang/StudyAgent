@@ -91,4 +91,4 @@ create/status 不调用 LLM；search 调用 embedding；hello/plan 使用真实 
 
 后续已补齐 embedding SDK 调用账本：记录 DOCUMENT/QUERY、模型/维度、内容哈希、trace、provider requestId、耗时及 provider usage；不保存明文输入或密钥，usage 缺失保留未知。独立汇总见 [embedding 账本快照](../evidence/m3/embedding-usage-20260909.json)，该快照包含 20 次调用；后续恢复实验另有新增调用。进程中断后缺少终态 usage 的情况已在 M4 实测保留，详见 [M4 实现与证据](m4-ingest-recovery.md)。
 
-完整学习链路、摘要/工具全链 trace 及性能基线仍待补齐。后续不重复消耗模型来碰运气通过旧强制流程；按批准的 M5 对话编排方向修正主链路，并保留现有失败和源码基线。M3/M4 均未完成全部验收。
+以上为初期诊断记录。2026-09-09后续已完成真实五点自然学习、摘要/工具/状态全链trace与持久恢复验收，见`docs/evidence/m5/conversation-pilot-v2-review.json`和`formal-v1-gate-review.json`；M3与M4当前验收完成，历史失败及源码基线仍保留。正式压缩对照尚未完成，不从功能试跑推算收益。
