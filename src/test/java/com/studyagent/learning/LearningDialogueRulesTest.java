@@ -10,6 +10,27 @@ import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 
 class LearningDialogueRulesTest {
+    @Test void priorReadEvidenceCanBeReusedButOtherPointsAndProseCannotAuthorizeSources() {
+        var use = io.agentscope.core.message.ToolUseBlock.builder().id("read").name("knowledge_read")
+                .input(java.util.Map.of("chunkId", "source")).build();
+        var result = io.agentscope.core.message.ToolResultBlock.of("read", "knowledge_read",
+                io.agentscope.core.message.TextBlock.builder().text("{\"hits\":[{\"chunkId\":\"source\",\"content\":\"actual fact\"}]}").build());
+        var messages = List.of(
+                LearningContextMessages.tag(io.agentscope.core.message.Msg.builder().role(io.agentscope.core.message.MsgRole.ASSISTANT).content(List.of(use)).build(), 1L, 2L),
+                LearningContextMessages.tag(io.agentscope.core.message.Msg.builder().role(io.agentscope.core.message.MsgRole.TOOL).content(List.of(result)).build(), 1L, 2L),
+                LearningContextMessages.summary("source: invented", 1L, "POINT"));
+        var sources = LearningContextMessages.retainedSources(messages, 1L, new ObjectMapper());
+        assertThat(sources).containsExactly("source");
+        assertThat(LearningContextMessages.retainedSources(messages, 9L, new ObjectMapper())).isEmpty();
+        var intent = new LearningTurnIntent(KnowledgePointStatus.EXPLAINING, new KnowledgeSearchExecution(), "继续", List.of());
+        intent.retainSources(sources);
+        var question = new QuizQuestionDraft("q", List.of("a", "b", "c", "d"), "a", "why", "source");
+        assertThatThrownBy(() -> intent.publishQuiz(List.of(new QuizQuestionDraft("q", question.options(), "a", "why", "invented"))))
+                .hasMessageContaining("实际读取");
+        intent.publishQuiz(List.of(question));
+        assertThat(intent.action()).isEqualTo(LearningTurnIntent.Action.QUIZ);
+    }
+
     @Test void acceptsVariableQuizSizesButRejectsEleven() {
         var questions = IntStream.range(0, 10).mapToObj(i -> new QuizQuestionDraft("question " + i,
                 List.of("a", "b", "c", "d"), "a", "reason", "source")).toList();

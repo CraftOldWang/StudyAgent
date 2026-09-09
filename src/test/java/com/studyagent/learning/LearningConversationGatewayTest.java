@@ -32,8 +32,7 @@ class LearningConversationGatewayTest {
             public String getModelName() { return "local-sdk-test"; }
             public Flux<ChatResponse> stream(List<Msg> messages, List<ToolSchema> tools, GenerateOptions options) {
                 assertThat(options.getToolChoice()).isNull();
-                assertThat(tools).extracting(ToolSchema::getName).containsExactlyInAnyOrder("knowledge_search", "learning_explanation_done",
-                        "learning_quiz_publish", "learning_quiz_submit", "learning_cards_begin", "learning_cards_publish");
+                assertThat(tools).extracting(ToolSchema::getName).containsExactlyInAnyOrder("knowledge_search", "learning_explanation_done");
                 if (calls.getAndIncrement() == 0) {
                     return Flux.just(ChatResponse.builder().id("search").content(List.of(ToolUseBlock.builder().id("search-call")
                             .name("knowledge_search").input(Map.of("query", "synthetic topic")).content("{\"query\":\"synthetic topic\"}").build())).finishReason("tool_calls").build());

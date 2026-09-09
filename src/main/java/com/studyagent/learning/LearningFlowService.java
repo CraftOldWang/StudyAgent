@@ -50,7 +50,7 @@ public class LearningFlowService {
     }
 
     public TracedAnswer explain(Long userId, Long sessionId) {
-        var turn = shortcut(userId, sessionId, "请开始讲解当前知识点。", "EXPLANATION");
+        var turn = shortcut(userId, sessionId, "请开始讲解当前知识点。", null);
         return new TracedAnswer(turn.getTraceId(), turn.getAssistantMessage());
     }
 

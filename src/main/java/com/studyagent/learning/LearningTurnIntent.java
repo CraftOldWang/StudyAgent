@@ -5,6 +5,8 @@ import com.studyagent.common.exception.BusinessException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.HashSet;
 
 /** Model tools stage one validated business effect; the application commits it with the completed turn. */
 public final class LearningTurnIntent {
@@ -19,6 +21,7 @@ public final class LearningTurnIntent {
     private List<String> answers;
     private List<QuizFeedback> feedback;
     private int score;
+    private Set<String> retainedSources = Set.of();
     private Runnable onBeginCards = () -> { };
 
     public LearningTurnIntent(KnowledgePointStatus current, KnowledgeSearchExecution search,
@@ -36,7 +39,7 @@ public final class LearningTurnIntent {
 
     public synchronized void publishQuiz(List<QuizQuestionDraft> drafts) {
         requireSearch();
-        List<QuizQuestionDraft> validated = LearningArtifactValidator.quiz(drafts, search.retrievedChunkIds());
+        List<QuizQuestionDraft> validated = LearningArtifactValidator.quiz(drafts, availableSources());
         reserve(Action.QUIZ, KnowledgePointStatus.QUIZZING);
         questions = validated;
     }
@@ -74,7 +77,7 @@ public final class LearningTurnIntent {
 
     public synchronized void publishCards(List<GeneratedCard> drafts) {
         requireSearch();
-        List<GeneratedCard> validated = LearningArtifactValidator.cards(drafts, search.retrievedChunkIds());
+        List<GeneratedCard> validated = LearningArtifactValidator.cards(drafts, availableSources());
         if (current != KnowledgePointStatus.CARD_GENERATING && action != Action.PREPARE_CARDS) {
             throw new BusinessException("请先调用learning_cards_begin进入卡片阶段");
         }
@@ -83,9 +86,17 @@ public final class LearningTurnIntent {
         cards = validated;
     }
 
+    public void retainSources(Set<String> sources) { retainedSources = Set.copyOf(sources); }
+
+    private Set<String> availableSources() {
+        Set<String> sources = new HashSet<>(retainedSources);
+        sources.addAll(search.retrievedChunkIds());
+        return sources;
+    }
+
     private void requireSearch() {
-        if (!search.invoked() || search.retrievedChunkIds().isEmpty()) {
-            throw new BusinessException("请先检索当前知识库并取得真实资料依据，未找到资料时说明不足，不提交学习产物");
+        if (availableSources().isEmpty()) {
+            throw new BusinessException("请先通过knowledge_read或knowledge_search取得真实资料依据；当前知识点历史中已读取的资料也可以使用");
         }
     }
     private void reserve(Action proposed, KnowledgePointStatus target) {

@@ -245,6 +245,11 @@ public class LearningPersistenceService {
         }
     }
 
+    @Transactional
+    public void beginPoint(KnowledgePoint point) {
+        if (KnowledgePointStatus.NEW.name().equals(point.getStatus())) { advance(point, KnowledgePointStatus.EXPLAINING); }
+    }
+
     private KnowledgePoint advance(KnowledgePoint point, KnowledgePointStatus target) {
         KnowledgePointStatus current;
         try {

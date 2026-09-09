@@ -83,6 +83,7 @@ public class LearningTurnPersistence {
             context.setAgentStateJson(initializer.initialState(session, point));
             context.setCompressionStrategy(properties.compressionStrategy()); context.setUpdatedAt(now); contexts.insert(context);
         }
+        learning.beginPoint(point);
         return new Claim(turn, true);
     }
 

@@ -17,7 +17,7 @@ public final class LearningArtifactValidator {
                     && q.options().stream().map(String::trim).distinct().count() == 4, "每题需要四个不同的非空选项");
             require(q.options().contains(q.correctAnswer()), "correctAnswer必须原样复制options中的完整选项文本，不能填A/B/C/D位置编号");
             require(text(q.explanation()), "测验题需有解析");
-            require(text(q.sourceChunkId()) && retrievedSources.contains(q.sourceChunkId()), "测验来源必须来自当前实际检索结果");
+            require(text(q.sourceChunkId()) && retrievedSources.contains(q.sourceChunkId()), "测验来源必须来自实际读取的资料");
         }
         return List.copyOf(drafts);
     }
@@ -27,7 +27,7 @@ public final class LearningArtifactValidator {
         Set<String> fronts = new HashSet<>();
         for (GeneratedCard c : drafts) {
             require(c != null && text(c.front()) && text(c.back()) && fronts.add(c.front().trim()), "卡片正反面不可为空，正面不可重复");
-            require(text(c.sourceChunkId()) && retrievedSources.contains(c.sourceChunkId()), "卡片来源必须来自当前实际检索结果");
+            require(text(c.sourceChunkId()) && retrievedSources.contains(c.sourceChunkId()), "卡片来源必须来自实际读取的资料");
         }
         return List.copyOf(drafts);
     }
