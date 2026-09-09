@@ -15,7 +15,7 @@
 - [~] M6：重点计划/完整历史/自然消息 SSE/来源抽屉已接入，核心界面和来源归属已验收，见 `docs/implementation/m6-core-ui.md`。原生multipart、ETag持久化/Bitmap恢复/唯一约束/短事务发布/取消已实现；20MB真实API重启续传、并发完成、哈希拒绝、归属隔离通过。400MB旧/新×1/4并发各5次，共20/20成功；相同4并发中位数35.048s→17.833s，降低49.1%，见 `docs/implementation/m6-upload-performance-report.md`。Worker哈希、字节进度、暂停/查询/取消、刷新恢复已接入；34项前端回归、构建、严格审计通过；400MB真实浏览器暂停/刷新/同会话补齐、跨库目标保留、390px布局通过。见 `docs/implementation/m6-upload.md`。正式压缩报告及真实模型/SSE生成中断验收仍待完成。
 - [x] M7：Anki 单向导出与卡片按钮已实现，持久状态/错误/尝试次数、稳定首字段去重、来源归属与HTML转义齐备。三张合成持久卡真实导入本机Anki，通过关闭端点、创建后丢响应、并发/重复导出及跨用户拒绝；实际进入牌组显示答案。浏览器失败/手动会话恢复/键盘重试/来源/390px布局通过，后端215项（3跳过）、前端37项与构建/严格审计通过，模型394→394。见 `docs/implementation/m7-anki-export.md`；不替代M5模型生成验收。
 - [~] M8：本机faster-whisper/CPU int8转写worker、媒体上传、TRANSCRIBING阶段/续租、转写产物/元数据持久化与复用已实现。后端222项（219通过、3跳过）、前端37项/构建/严格审计通过。完整797.838秒录音转写129.359秒；终止后端后1次ASR+1次缓存复用恢复INDEXED，13次文档embedding。60秒真实MP4经浏览器上传转写15.922秒，来源检索通过；无效媒体及无语音明确失败且无下游产物。390px布局通过。学习问答仍受DeepSeek课程外传审批阻塞；见 `docs/implementation/m8-local-asr.md`。
-- [ ] 收尾：独立验收、文档一致性检查、证据归档，以及按实测结果改写简历与面试说明。
+- [~] 收尾：完成15个原始证据哈希核对与20次上传原始结果重算，见`docs/evidence/final/partial-audit-v1.json`；六条简历目标草稿、面试机制及逐项缺口见`docs/implementation/resume-and-interview.md`。修正历史报告与当前阶段状态混写。最终独立端到端验收与压缩数据仍缺失，不因草稿完成关闭Goal。
 
 **下一步：** M4、M6上传、M7 Anki及M8音视频入库/检索/恢复已有实测证据；M8提交`8c5cfa9`已推送。LLM账本394/2000次。自编虚构课程与可恢复模型功能脚本已准备，尚未模型执行；见 `docs/implementation/m5-authored-functional-acceptance.md`。当前8080配置为 `study_agent_eval`、Redis DB1、`eval-synthetic-learning`索引，V15已应用；其两份自编资料因容器DNS失败尚未INDEXED。Docker管理API500，WSL负载125且进一步诊断超时；需先恢复项目运行环境。本轮ASR worker已停止释放内存，缓存保留。真实课程→DeepSeek的既有审批拒绝未绕过；规划v3真实课程、完整自然学习、SSE生成中断及正式压缩实验仍待验收，Goal尚未完成。
 

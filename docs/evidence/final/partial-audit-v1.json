@@ -1,0 +1,127 @@
+{
+  "auditedAt": "2026-09-09T02:25:39.384993+00:00",
+  "scope": "Offline artifact integrity and independent upload recomputation; NOT full Goal completion",
+  "hashChecks": [
+    {
+      "path": ".eval\\runs\\validation-selected-v1\\manifest.json",
+      "sha256": "c59c941890f30da6c9c2452f3b04574103252384a47e0fa37a6bce8aa8777d72",
+      "matches": true
+    },
+    {
+      "path": ".eval\\runs\\validation-selected-v1\\responses.jsonl",
+      "sha256": "0f9b357d79f8f45fca6b168959309bd857d1f6807492f149a77bc1cfb2acdc51",
+      "matches": true
+    },
+    {
+      "path": ".eval\\runs\\validation-parent-paired-v1\\manifest.json",
+      "sha256": "913524ac26b9f72de64fa73768fca6bba9068cacf0aa8ba95735b354632f124a",
+      "matches": true
+    },
+    {
+      "path": ".eval\\runs\\validation-parent-paired-v1\\pairs.jsonl",
+      "sha256": "ebdce714b6fcef0e90836499f69e3da93a27265810d17bf148ac8e480dd94918",
+      "matches": true
+    },
+    {
+      "path": ".eval\\runs\\validation-answers-v1\\manifest.json",
+      "sha256": "08827425bb3094e7a76734e8eda6375d964bbfba5b25474a1dcb21f281bee47f",
+      "matches": true
+    },
+    {
+      "path": ".eval\\runs\\validation-answers-v1\\judgments.json",
+      "sha256": "90f5ccae272221834acce6d3f81e8b808efd6c8457004b654aa8dbf2c89b90b7",
+      "matches": true
+    },
+    {
+      "path": "eval\\rag\\gold-v1.jsonl",
+      "sha256": "0397306190815195eeeb5e53baf15df369a5481db6f867e2e816b5c34552d71c",
+      "matches": true
+    },
+    {
+      "path": ".eval/m8-asr-full-package.log",
+      "sha256": "732be46db2968899ba261887ed727ab4757ed8275d29c11a070be2b8eb1a0c1e",
+      "matches": true
+    },
+    {
+      "path": ".eval/m8-asr-ui-tests-r2.log",
+      "sha256": "6500020a0ce4da7165d512f879875ab2d8e60f044840842e5a4e1d43d6c4b865",
+      "matches": true
+    },
+    {
+      "path": ".eval/m8-asr-ui-build-r2.log",
+      "sha256": "1572deaa52d0561ff20e2005dc866d0678dce598676366a6270012e4aed8e405",
+      "matches": true
+    },
+    {
+      "path": ".eval/m8-asr-premium-audit.json",
+      "sha256": "2aafa915b2b103bca509edab7a41fb265bc1e6dc5974c0d32dbb17d5d89f40d2",
+      "matches": true
+    },
+    {
+      "path": ".eval/m8-asr-python-freeze-compatible.txt",
+      "sha256": "404b89534dbcab7333c9cc5f912d877f5a0fcc49da5c126dc61a00a824f871d8",
+      "matches": true
+    },
+    {
+      "path": ".eval/runs/m8-asr-recovery-v1/report.json",
+      "sha256": "4ef044853d53e823f3a961c006d7a87bf7887495c0332c259375223f0430e756",
+      "matches": true
+    },
+    {
+      "path": ".eval/runs/m8-video-v1/bm25-search.json",
+      "sha256": "d3983d9577850b0bd059d1c8c710b5812f5c69c1f96440cecef6fa2c7b54bd69",
+      "matches": true
+    },
+    {
+      "path": ".eval/runs/m8-video-v1/source.json",
+      "sha256": "773282553c7227d7fd25ea357a1287c2a7c0e19ae854c4219f1767ecd5b027be",
+      "matches": true
+    }
+  ],
+  "uploadGroupsFromRawFiles": [
+    {
+      "arm": "native",
+      "concurrency": 1,
+      "trials": 5,
+      "medianSeconds": 22.81598899999517
+    },
+    {
+      "arm": "native",
+      "concurrency": 4,
+      "trials": 5,
+      "medianSeconds": 17.833396999994875
+    },
+    {
+      "arm": "original",
+      "concurrency": 1,
+      "trials": 5,
+      "medianSeconds": 41.10267499998736
+    },
+    {
+      "arm": "original",
+      "concurrency": 4,
+      "trials": 5,
+      "medianSeconds": 35.04751159998705
+    }
+  ],
+  "uploadReductionPercent": 49.11651017186205,
+  "ragClaim": {
+    "questionCount": 60,
+    "bm25HitsAt5": 42,
+    "rrfHitsAt5": 55,
+    "vectorHitsAt5": 55
+  },
+  "missingGates": [
+    "Planning v3 real-course quality and process recovery",
+    "Natural learning with real provider, real-course full trace and mid-generation SSE disconnect",
+    "18-session real-course compaction benchmark with quality checks",
+    "Audio/video learning questions after successful retrieval",
+    "Final independent end-to-end acceptance after environment recovery"
+  ],
+  "runtimeObservation": {
+    "authoredIndexDocumentCount": 0,
+    "authoredDocumentsFailed": 2,
+    "dockerApiVersion144": "client timed out after 20s",
+    "llmAttempts": 394
+  }
+}

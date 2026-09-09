@@ -29,4 +29,4 @@ V10 新增 run 和 stage-attempt 表，保留每次尝试的输入指纹、原�
 
 可复现入口为 `scripts/run-planning-smoke.py`，进程中断注入入口为 `scripts/verify-planning-recovery.py`。v2 已验证失败阶段恢复与成功提取复用，但重点语义仍不合格、TASKS 因代码围栏失败，详见 `docs/evidence/m5/planning-development-review.json`。当前 v3 使用 [DeepSeek JSON Output](https://api-docs.deepseek.com/guides/json_mode/) 的 `json_object` 模式并强化直接依据规则；13 项定向回归与独立打包通过。
 
-v3 真实模型测试被自动审批拒绝，两次复核均要求用户明确确认课程内容发送至 DeepSeek。现有用户已授权资料测试和 provider 使用，但工具审批未接受该授权范围；未通过其它命令、工具或 provider 绕过。v3 尚无真实模型验收，进程中断注入未成功实施，不能声称规划进程恢复已实测。待审批问题解决后从 `.eval/runs/m5-planning-smoke-v3/` 创建新版本任务验收。自然对话、摘要策略与 SSE 的本地实现进展见 [m5-conversation.md](m5-conversation.md)，真实验收与前端改进仍待完成；规划接口通过不代表整个 M5 完成。
+v3 真实模型测试被自动审批拒绝，两次复核均要求用户明确确认课程内容发送至 DeepSeek。现有用户已授权资料测试和 provider 使用，但工具审批未接受该授权范围；未通过其它命令、工具或 provider 绕过。v3 尚无真实模型验收，进程中断注入未成功实施，不能声称规划进程恢复已实测。待审批问题解决后从 `.eval/runs/m5-planning-smoke-v3/` 创建新版本任务验收。自然对话、摘要策略与 SSE 的本地实现进展见 [m5-conversation.md](m5-conversation.md)，真实模型及前端完整学习验收仍待完成；已有核心界面改进见m6-core-ui.md，规划接口通过不代表整个 M5 完成。

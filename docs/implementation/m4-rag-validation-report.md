@@ -51,6 +51,6 @@ RRF相对BM25提高21.67个百分点，按课程分层的配对bootstrap区间�
 
 - 适合当前简历的数据：**在60道课程验证问题上，相对BM25，标注证据Hit@5从70.0%提升至91.7%**。面试同时说明与纯向量持平、跨语言材料及小集合的边界。
 - 父子切块可表述为支持小块检索、父块回填、来源追踪与预算控制，不能写成本轮已证实的总体质量提升。
-- 320次模型调用全部有usage：回答652,888 token，评审699,840 token。Goal累计382/2000次模型尝试；前期两次失败usage未知，不以零替代。
+- 320次模型调用全部有usage：回答652,888 token，评审699,840 token。本报告采集完成时Goal累计382/2000次模型尝试，最新总数见PROGRESS.md；前期两次失败usage未知，不以零替代。
 - `scripts/run-rag-evaluation.py` 复现独立检索；`run-parent-comparison.py` 复现共享排名对照；`evaluate-rag-answers.py` 复现固定回答/评审；`report-rag-evaluation.py` 从原始文件生成[完整JSON报告](../evidence/m4/rag-validation-v1.json)。使用Git提交、JAR、配置、语料、题目、响应、prompt与trace指纹核对版本。
-- 当前后端13项相关回归、Python5项评分/Unicode JSONL/统计回归通过。真实400次验证检索/对照请求、320次模型请求完成。M5多轮学习、压缩、上传、Anki和ASR尚未完成本轮Goal验收。
+- 本报告关联的后端13项相关回归、Python5项评分/Unicode JSONL/统计回归通过。真实400次验证检索/对照请求、320次模型请求完成。本报告不覆盖M5多轮学习、压缩、上传、Anki和ASR；后续阶段实测状态与证据入口见PROGRESS.md。
