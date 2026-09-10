@@ -1,0 +1,28 @@
+{"id": "os-human-01", "query": "课程评分标准是什么？", "documentPath": "操作系统/课件/1.OS_Introduction-2024.pptx", "userPages": [24], "status": "draft"}
+{"id": "os-human-02", "query": "课程有什么推荐的课本吗？", "documentPath": "操作系统/课件/1.OS_Introduction-2024.pptx", "userPages": [25, 26, 27], "status": "draft"}
+{"id": "os-human-03", "query": "鸿蒙操作系统在哪些领域有应用？", "documentPath": "操作系统/课件/1.OS_Introduction-2024.pptx", "userPages": [49], "status": "draft"}
+{"id": "os-human-04", "query": "OS方面的顶级会议有什么？", "documentPath": "操作系统/课件/1.OS_Introduction-2024.pptx", "userPages": [57], "status": "draft"}
+{"id": "os-human-05", "query": "ENIAC有多大、多贵？", "documentPath": "操作系统/课件/3.1.OS_ProcessManagement-进程的上下文切换-2024.pptx", "userPages": [3], "status": "draft"}
+{"id": "os-human-06", "query": "并发的意义在哪里？明明没有更多的计算资源使用？", "documentPath": "操作系统/课件/3.1.OS_ProcessManagement-进程的上下文切换-2024.pptx", "userPages": [7], "status": "draft"}
+{"id": "os-human-07", "query": "进程切换的流程是怎样的？", "documentPath": "操作系统/课件/3.1.OS_ProcessManagement-进程的上下文切换-2024.pptx", "userPages": [31], "status": "draft"}
+{"id": "os-human-08", "query": "RISCV有几个特权等级？", "documentPath": "操作系统/课件/3.1.OS_ProcessManagement-进程的上下文切换-2024.pptx", "userPages": [43], "status": "draft"}
+{"id": "os-human-09", "query": "五状态进程模型有几种状态，是什么？", "documentPath": "操作系统/课件/3.1.OS_ProcessManagement-进程的上下文切换-2024.pptx", "userPages": [49], "status": "draft"}
+{"id": "os-human-10", "query": "多级反馈队列算法是什么？有什么特征？", "documentPath": "操作系统/课件/3.2.OS_ProcessManagement-进程的调度策略-2024.pptx", "userPages": [25], "status": "draft"}
+{"id": "os-human-11", "query": "衡量调度算法的指标有什么？", "documentPath": "操作系统/课件/3.2.OS_ProcessManagement-进程的调度策略-2024.pptx", "userPages": [32], "status": "draft"}
+{"id": "os-human-12", "query": "基于EAS的调度是什么？", "documentPath": "操作系统/课件/3.2.OS_ProcessManagement-进程的调度策略-2024.pptx", "userPages": [65, 66, 67, 68], "status": "draft"}
+{"id": "os-human-13", "query": "内存分配算法主要做什么工作？", "documentPath": "操作系统/课件/4.1OS_MemoryManagement-上古时期的内存管理-2024.pptx", "userPages": [20], "status": "draft"}
+{"id": "os-human-14", "query": "课上讲到几种内存分配算法？", "documentPath": "操作系统/课件/4.1OS_MemoryManagement-上古时期的内存管理-2024.pptx", "userPages": [20, 21, 22, 23, 24, 25, 26, 27], "status": "draft"}
+{"id": "os-human-15", "query": "伙伴系统是什么，怎么实现的？", "documentPath": "操作系统/课件/4.2OS_MemoryManagement-分页机制-2024.pptx", "userPages": [5, 6, 7, 8], "status": "draft"}
+{"id": "os-human-16", "query": "虚拟内存的基本思想是什么？", "documentPath": "操作系统/课件/4.2OS_MemoryManagement-分页机制-2024.pptx", "userPages": [19], "status": "draft"}
+{"id": "os-human-17", "query": "缺页异常的处理流程？", "documentPath": "操作系统/课件/4.2OS_MemoryManagement-分页机制-2024.pptx", "userPages": [32], "status": "draft"}
+{"id": "os-human-18", "query": "快表是什么？", "documentPath": "操作系统/课件/4.2OS_MemoryManagement-分页机制-2024.pptx", "userPages": [56], "status": "draft"}
+{"id": "os-human-19", "query": "物理内存不够的两种应对办法是什么？", "documentPath": "操作系统/课件/4.2OS_MemoryManagement-分页机制-2024.pptx", "userPages": [16, 17, 18, 19], "status": "draft"}
+{"id": "os-human-20", "query": "置换算法是做什么用的？", "documentPath": "操作系统/课件/4.3OS_MemoryManagement-换页-2024.pptx", "userPages": [10], "status": "draft"}
+{"id": "os-human-21", "query": "OPT置换算法是什么？", "documentPath": "操作系统/课件/4.3OS_MemoryManagement-换页-2024.pptx", "userPages": [13], "status": "draft"}
+{"id": "os-human-22", "query": "什么是Belady现象？", "documentPath": "操作系统/课件/4.3OS_MemoryManagement-换页-2024.pptx", "userPages": [18], "status": "draft"}
+{"id": "os-human-23", "query": "影响缺页率的因素有什么？", "documentPath": "操作系统/课件/4.3OS_MemoryManagement-换页-2024.pptx", "userPages": [45], "status": "draft"}
+{"id": "os-human-24", "query": "什么是常驻集？", "documentPath": "操作系统/课件/4.3OS_MemoryManagement-换页-2024.pptx", "userPages": [41], "status": "draft"}
+{"id": "os-human-25", "query": "段式地址管理中，进程的地址空间被分为哪些段？", "documentPath": "操作系统/课件/4.3OS_MemoryManagement-换页-2024.pptx", "userPages": [56], "status": "draft"}
+{"id": "os-human-26", "query": "内存置换的Clock算法是什么？", "documentPath": "操作系统/课件/4.3OS_MemoryManagement-换页-2024.pptx", "userPages": [29, 30], "status": "draft"}
+{"id": "os-human-27", "query": "LRU可以如何实现？", "documentPath": "操作系统/课件/4.3OS_MemoryManagement-换页-2024.pptx", "userPages": [21], "status": "draft"}
+{"id": "os-human-28", "query": "LRU可能出现Belady现象吗？", "documentPath": "操作系统/课件/4.3OS_MemoryManagement-换页-2024.pptx", "userPages": [23], "status": "draft"}
