@@ -49,6 +49,8 @@ public class PlanningModel {
         if (useReasoning(stage)) {
             options.additionalBodyParam("thinking", java.util.Map.of("type", "enabled"))
                     .additionalBodyParam("reasoning_effort", reasoning.effort());
+        } else {
+            options.additionalBodyParam("thinking", java.util.Map.of("type", "disabled"));
         }
         return options.build();
     }

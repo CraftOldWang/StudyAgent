@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 
 @ConfigurationProperties(prefix = "study-agent.learning.planning")
 public record LearningPlanningProperties(
-        @DefaultValue("4800") int batchTokens,
+        @DefaultValue("2400") int batchTokens,
         @DefaultValue("28000") int inputTokens,
         @DefaultValue("6000") int outputTokens,
         @DefaultValue("600") int leaseSeconds) {

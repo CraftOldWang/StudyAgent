@@ -91,6 +91,7 @@ public class LearningPlanningService {
             for (List<Source> batch : batches(input.lessons())) {
                 String prompt = """
                         按当前课件片段提取学习知识点，保留概念、算法、前提及关键区别，数量由实际内容决定。
+                        topic 和 subtopics 只写简短目录标题，不写定义、讲解、例题过程或重复描述。
                         不把页眉、页码、目录文字单独当作知识点。当前目标仅决定详略，不能静默忽略整段资料。
                         作业提交、预习安排不是知识点；例题练习附属对应概念，不单列“预习作业”教学主题。
                         格式：{"points":[{"topic":"...","subtopics":["..."],"sourceChunkIds":["..."],
