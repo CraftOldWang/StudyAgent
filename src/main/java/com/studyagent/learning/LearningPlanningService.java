@@ -71,7 +71,7 @@ public class LearningPlanningService {
         Result result = null;
         LearningPlanStage tasks = persistence.latest(runId, "TASKS");
         if (tasks != null && "SUCCEEDED".equals(tasks.getStatus())) { result = decode(tasks.getOutputJson(), Result.class); }
-        // Full source snapshots stay in storage; the UI loads provenance on demand rather than receiving every course page.
+        // The outline screen receives the tree only; source references remain available to learning tools.
         return new View(run.getId(), run.getKnowledgeBaseId(), run.getLearningGoal(), run.getStatus(),
                 run.getErrorMessage(), run.getSessionId(), persistence.listStages(runId).stream()
                 .map(s -> new StageView(s.getId(), s.getStageKey(), s.getStatus(), s.getInputHash(), s.getAttemptCount(),
@@ -199,7 +199,7 @@ public class LearningPlanningService {
                     目标：%s
                     大纲：%s
                     """.formatted(run.getLearningGoal(), json(outline.chapters().stream().flatMap(c -> c.points().stream())
-                            .map(p -> Map.of("id", p.id(), "topic", p.topic(), "subtopics", p.subtopics())).toList()));
+                            .map(p -> Map.of("id", p.id(), "path", p.path(), "topic", p.topic())).toList()));
             stage(run, token, "TASKS", taskPrompt, Result.class,
                     node -> PlanningOutline.build(outline, emphasis, PlanningValidation.tasks(node, outline, emphasis)));
             persistence.complete(run, token);

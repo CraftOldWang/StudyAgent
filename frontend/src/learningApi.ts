@@ -9,14 +9,14 @@ import type {
   QuizResult,
   ConversationTurn,
   PlanningView,
-  PlanEntry,
   SessionEntry,
 } from './learningTypes'
 
 const SESSION_PATH = '/api/learning/sessions'
 
 export const learningApi = {
-  listPlans: (knowledgeBaseId: string) => apiRequest<PlanEntry[]>(`/api/learning/plans?knowledgeBaseId=${knowledgeBaseId}`),
+  currentPlan: (knowledgeBaseId: string, sessionId?: string | null) => apiRequest<PlanningView | null>(
+    `/api/learning/plans/current?knowledgeBaseId=${knowledgeBaseId}${sessionId ? `&sessionId=${sessionId}` : ''}`),
   listSessions: (knowledgeBaseId: string) => apiRequest<SessionEntry[]>(`${SESSION_PATH}?knowledgeBaseId=${knowledgeBaseId}`),
   history: (sessionId: string) => apiRequest<ConversationTurn[]>(`${SESSION_PATH}/${sessionId}/messages`),
   streamMessage: async (sessionId: string, message: string, requestId: string,

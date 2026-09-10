@@ -83,16 +83,11 @@ export interface ConversationTurn {
   traceId: string
 }
 
-export interface PlanningTask {
-  knowledgePointId: string
-  chapterId: string
-  chapterTitle: string
-  topic: string
-  subtopics: string[]
-  sourceChunkIds: string[]
+export interface OutlineNode {
+  id: string
+  title: string
   priority: string
-  estimatedMinutes: number
-  reason: string
+  children: OutlineNode[]
 }
 
 export interface PlanningView {
@@ -103,13 +98,7 @@ export interface PlanningView {
   errorMessage: string | null
   sessionId: string | null
   stages: { id: string; stage: string; status: string; errorMessage: string | null; attemptCount: number }[]
-  result: {
-    tasks: PlanningTask[]
-    emphasis: {
-      matches: { knowledgePointId: string; quote: string; lessonQuote: string; reason: string; priority: string }[]
-      unmatched: { quote: string; reason: string }[]
-    }
-  } | null
+  result: { nodes: OutlineNode[] } | null
 }
 
 export interface GeneratedQuiz {
@@ -133,14 +122,6 @@ export interface GeneratedCards {
   session: LearningSession
 }
 
-export interface PlanEntry {
-  id: string
-  knowledgeBaseId: string
-  learningGoal: string
-  status: string
-  sessionId: string | null
-  updatedAt: string
-}
 export interface SessionEntry {
   id: string
   knowledgeBaseId: string
