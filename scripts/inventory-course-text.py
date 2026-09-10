@@ -56,6 +56,59 @@ def mark_encoded_text(row):
         row.update(status='unreadable', error='PDF输出主要为字形编码，不计入可读文字量；需要OCR或其他来源')
 
 
+def course_set(row):
+    parts = Path(row['relative']).parts
+    course, name = row['course'], Path(row['path']).name
+    if course == '数据结构':
+        return ('辛运帷目录版', '主课件', '独立教师目录') if '辛运帷' in parts else ('根目录版（教师未确认）', '主课件', '用户确认与辛运帷为两套；包含3份复习专题')
+    if course == '计算机组成原理':
+        if '网课' in parts:
+            return ('网课版', '主课件', '独立来源目录；含配套习题课')
+        return ('李涛目录／英文Chapter版', '主课件', 'Chapter_01–06；与中文编号版分开') if name.startswith('Chapter_') else ('李涛目录／中文第1–6章版', '主课件', '中文译本课件；不与英文版相加')
+    if course == '数据库系统':
+        return ('英文Week周次版', '主课件', 'Week1–16连续命名，首页为同一教学团队') if name.lower().startswith('week') else ('数字编号版（教师未确认）', '待处理', '1–17另成一组；15份乱码、1份未提取到文本')
+    if course == '人工智能导论':
+        return ('南开教学团队PPTX版', '主课件', '课程概述列出联合主讲；按完整课程而非逐教师拆开') if row['format']=='.pptx' else ('外部英文补充PDF', '补充', 'RNN与Attention两讲；不同来源，单独列出')
+    if course == '算法设计和分析':
+        if '苏明' in parts:
+            return ('苏明／Ch章节版', '主课件', '独立教师目录中的Ch编号讲义') if re.fullmatch(r'Ch\d+\.pdf', name) else ('苏明／习题与论文补充', '补充', 'Exercise1及两篇论文，不计入章节版')
+        return ('根目录Chap版（教师未确认）', '主课件', '与苏明目录分开；保留该目录的配套专题')
+    if course == '编译原理':
+        return ('第1–10章PPTX版', '主课件', '章节目录是同一套的组成部分，不拆成10套') if row['format']=='.pptx' else ('根目录10.pdf', '待处理', '来源未确认且存在字形编码问题')
+    return ('2024版', '主课件', '连续章节且统一2024文件名') if course == '操作系统' else ('当前章节PPTX版（教师未确认）', '主课件', '目前未发现独立的第二套；同章主题拆分保留')
+
+
+def write_sets(rows, output):
+    groups = defaultdict(list)
+    for row in rows:
+        label, kind, basis = course_set(row)
+        groups[(row['course'], label, kind, basis)].append(row)
+    ranked = []
+    for (course, label, kind, basis), items in groups.items():
+        good = [r for r in items if r['status']=='ok' and r.get('characters',0)>0]
+        ranked.append(dict(course=course, label=label, kind=kind, basis=basis, files=len(items),
+                           readableFiles=len(good), characters=sum(r['characters'] for r in good),
+                           hanCharacters=sum(r['hanCharacters'] for r in good),
+                           pages=sum(r['pages'] for r in good), items=items))
+    ranked.sort(key=lambda r:(r['kind']!='主课件', -r['characters']))
+    lines=['# 按教学来源与课件版本分别统计', '',
+           '本表替代按课程文件夹相加的选课排名。按独立课件套版比较；联合授课的一套课件不按教师人数拆开。同一老师目录中的中英文版本也分开，避免重复计入。没有教师信息时只标版本，分组依据见各清单。', '',
+           '复用已提取文本，没有重新解析或调用embedding。字数为非空白字符，不是token；中英文的字符数不能直接当作相同学习体量。未OCR、未做逐段语义去重。', '',
+           '|课程|独立课件套版|类型|文件数／可读|可读页数|非空白字符|其中汉字|',
+           '|---|---|---|---:|---:|---:|---:|']
+    for g in ranked:
+        lines.append(f"|{g['course']}|{g['label']}|{g['kind']}|{g['files']}／{g['readableFiles']}|{g['pages']}|{g['characters']:,}|{g['hanCharacters']:,}|")
+    for g in ranked:
+        lines += ['', f"## {g['course']}：{g['label']}", '', '分组依据：'+g['basis']+'。', '',
+                  '|该套原始文件|可提取字符|解析文本|','|---|---:|---|']
+        for r in g['items']:
+            available = r['status']=='ok' and r.get('characters',0)>0
+            amount=f"{r['characters']:,}" if available else '无法提取可读文本'
+            lines.append(f"|{link(Path(r['path']).name,r['path'])}|{amount}|{link('查看',r['textPath']) if available else '待处理'}|")
+    (output/'sets.md').write_text('\n'.join(lines)+'\n',encoding='utf-8')
+    (output/'sets.json').write_text(json.dumps(ranked,ensure_ascii=False,indent=2),encoding='utf-8')
+
+
 def main():
     sys.stdout.reconfigure(encoding='utf-8')
     parser = argparse.ArgumentParser()
@@ -122,6 +175,7 @@ def main():
     report += ['',f'解析异常或不可读：{len(failures)} 份。逐文件结果保存在同目录 inventory.json。']
     (output/'README.md').write_text('\n'.join(report)+'\n',encoding='utf-8')
     (output/'inventory.json').write_text(json.dumps(dict(root=str(root),summary=summaries,files=rows),ensure_ascii=False,indent=2),encoding='utf-8')
+    write_sets(rows, output)
     print(json.dumps(summaries,ensure_ascii=False,indent=2),flush=True)
     print(f'Report: {output / "README.md"}',flush=True)
 
