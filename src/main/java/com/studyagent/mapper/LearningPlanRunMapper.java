@@ -2,14 +2,17 @@ package com.studyagent.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.studyagent.model.LearningPlanRun;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 public interface LearningPlanRunMapper extends BaseMapper<LearningPlanRun> {
-    @org.apache.ibatis.annotations.Select("""
-            SELECT id, knowledge_base_id, learning_goal, status, session_id, updated_at
-            FROM learning_plan_runs WHERE user_id = #{userId} AND knowledge_base_id = #{knowledgeBaseId}
-            ORDER BY updated_at DESC, id DESC
+    @Select("""
+            SELECT id FROM learning_plan_runs
+            WHERE user_id = #{userId} AND knowledge_base_id = #{knowledgeBaseId}
+              AND JSON_UNQUOTE(JSON_EXTRACT(input_json, '$.version')) = #{version}
+              AND (#{sessionId} IS NULL OR session_id = #{sessionId})
+            ORDER BY created_at DESC, id DESC LIMIT 1
             """)
-    java.util.List<com.studyagent.learning.LearningCatalog.PlanEntry> listCatalog(
-            @org.apache.ibatis.annotations.Param("userId") Long userId,
-            @org.apache.ibatis.annotations.Param("knowledgeBaseId") Long knowledgeBaseId);
+    Long currentId(@Param("userId") Long userId, @Param("knowledgeBaseId") Long knowledgeBaseId,
+                   @Param("sessionId") Long sessionId, @Param("version") String version);
 }

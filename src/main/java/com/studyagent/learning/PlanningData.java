@@ -12,7 +12,7 @@ public final class PlanningData {
     public record Candidate(Long id, String topic, List<String> subtopics, List<String> sourceChunkIds, List<Evidence> evidence) { }
     public record Uncovered(String sourceChunkId, String reason) { }
     public record Extraction(List<Candidate> points, List<Uncovered> uncovered) { }
-    public record Point(Long id, String topic, List<String> subtopics, List<String> sourceChunkIds, List<Evidence> evidence) { }
+    public record Point(Long id, List<String> path, String topic, List<String> subtopics, List<String> sourceChunkIds, List<Evidence> evidence) { }
     public record Chapter(Long id, String title, List<Point> points) { }
     public record Outline(List<Chapter> chapters) { }
     public record Importance(Long knowledgePointId, String sourceChunkId, String quote,
@@ -22,5 +22,6 @@ public final class PlanningData {
     public record Task(Long knowledgePointId, Long chapterId, String chapterTitle, String topic,
                        List<String> subtopics, List<String> sourceChunkIds, String priority,
                        int estimatedMinutes, String reason) { }
-    public record Result(Outline outline, Emphasis emphasis, List<Task> tasks) { }
+    public record OutlineNode(Long id, String title, String priority, List<OutlineNode> children) { }
+    public record Result(Outline outline, Emphasis emphasis, List<Task> tasks, List<OutlineNode> nodes) { }
 }

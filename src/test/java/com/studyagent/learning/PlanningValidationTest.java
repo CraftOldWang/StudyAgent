@@ -12,8 +12,8 @@ class PlanningValidationTest {
     private final ObjectMapper mapper = new ObjectMapper();
     private final Source source = new Source(1L, "lecture", "hash", "chunk-1", "进程同步与互斥", "{}");
     private final Outline outline = new Outline(List.of(new Chapter(10L, "并发", List.of(
-            new Point(20L, "同步", List.of("互斥"), List.of("chunk-1"), List.of(new Evidence("chunk-1", "进程同步与互斥"))),
-            new Point(21L, "基础", List.of(), List.of("chunk-1"), List.of(new Evidence("chunk-1", "进程同步与互斥")))))));
+            new Point(20L, List.of("操作系统"), "同步", List.of("互斥"), List.of("chunk-1"), List.of(new Evidence("chunk-1", "进程同步与互斥"))),
+            new Point(21L, List.of("操作系统"), "基础", List.of(), List.of("chunk-1"), List.of(new Evidence("chunk-1", "进程同步与互斥")))))));
 
     @Test void rejectsOmittedInputAndForeignReferences() throws Exception {
         assertThatThrownBy(() -> PlanningValidation.extraction(mapper.readTree("{\"points\":[],\"uncovered\":[]}"), List.of(source)))
@@ -34,18 +34,18 @@ class PlanningValidationTest {
         var candidates = List.of(new Candidate(1L,"同步",List.of(),List.of("c1"),List.of(new Evidence("c1","同步"))),
                 new Candidate(2L,"同步机制",List.of(),List.of("c2"),List.of(new Evidence("c2","同步机制"))));
         var valid = PlanningValidation.outline(mapper.readTree("""
-                {"points":[{"chapterTitle":"并发","topic":"同步","subtopics":[],"candidateIds":["C1","C2"]}]}
+                {"points":[{"path":["并发"],"topic":"同步","subtopics":[],"candidateIds":["C1","C2"]}]}
                 """), candidates, null);
         assertThat(valid.chapters().getFirst().points().getFirst().sourceChunkIds()).containsExactly("c1","c2");
         assertThatThrownBy(() -> PlanningValidation.outline(mapper.readTree("""
-                {"points":[{"chapterTitle":"并发","topic":"同步","subtopics":[],"candidateIds":["C1"]}]}
+                {"points":[{"path":["并发"],"topic":"同步","subtopics":[],"candidateIds":["C1"]}]}
                 """), candidates, null)).hasMessageContaining("全部候选");
     }
 
     @Test void requestedPointCountIsCheckedAcrossChapters() throws Exception {
         var candidates = List.of(new Candidate(1L,"同步",List.of(),List.of("c1"),List.of(new Evidence("c1","同步"))));
         assertThatThrownBy(() -> PlanningValidation.outline(mapper.readTree("""
-                {"points":[{"chapterTitle":"并发","topic":"同步","subtopics":[],"candidateIds":["C1"]}]}
+                {"points":[{"path":["并发"],"topic":"同步","subtopics":[],"candidateIds":["C1"]}]}
                 """), candidates, 5)).hasMessageContaining("数量");
     }
 

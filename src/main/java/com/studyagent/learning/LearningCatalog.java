@@ -13,16 +13,13 @@ public class LearningCatalog {
     private final LearningPlanRunMapper plans;
     private final LearningSessionMapper sessions;
 
-    public List<PlanEntry> plans(Long userId, Long knowledgeBaseId) {
-        return plans.listCatalog(userId, knowledgeBaseId);
+    public Long currentPlanId(Long userId, Long knowledgeBaseId, Long sessionId) {
+        return plans.currentId(userId, knowledgeBaseId, sessionId, PlanningModel.VERSION);
     }
 
     public List<SessionEntry> sessions(Long userId, Long knowledgeBaseId) {
         return sessions.listCatalog(userId, knowledgeBaseId);
     }
-
-    public record PlanEntry(Long id, Long knowledgeBaseId, String learningGoal, String status,
-                            Long sessionId, LocalDateTime updatedAt) { }
 
     public record SessionEntry(Long id, Long knowledgeBaseId, String learningGoal, String status,
                                LocalDateTime updatedAt, Long planId, int completedPoints, int totalPoints) { }

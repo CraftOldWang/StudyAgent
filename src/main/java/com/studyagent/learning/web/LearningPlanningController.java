@@ -21,9 +21,11 @@ public class LearningPlanningController {
     private final CurrentUserContext user;
     private final com.studyagent.learning.LearningCatalog catalog;
 
-    @GetMapping
-    public ApiResponse<List<com.studyagent.learning.LearningCatalog.PlanEntry>> list(@RequestParam Long knowledgeBaseId) {
-        return ApiResponse.ok(catalog.plans(user.userId(), knowledgeBaseId));
+    @GetMapping("/current")
+    public ApiResponse<LearningPlanningService.View> current(@RequestParam Long knowledgeBaseId,
+            @RequestParam(required = false) Long sessionId) {
+        Long id = catalog.currentPlanId(user.userId(), knowledgeBaseId, sessionId);
+        return ApiResponse.ok(id == null ? null : planning.view(user.userId(), id));
     }
 
     @PostMapping

@@ -73,13 +73,16 @@ public final class PlanningValidation {
                 Long number = id(new com.fasterxml.jackson.databind.node.TextNode(value.asText().substring(1)));
                 require(number <= candidates.size(), "大纲合并引用未知候选编号：" + value.asText());
                 Long id = candidates.get(number.intValue() - 1).id();
-                require(allowed.containsKey(id) && consumed.add(id), "大纲合并引用未知或重复候选知识点：" + id);
+                require(allowed.containsKey(id), "大纲引用未知候选知识点：" + id);
+                consumed.add(id);
                 refs.addAll(allowed.get(id).sourceChunkIds());
                 evidence.addAll(allowed.get(id).evidence());
             }
             require(!refs.isEmpty(), "合并知识点必须有候选来源");
-            byChapter.computeIfAbsent(text(point, "chapterTitle"), key -> new ArrayList<>()).add(
-                    new Point(IdWorker.getId(), text(point, "topic"), strings(point, "subtopics"), List.copyOf(refs), List.copyOf(evidence)));
+            List<String> path = strings(point, "path");
+            require(!path.isEmpty(), "学习节点需要所属目录路径");
+            byChapter.computeIfAbsent(path.getFirst(), key -> new ArrayList<>()).add(
+                    new Point(IdWorker.getId(), path, text(point, "topic"), List.of(), List.copyOf(refs), List.copyOf(evidence)));
         }
         require(!byChapter.isEmpty() && consumed.equals(allowed.keySet()), "合并大纲必须保留全部候选知识点，可合并同义项；遗漏候选ID："
                 + java.util.stream.IntStream.range(0, candidates.size()).filter(i -> !consumed.contains(candidates.get(i).id()))
@@ -182,7 +185,7 @@ public final class PlanningValidation {
                     .map(Importance::reason).distinct().collect(Collectors.joining("；"));
             String reason = text(node, "reason") + (basis.isEmpty() ? " 本批习题暂无直接匹配依据，按基础内容安排。"
                     : " 习题依据：" + basis + "；追加练习" + (allocated - minutes.intValue()) + "分钟。");
-            tasks.add(new Task(id, c.id(), c.title(), p.topic(), p.subtopics(), p.sourceChunkIds(), priority,
+            tasks.add(new Task(id, c.id(), String.join(" / ", p.path()), p.topic(), p.subtopics(), p.sourceChunkIds(), priority,
                     allocated, reason));
         }
         require(used.equals(points.keySet()), "计划不能删除未被习题覆盖的基础知识点");

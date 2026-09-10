@@ -65,6 +65,9 @@ public class LearningPlanningService {
 
     public View view(Long userId, Long runId) {
         LearningPlanRun run = persistence.require(userId, runId);
+        if (!PlanningModel.VERSION.equals(decode(run.getInputJson(), Input.class).version())) {
+            throw new BusinessException("请重新生成多层学习大纲，旧大纲不再使用");
+        }
         Result result = null;
         LearningPlanStage tasks = persistence.latest(runId, "TASKS");
         if (tasks != null && "SUCCEEDED".equals(tasks.getStatus())) { result = decode(tasks.getOutputJson(), Result.class); }
@@ -73,7 +76,7 @@ public class LearningPlanningService {
                 run.getErrorMessage(), run.getSessionId(), persistence.listStages(runId).stream()
                 .map(s -> new StageView(s.getId(), s.getStageKey(), s.getStatus(), s.getInputHash(), s.getAttemptCount(),
                         s.getTraceId(), s.getErrorMessage(), s.getStartedAt(), s.getCompletedAt(), s.getElapsedMillis(),
-                        s.getUsageJson())).toList(), result);
+                        s.getUsageJson())).toList(), result == null ? null : new OutlineView(result.nodes()));
     }
 
     public View execute(Long userId, Long runId) {
@@ -108,24 +111,20 @@ public class LearningPlanningService {
             }
             if (candidates.isEmpty()) { throw new BusinessException("选定课件没有可用于学习的大纲知识点"); }
             String mergePrompt = """
-                    合并候选知识点，形成章节→知识点两层教学大纲，按先修概念在前排序。
-                    每个候选 id 必须恰好出现一次；同义点、同一教学目标的相近子主题及其练习可合并，不能删除基础知识。
-                    输出 points 数组的长度要求：%s。每个元素是一个最终知识点，chapterTitle 用于后续章节分组。
-                    保留教学子主题再归并，不得编造课件未涉及的主题。删除候选中混入的预习作业、提交要求等管理性子主题，
-                    但仍保留该候选ID及其教学内容；这些安排既不能作为知识点，也不能作为subtopics。
-                    格式：{"points":[{"chapterTitle":"...","topic":"...","subtopics":["..."],
-                    "candidateIds":["输入候选id"]}]}。不要嵌套 chapters 数组，服务端按 chapterTitle 分组。
-                    合并跨片段重复或同义的候选，保留不同概念、算法和方法的独立学习单元，再填写子主题。
-                    未指定数量时，不要为了减少知识点数量将不同主题强行合并；这是覆盖整门课程的可复用大纲，不是单次学习的任务限额。
-                    主题相近的候选也必须把各自 ID 写入同一个 candidateIds，不能因语义已覆盖而省略 ID。
-                    输出前核对所有 candidateIds 的并集等于待分配 ID 清单，且没有重复。
-                    不要输出自己的教学 ID 或来源 ID，服务端会分配及汇总。
+                    将课件候选整理为多层学习待办大纲，按先修关系排序。只写简短目录标题，不写讲解、依据、理由或时间。
+                    每个输出项是一个可独立完成讲解、练习和复习卡的最底层学习节点。
+                    path 是该节点的上级目录，从课程/主题到子主题，可以有不同深度；topic 是叶子节点标题。
+                    例如：{"points":[{"path":["Java八股","JUC","线程池"],"topic":"核心线程数与最大线程数","candidateIds":["C1"]},
+                    {"path":["Java八股","JUC","线程池"],"topic":"拒绝策略","candidateIds":["C1"]}]}。
+                    不输出 subtopics 描述列表，需要单独学习的小点必须成为独立叶子节点。
+                    候选可拆成多个叶子，也可合并同义项；同一个候选可以支持多个叶子，所有候选都要覆盖。
+                    同一目录下不得有重复标题；不要把不同知识点强行合并成一项，不要把一句话拆成过细的待办。
+                    目录标题与叶子标题不能包含详细解释，课程管理/作业提交要求不作为学习节点。
+                    数量：%s。
                     目标：%s
-                    待分配 ID 清单：%s
                     候选：%s
-                    """.formatted(input.targetPointCount() == null ? "按资料内容合理确定" : "必须恰好 " + input.targetPointCount(),
-                    run.getLearningGoal(), json(java.util.stream.IntStream.range(0, candidates.size()).mapToObj(i -> "C" + (i + 1)).toList()),
-                    json(java.util.stream.IntStream.range(0, candidates.size()).mapToObj(i -> Map.of("id", "C" + (i + 1),
+                    """.formatted(input.targetPointCount() == null ? "由资料内容决定，没有固定数量" : "叶子节点共 " + input.targetPointCount(),
+                    run.getLearningGoal(), json(java.util.stream.IntStream.range(0, candidates.size()).mapToObj(i -> Map.of("id", "C" + (i + 1),
                             "topic", candidates.get(i).topic(), "subtopics", candidates.get(i).subtopics())).toList()));
             Outline outline = stage(run, token, "OUTLINE", mergePrompt, Outline.class,
                     node -> PlanningValidation.outline(node, candidates, input.targetPointCount()));
@@ -202,7 +201,7 @@ public class LearningPlanningService {
                     """.formatted(run.getLearningGoal(), json(outline.chapters().stream().flatMap(c -> c.points().stream())
                             .map(p -> Map.of("id", p.id(), "topic", p.topic(), "subtopics", p.subtopics())).toList()));
             stage(run, token, "TASKS", taskPrompt, Result.class,
-                    node -> new Result(outline, emphasis, PlanningValidation.tasks(node, outline, emphasis)));
+                    node -> PlanningOutline.build(outline, emphasis, PlanningValidation.tasks(node, outline, emphasis)));
             persistence.complete(run, token);
             return view(userId, runId);
         } catch (RuntimeException error) {
@@ -334,6 +333,7 @@ public class LearningPlanningService {
     }
     public record StageView(Long id, String stage, String status, String inputHash, int attemptCount, String traceId,
                             String errorMessage, LocalDateTime startedAt, LocalDateTime completedAt, Long elapsedMillis, String usageJson) { }
+    public record OutlineView(List<OutlineNode> nodes) { }
     public record View(Long id, Long knowledgeBaseId, String learningGoal, String status, String errorMessage,
-                       Long sessionId, List<StageView> stages, Result result) { }
+                       Long sessionId, List<StageView> stages, OutlineView result) { }
 }
