@@ -2,8 +2,6 @@ import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { learningApi } from '../learningApi'
 import type { ConversationTurn, LearningSession, LearningTurn } from '../learningTypes'
 import type { KnowledgeBase } from '../types'
-import { LearningPlan } from './LearningPlan'
-import { PlanningStart } from './PlanningStart'
 import { QuizSection } from './QuizSection'
 import { ReviewCards } from './ReviewCards'
 import { CardDrafts } from './CardDrafts'
@@ -15,12 +13,11 @@ import { SavedArtifacts } from './SavedArtifacts'
 import { MessageContent } from './ui/MessageContent'
 import { SourceProvider } from './SourceDrawer'
 
-interface Props { knowledgeBase: KnowledgeBase; onSessionKnowledgeBase: (id: string) => void }
+interface Props { knowledgeBase: KnowledgeBase; initialSessionId: string; onSessionKnowledgeBase: (id: string) => void; onBack: () => void; onOutline: () => void }
 interface Pending { requestId: string; message: string }
-export function LearningPanel({ knowledgeBase, onSessionKnowledgeBase }: Props) {
+export function LearningPanel({ knowledgeBase, initialSessionId, onSessionKnowledgeBase, onBack, onOutline }: Props) {
   const [session, setSession] = useState<LearningSession | null>(null)
   const [history, setHistory] = useState<ConversationTurn[]>([])
-  const [restoreId, setRestoreId] = useState('')
   const [message, setMessage] = useState('')
   const [pending, setPending] = useState<Pending | null>(null)
   const [partial, setPartial] = useState('')
@@ -34,7 +31,6 @@ export function LearningPanel({ knowledgeBase, onSessionKnowledgeBase }: Props) 
   const sessionId = useRef('')
   const chatScroll = useRef<HTMLDivElement>(null)
   const [showLatest, setShowLatest] = useState(false)
-  const [planVisible, setPlanVisible] = useState(false)
   const follow = useRef(true)
   const draft = useRef(new Map<string, string>())
   const pendingBySession = useRef(new Map<string, Pending>())
@@ -72,15 +68,15 @@ export function LearningPanel({ knowledgeBase, onSessionKnowledgeBase }: Props) 
     const savedPending = pendingBySession.current.get(value.id)
     const alreadySaved = turns.some(t => t.requestId === savedPending?.requestId && t.status === 'SUCCEEDED')
     if (alreadySaved) pendingBySession.current.delete(value.id)
-    setSession(value); setHistory(turns); setRestoreId(value.id); setPartial(''); setPending(alreadySaved ? null : savedPending || null)
+    setSession(value); setHistory(turns); setPartial(''); setPending(alreadySaved ? null : savedPending || null)
     onSessionKnowledgeBase(value.knowledgeBaseId)
   }
-  async function restore(event: FormEvent) {
-    event.preventDefault()
-    if (lock.current || !/^[1-9]\d*$/.test(restoreId)) return
+  useEffect(() => { void openSession() }, [initialSessionId])
+  async function openSession() {
+    if (lock.current) return
     lock.current = true; setBusy(true); setError('')
-    try { await loadSession(await learningApi.getSession(restoreId)) }
-    catch (e) { setError(e instanceof Error ? e.message : String(e)) }
+    try { await loadSession(await learningApi.getSession(initialSessionId)) }
+    catch (e) { if (mounted.current) setError(e instanceof Error ? e.message : String(e)) }
     finally { lock.current = false; if (mounted.current) setBusy(false) }
   }
   async function refresh() {
@@ -158,23 +154,19 @@ export function LearningPanel({ knowledgeBase, onSessionKnowledgeBase }: Props) 
     } finally { lock.current = false; setBusy(false) }
   }
   if (!session) return <section className="panel learning-start">
-    <div className="panel-header"><div><span className="eyebrow">学习工作台</span><h1>{knowledgeBase.name}</h1><p>资料有依据，学习有顺序，复习有记录。</p></div></div>
-    {error && <Feedback error>{error}</Feedback>}
-    <details className="session-restore" open><summary>继续已有学习</summary><form noValidate onSubmit={restore} className="inline-form">
-      <Field id="learning-session-id" label="学习会话编号"><input id="learning-session-id" inputMode="numeric" value={restoreId} onChange={e => setRestoreId(e.target.value.trim())} placeholder="输入之前保存的会话编号" /></Field>
-      <button className="secondary" disabled={busy || !/^[1-9]\d*$/.test(restoreId)} type="submit">{busy ? '正在恢复…' : '恢复会话'}</button></form></details>
-    <PlanningStart key={knowledgeBase.id} knowledgeBase={knowledgeBase} onSession={loadSession} />
+    <h1>打开学习会话</h1>
+    {error ? <Feedback error>{error}<button type="button" disabled={busy} onClick={() => void openSession()}>重新读取会话</button></Feedback> : <Feedback>正在读取已保存的学习进度和对话…</Feedback>}
+    <button className="secondary" type="button" onClick={onBack}>返回历史会话</button>
   </section>
   return <SourceProvider knowledgeBaseId={session.knowledgeBaseId}><div className="learning-workspace">
-    <section className="panel learning-summary"><div><span className="eyebrow">{session.status === 'COMPLETED' ? '本次学习已完成' : '02 / 学习与练习'}</span><h1>{session.learningGoal}</h1>
-      <details className="resource-reference"><summary>会话信息与恢复编号</summary><p>会话：{session.id}<br />绑定资料库：{session.knowledgeBaseId}</p></details></div>
-      <div className="action-row"><button className="secondary" type="button" aria-expanded={planVisible} aria-controls="learning-outline" onClick={() => setPlanVisible(visible => !visible)}>学习计划</button>
+    <section className="panel learning-summary"><div><span className="eyebrow">{session.status === 'COMPLETED' ? '课程学习已完成' : '学习与练习'}</span><h1>{session.learningGoal}</h1>
+      <details className="resource-reference"><summary>会话信息</summary><p>会话：{session.id}<br />绑定资料库：{session.knowledgeBaseId}</p></details></div>
+      <div className="action-row"><button className="secondary" type="button" onClick={() => { onSessionKnowledgeBase(session.knowledgeBaseId); onOutline() }}>查看学习大纲</button>
         <button className="secondary" disabled={busy} onClick={() => void refresh()} type="button">查询已保存结果</button>
-        <button className="secondary" disabled={busy} onClick={() => { sessionId.current = ''; setSession(null); setHistory([]); setMessage(''); setError('') }} type="button">返回学习准备</button></div></section>
+        <button className="secondary" disabled={busy} onClick={onBack} type="button">历史会话</button></div></section>
     {session.knowledgeBaseId !== knowledgeBase.id && <Feedback>当前会话仍绑定原资料库。<button className="text-button" type="button" onClick={() => onSessionKnowledgeBase(session.knowledgeBaseId)}>切回会话资料库</button></Feedback>}
     {(error || session.errorMessage) && <Feedback error>{error || session.errorMessage}</Feedback>}
-    <div className={`learning-columns${planVisible ? ' with-plan' : ''}`}>
-      {planVisible && <div id="learning-outline" className="learning-outline"><LearningPlan activeKnowledgePointId={active?.id || null} points={session.plan} /></div>}
+    <div className="learning-columns">
       <section className="learning-focus" aria-label="学习对话">
         <div className="focus-heading"><span className="eyebrow">{active ? `当前知识点 · ${active.sequenceNo}` : '学习记录'}</span><h2>{active?.topic || '讲解、测验与卡片已保存'}</h2><p>完成流程不代表已经掌握，之后可用卡片继续复习。</p></div>
         <div className="chat-scroll-wrapper">
@@ -183,7 +175,7 @@ export function LearningPanel({ knowledgeBase, onSessionKnowledgeBase }: Props) 
           follow.current = node.scrollHeight - node.scrollTop - node.clientHeight < 100
           setShowLatest(!follow.current)
         }}>
-        {history.length === 0 && <Feedback>{session.status === 'COMPLETED' ? '本次学习已完成，可以查看保存的卡片与资料来源。' : active?.explanation ? '此会话来自旧版本，早期对话未存为聊天记录；现有讲解与测验仍可查看。' : '发送一条消息开始学习，也可以先提问。'}</Feedback>}
+        {history.length === 0 && <Feedback>{session.status === 'COMPLETED' ? '课程学习已完成，可以查看保存的卡片与资料来源。' : active?.explanation ? '此会话来自旧版本，早期对话未存为聊天记录；现有讲解与测验仍可查看。' : '发送一条消息开始学习，也可以先提问。'}</Feedback>}
         {history.length === 0 && active?.explanation && <article className="chat-answer"><MessageContent text={active.explanation} /></article>}
         <div className="conversation-history">{history.map(turn => <article className="conversation-turn" key={turn.id}>
           <div className="chat-user"><span>你</span><p>{turn.userMessage}</p></div>

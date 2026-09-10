@@ -9,11 +9,15 @@ import type {
   QuizResult,
   ConversationTurn,
   PlanningView,
+  PlanEntry,
+  SessionEntry,
 } from './learningTypes'
 
 const SESSION_PATH = '/api/learning/sessions'
 
 export const learningApi = {
+  listPlans: (knowledgeBaseId: string) => apiRequest<PlanEntry[]>(`/api/learning/plans?knowledgeBaseId=${knowledgeBaseId}`),
+  listSessions: (knowledgeBaseId: string) => apiRequest<SessionEntry[]>(`${SESSION_PATH}?knowledgeBaseId=${knowledgeBaseId}`),
   history: (sessionId: string) => apiRequest<ConversationTurn[]>(`${SESSION_PATH}/${sessionId}/messages`),
   streamMessage: async (sessionId: string, message: string, requestId: string,
     onEvent: (event: StreamEvent) => void, signal?: AbortSignal) => {
@@ -23,9 +27,9 @@ export const learningApi = {
     })
     await readEventStream(response, onEvent)
   },
-  createPlan: (knowledgeBaseId: string, learningGoal: string, lessonDocumentIds: string[], exerciseDocumentIds: string[], targetPointCount: number) =>
+  createPlan: (knowledgeBaseId: string, learningGoal: string, lessonDocumentIds: string[], exerciseDocumentIds: string[]) =>
     apiRequest<PlanningView>('/api/learning/plans', { method: 'POST',
-      body: JSON.stringify({ knowledgeBaseId, learningGoal, lessonDocumentIds, exerciseDocumentIds, targetPointCount }) }),
+      body: JSON.stringify({ knowledgeBaseId, learningGoal, lessonDocumentIds, exerciseDocumentIds }) }),
   getPlan: (id: string) => apiRequest<PlanningView>(`/api/learning/plans/${id}`),
   executePlan: (id: string) => apiRequest<PlanningView>(`/api/learning/plans/${id}/execute`, { method: 'POST' }),
   planSession: (id: string) => apiRequest<LearningSession>(`/api/learning/plans/${id}/session`, { method: 'POST' }),

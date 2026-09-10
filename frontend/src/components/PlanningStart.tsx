@@ -1,141 +1,173 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { api } from '../api'
 import { learningApi } from '../learningApi'
-import type { LearningSession, PlanningView } from '../learningTypes'
+import type { LearningSession, PlanEntry, PlanningView } from '../learningTypes'
 import type { DocumentItem, KnowledgeBase } from '../types'
 import { Feedback } from './ui/Feedback'
 import { Field, MultilineInput } from './ui/Field'
 import { SourceLink, SourceProvider } from './SourceDrawer'
+import { LearningPlan } from './LearningPlan'
 
 type Role = 'lesson' | 'exercise' | 'unused'
-interface Draft { roles: Record<string, Role>; goal: string; count: string; runId: string; plan: PlanningView | null }
-// Keep drafts across in-app navigation without storing course text in browser storage.
-const drafts = new Map<string, Draft>()
+const drafts = new Map<string, { roles: Record<string, Role>; goal: string }>()
 const phaseLabel = (value: string) => ({ EXTRACT: '读取课件', OUTLINE: '整理大纲', EMPHASIS: '标注习题重点', EMPHASIS_REVIEW: '核对重点依据', TASKS: '安排学习任务' }[value.split('/')[0]] || value)
 export const priorityLabel = (value?: string | null) => value === 'HIGH' ? '重点' : value === 'MEDIUM' ? '关注' : '基础'
+const planStatus = (value: string) => ({ SUCCEEDED: '已生成', RUNNING: '生成中', FAILED: '生成未完成', READY: '待生成' }[value] || value)
 
-export function PlanningStart({ knowledgeBase, onSession }: {
-  knowledgeBase: KnowledgeBase; onSession: (session: LearningSession) => Promise<void>
+export function PlanningStart({ knowledgeBase, visible, requestedSessionId, onSession }: {
+  knowledgeBase: KnowledgeBase; visible: boolean; requestedSessionId: string | null
+  onSession: (session: LearningSession) => Promise<void>
 }) {
+  const [entries, setEntries] = useState<PlanEntry[]>([])
   const [documents, setDocuments] = useState<DocumentItem[]>([])
   const [roles, setRoles] = useState<Record<string, Role>>(() => drafts.get(knowledgeBase.id)?.roles || {})
   const [goal, setGoal] = useState(() => drafts.get(knowledgeBase.id)?.goal || '')
-  const [count, setCount] = useState(() => drafts.get(knowledgeBase.id)?.count || '5')
-  const [runId, setRunId] = useState(() => drafts.get(knowledgeBase.id)?.runId || '')
-  const [plan, setPlan] = useState<PlanningView | null>(() => drafts.get(knowledgeBase.id)?.plan || null)
+  const [plan, setPlan] = useState<PlanningView | null>(null)
+  const [session, setSession] = useState<LearningSession | null>(null)
+  const [creating, setCreating] = useState(false)
   const [busy, setBusy] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [documentError, setDocumentError] = useState('')
-  const [loadVersion, setLoadVersion] = useState(0)
   const [error, setError] = useState('')
+  const [documentError, setDocumentError] = useState('')
   const mounted = useRef(true)
-  const polling = useRef<ReturnType<typeof setInterval>>()
-  const currentRun = useRef('')
   const lock = useRef(false)
-  const previewHeading = useRef<HTMLHeadingElement>(null)
-  useEffect(() => { if (plan?.result) previewHeading.current?.focus() }, [plan?.id, plan?.status])
-  useEffect(() => { drafts.set(knowledgeBase.id, { roles, goal, count, runId, plan }) }, [knowledgeBase.id, roles, goal, count, runId, plan])
+  const selection = useRef<string | null>(null)
+  const request = useRef(0)
+  useEffect(() => { drafts.set(knowledgeBase.id, { roles, goal }) }, [knowledgeBase.id, roles, goal])
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; request.current++ } }, [])
+  useEffect(() => { if (visible) void reload() }, [visible, requestedSessionId])
   useEffect(() => {
-    mounted.current = true
-    let active = true
-    setLoading(true); setDocumentError('')
-    api.listDocuments(knowledgeBase.id).then(items => {
-      if (active) setDocuments(items)
-    }).catch(e => { if (active) setDocumentError(String(e.message || e)) })
-      .finally(() => { if (active) setLoading(false) })
-    return () => { active = false }
-  }, [knowledgeBase.id, loadVersion])
-  useEffect(() => () => { mounted.current = false; clearInterval(polling.current) }, [])
-  const lessons = documents.filter(d => d.pipelineStatus === 'INDEXED' && roles[d.id] === 'lesson').map(d => d.id)
-  const exercises = documents.filter(d => d.pipelineStatus === 'INDEXED' && roles[d.id] === 'exercise').map(d => d.id)
-  const validCount = /^\d+$/.test(count) && +count >= 1 && +count <= 30
-  async function execute(id: string) {
-    currentRun.current = id
-    let fetching = false
-    polling.current = setInterval(async () => {
+    if (plan?.status !== 'RUNNING') return
+    let active = true, fetching = false
+    const timer = setInterval(async () => {
       if (fetching) return
       fetching = true
       try {
-        const next = await learningApi.getPlan(id)
-        if (mounted.current && currentRun.current === id) setPlan(next)
-      } catch (e) {
-        if (mounted.current) setError(`进度查询失败：${e instanceof Error ? e.message : String(e)}`)
-      } finally { fetching = false }
+        const next = await learningApi.getPlan(plan.id)
+        if (active) { setPlan(next); if (next.status !== 'RUNNING') await refreshEntries() }
+      } catch (e) { if (active) setError(`进度读取失败：${e instanceof Error ? e.message : String(e)}`) }
+      finally { fetching = false }
     }, 2500)
+    return () => { active = false; clearInterval(timer) }
+  }, [plan?.id, plan?.status])
+
+  async function refreshEntries() {
+    const items = await learningApi.listPlans(knowledgeBase.id)
+    if (mounted.current) setEntries(items)
+    return items
+  }
+  async function loadPlan(id: string) {
+    const version = ++request.current
+    selection.current = id; setCreating(false); setPlan(null); setSession(null); setLoading(true); setError('')
     try {
-      const next = await learningApi.executePlan(id)
-      const cached = drafts.get(knowledgeBase.id)
-      if (cached?.runId === id) drafts.set(knowledgeBase.id, { ...cached, plan: next })
-      if (mounted.current) setPlan(next)
-    } finally { currentRun.current = ''; clearInterval(polling.current) }
+      const next = await learningApi.getPlan(id)
+      const progress = next.sessionId ? await learningApi.getSession(next.sessionId) : null
+      if (mounted.current && version === request.current) { setPlan(next); setSession(progress) }
+    } catch (e) { if (mounted.current && version === request.current) setError(e instanceof Error ? e.message : String(e)) }
+    finally { if (mounted.current && version === request.current) setLoading(false) }
+  }
+  async function reload() {
+    if (lock.current) return
+    setLoading(true); setError('')
+    try {
+      const items = await refreshEntries()
+      if (!mounted.current) return
+      const requested = requestedSessionId && items.find(item => item.sessionId === requestedSessionId)
+      if (requested) await loadPlan(requested.id)
+      else if (requestedSessionId) {
+        const saved = await learningApi.getSession(requestedSessionId)
+        if (mounted.current) { setSession(saved); setPlan(null); setCreating(false); selection.current = null }
+      } else if (selection.current !== 'new') {
+        const id = items.find(item => item.id === selection.current)?.id || items[0]?.id
+        if (id) await loadPlan(id)
+      }
+    } catch (e) { if (mounted.current) setError(e instanceof Error ? e.message : String(e)) }
+    finally { if (mounted.current) setLoading(false) }
+  }
+  async function newOutline() {
+    request.current++; selection.current = 'new'; setCreating(true); setPlan(null); setSession(null); setError(''); setDocumentError(''); setLoading(true)
+    try { const items = await api.listDocuments(knowledgeBase.id); if (mounted.current) setDocuments(items) }
+    catch (e) { if (mounted.current) setDocumentError(e instanceof Error ? e.message : String(e)) }
+    finally { if (mounted.current) setLoading(false) }
   }
   async function action(work: () => Promise<void>) {
     if (lock.current) return
-    lock.current = true
-    setBusy(true); setError('')
+    lock.current = true; setBusy(true); setError('')
     try { await work() }
     catch (e) { if (mounted.current) setError(e instanceof Error ? e.message : String(e)) }
     finally { lock.current = false; if (mounted.current) setBusy(false) }
   }
+  async function execute(id: string) {
+    setPlan(current => current && { ...current, status: 'RUNNING', errorMessage: null })
+    const next = await learningApi.executePlan(id)
+    if (mounted.current) setPlan(next)
+    await refreshEntries()
+  }
+  const lessons = documents.filter(d => d.pipelineStatus === 'INDEXED' && roles[d.id] === 'lesson').map(d => d.id)
+  const exercises = documents.filter(d => d.pipelineStatus === 'INDEXED' && roles[d.id] === 'exercise').map(d => d.id)
   async function generate(event: FormEvent) {
     event.preventDefault()
-    if (!goal.trim() || !validCount || !lessons.length) return
+    if (!goal.trim() || !lessons.length) return
     await action(async () => {
-      const created = await learningApi.createPlan(knowledgeBase.id, goal.trim(), lessons, exercises, +count)
-      drafts.set(knowledgeBase.id, { roles, goal, count, runId: created.id, plan: created })
+      const created = await learningApi.createPlan(knowledgeBase.id, goal.trim(), lessons, exercises)
       if (!mounted.current) return
-      setPlan(created); setRunId(created.id)
+      selection.current = created.id; setPlan(created); setCreating(false)
+      await refreshEntries()
       await execute(created.id)
     })
   }
-  return <SourceProvider knowledgeBaseId={plan?.knowledgeBaseId || knowledgeBase.id}><section className="planning-start">
-    <div className="section-intro"><span className="eyebrow">01 / 准备学习</span><h2>先梳理大纲，再分配重点</h2>
-      <p>用课件建立完整路线，参考往年习题安排投入。重点会保留资料依据，基础知识点仍会保留。</p></div>
-    {error && <Feedback error>{error}</Feedback>}
-    {!plan && <form noValidate onSubmit={generate} className="plan-form">
-      <Field id="learning-goal" label="这次想学会什么？">
-        <MultilineInput id="learning-goal" rows={3} value={goal} maxLength={3000} onChange={e => setGoal(e.target.value)} placeholder="例如：期末复习编译原理，重点理解词法分析与语法分析" />
-      </Field>
-      <Field id="point-count" label="本次知识点数" hint="1–30 个，按课件顺序安排；时间为计划估算。" error={validCount ? undefined : '请输入 1–30 的整数。'}>
-        <input id="point-count" className="short-input" inputMode="numeric" value={count} onChange={e => setCount(e.target.value)} aria-invalid={!validCount} aria-describedby={`point-count-hint${validCount ? '' : ' point-count-error'}`} />
-      </Field>
-      <fieldset className="source-selection"><legend>选择资料及用途</legend><p>每份资料只选择一种用途。只有处理完成的资料可以加入计划。</p>
-        {loading ? <Feedback>正在读取资料…</Feedback> : documentError ? <Feedback error>{documentError}<button type="button" className="text-button" onClick={() => setLoadVersion(v => v + 1)}>重新读取资料</button></Feedback> : documents.length === 0 ? <Feedback>资料库为空，请先在资料页上传课件。</Feedback> :
-          documents.map(doc => <fieldset key={doc.id} className="source-row" disabled={busy || doc.pipelineStatus !== 'INDEXED'}>
-            <legend>{doc.title}</legend><div className="source-roles">
-              {(['lesson', 'exercise', 'unused'] as Role[]).map(role => <label key={role}><input type="radio" name={`role-${doc.id}`} checked={(roles[doc.id] || 'unused') === role} onChange={() => setRoles(r => ({ ...r, [doc.id]: role }))} />
-                {role === 'lesson' ? '课件' : role === 'exercise' ? '习题参考' : '不使用'}</label>)}
-              {doc.pipelineStatus !== 'INDEXED' && <small>尚未处理完成</small>}
-            </div></fieldset>)}
-      </fieldset>
-      <div className="action-row"><button disabled={busy || loading || !!documentError || !goal.trim() || !validCount || !lessons.length} type="submit">{busy ? '正在整理计划…' : '生成重点学习计划'}</button>
-        <small>已选 {lessons.length} 份课件 · {exercises.length} 份习题</small></div>
-    </form>}
-    {plan && <div className="plan-preview" aria-busy={busy}>
-      <h3 tabIndex={-1} ref={previewHeading}>{plan.learningGoal}</h3><p className="resource-reference">计划编号：{plan.id} · 保存该编号可恢复</p>
-      <ol className="planning-stages">{plan.stages.map(stage => <li key={stage.id}>
-        <span className={stage.status === 'FAILED' ? 'field-error' : ''}>{stage.status === 'SUCCEEDED' ? '✓' : stage.status === 'FAILED' ? '!' : '·'} {phaseLabel(stage.stage)}</span>
-        <small>{stage.status === 'SUCCEEDED' ? '已保存' : stage.status === 'FAILED' ? '未完成' : '处理中'} · 第 {stage.attemptCount} 次</small>
-        {stage.errorMessage && <p className="field-error">{stage.errorMessage}</p>}
-      </li>)}</ol>
-      {busy && <Feedback>正在整理资料。已完成阶段会保存，可用上方编号查询进度。</Feedback>}
-      {plan.errorMessage && <Feedback error>{plan.errorMessage}</Feedback>}
-      {plan.result && <><ol className="preview-tasks">{plan.result.tasks.map(task => <li key={task.knowledgePointId}>
-        <small>{task.chapterTitle}</small><div className="task-title"><strong>{task.topic}</strong><span className={`priority priority-${task.priority.toLowerCase()}`}>{priorityLabel(task.priority)}</span></div>
-        <p>{task.reason} · 约 {task.estimatedMinutes} 分钟</p>
-        <div className="source-links">{task.sourceChunkIds.map((id, i) => <SourceLink key={id} chunkId={id} label={`课件依据 ${i + 1}`} />)}</div>
-        {plan.result?.emphasis.matches.filter(m => m.knowledgePointId === task.knowledgePointId).map((match, i) => <details key={i}><summary>重点依据</summary>
-          <p>习题：“{match.quote}”</p><p>课件：“{match.lessonQuote}”</p><p>{match.reason}</p></details>)}
-      </li>)}</ol>
-      {plan.result.emphasis.unmatched.length > 0 && <details><summary>{plan.result.emphasis.unmatched.length} 条习题内容未匹配到课件</summary>{plan.result.emphasis.unmatched.map((item, i) => <p key={i}>{item.quote} — {item.reason}</p>)}</details>}</>}
-      <div className="action-row">
-        {plan.status === 'SUCCEEDED' ? <button disabled={busy} type="button" onClick={() => void action(async () => onSession(await learningApi.planSession(plan.id)))}>按此计划开始学习</button> :
-          <button disabled={busy} type="button" onClick={() => void action(() => execute(plan.id))}>继续生成此计划</button>}
-        <button className="secondary" disabled={busy} type="button" onClick={() => setPlan(null)}>返回资料选择</button>
-      </div>
-    </div>}
-    <details className="restore-planning"><summary>用计划编号查询或恢复</summary><form noValidate className="inline-form" onSubmit={e => { e.preventDefault(); void action(async () => setPlan(await learningApi.getPlan(runId))) }}>
-      <label className="visually-hidden" htmlFor="plan-id">计划编号</label><input id="plan-id" value={runId} inputMode="numeric" onChange={e => setRunId(e.target.value.trim())} />
-      <button className="secondary" disabled={busy || !/^[1-9]\d*$/.test(runId)} type="submit">查询计划</button></form></details>
-  </section></SourceProvider>
+  const tasks = plan?.result?.tasks || []
+  const completed = session?.plan.filter(p => p.status === 'COMPLETED').length || 0
+  const generating = busy || plan?.status === 'RUNNING'
+  return <div className="outline-workspace">
+    <aside className="panel catalog-panel" aria-label="已保存的大纲">
+      <div className="catalog-heading"><h2>学习大纲</h2><p>一份课程大纲，持续记录学习进度。</p>
+        <button type="button" disabled={generating} onClick={() => void newOutline()}>新建学习大纲</button></div>
+      <div className="catalog-list">{entries.map(item => <button className="catalog-entry" aria-current={plan?.id === item.id ? 'true' : undefined} key={item.id} disabled={generating} onClick={() => void loadPlan(item.id)} type="button">
+        <strong>{item.learningGoal}</strong><small>{planStatus(item.status)} · {item.updatedAt.replace('T', ' ').slice(0, 16)}</small>
+      </button>)}</div>
+      {!loading && entries.length === 0 && <p className="catalog-empty">还没有保存的大纲。</p>}
+    </aside>
+    <section className="panel outline-detail">
+    <SourceProvider knowledgeBaseId={knowledgeBase.id}><div className="planning-start">
+      <div className="section-intro"><span className="eyebrow">{knowledgeBase.name}</span><h1>{creating ? '建立课程学习大纲' : '课程路线与学习进度'}</h1>
+        <p>大纲生成后会保存。每次学习都沿用它，完成的知识点会在这里标记。</p></div>
+      {error && <Feedback error>{error}<button className="text-button" type="button" disabled={busy} onClick={() => void reload()}>重新读取</button></Feedback>}
+      {loading && <Feedback>正在读取资料与已保存的大纲…</Feedback>}
+      {!creating && !plan && !session && !loading && !error && <Feedback>点击“新建学习大纲”，用课件建立完整路线；有往年习题时，可以一起标注重点。</Feedback>}
+      {creating && <form noValidate onSubmit={generate} className="plan-form">
+        <Field id="learning-goal" label="课程学习目标"><MultilineInput id="learning-goal" rows={3} value={goal} maxLength={3000} onChange={e => setGoal(e.target.value)} placeholder="例如：系统复习编译原理，准备期末考试" /></Field>
+        <p className="muted">知识点数量由所选资料内容决定，按章节组织；每次学到哪里，就从哪里继续。</p>
+        <fieldset className="source-selection"><legend>选择资料及用途</legend><p>使用已处理完成的资料，无需重复上传。课件用于生成大纲，习题用于标注重点。</p>
+          {documentError ? <Feedback error>{documentError}<button type="button" className="text-button" onClick={() => void newOutline()}>重新读取资料</button></Feedback> : !loading && documents.length === 0 ? <Feedback>资料库为空，请先在资料页上传课件。</Feedback> : documents.map(doc => <fieldset key={doc.id} className="source-row" disabled={busy || doc.pipelineStatus !== 'INDEXED'}>
+            <legend>{doc.title}</legend><div className="source-roles">{(['lesson', 'exercise', 'unused'] as Role[]).map(role => <label key={role}><input type="radio" name={`role-${doc.id}`} checked={(roles[doc.id] || 'unused') === role} onChange={() => setRoles(r => ({ ...r, [doc.id]: role }))} />{role === 'lesson' ? '课件' : role === 'exercise' ? '习题参考' : '不使用'}</label>)}{doc.pipelineStatus !== 'INDEXED' && <small>尚未处理完成</small>}</div>
+          </fieldset>)}
+        </fieldset>
+        <div className="action-row"><button disabled={busy || loading || !!documentError || !goal.trim() || !lessons.length} type="submit">{busy ? '正在生成大纲…' : '生成学习大纲'}</button><small>已选 {lessons.length} 份课件 · {exercises.length} 份习题</small></div>
+      </form>}
+      {plan && <div className="plan-preview" aria-busy={generating}>
+        <h2>{plan.learningGoal}</h2>
+        {plan.result && <div className="outline-progress"><strong>已完成 {completed} / {tasks.length} 个知识点</strong><progress aria-label="大纲完成进度" value={completed} max={tasks.length || 1} /><p>完成代表已走完讲解、练习与卡片确认流程。</p></div>}
+        <div className="action-row">{plan.status === 'SUCCEEDED' ? <button disabled={busy} type="button" onClick={() => void action(async () => {
+          const value = await learningApi.planSession(plan.id)
+          if (mounted.current) { setSession(value); setPlan(current => current && { ...current, sessionId: value.id }) }
+          await onSession(value)
+        })}>{session ? session.status === 'COMPLETED' ? '查看学习记录' : '继续学习' : '开始学习'}</button> : <button disabled={generating} type="button" onClick={() => void action(() => execute(plan.id))}>{generating ? '正在生成大纲…' : '继续生成大纲'}</button>}</div>
+        {plan.errorMessage && <Feedback error>{plan.errorMessage}</Feedback>}
+        <details open={!plan.result}><summary>大纲生成进度 · {planStatus(plan.status)}</summary><ol className="planning-stages">{plan.stages.map(stage => <li key={stage.id}><span className={stage.status === 'FAILED' ? 'field-error' : ''}>{stage.status === 'SUCCEEDED' ? '✓' : stage.status === 'FAILED' ? '!' : '·'} {phaseLabel(stage.stage)}</span><small>{stage.status === 'SUCCEEDED' ? '已保存' : stage.status === 'FAILED' ? '未完成' : '处理中'}</small>{stage.errorMessage && <p className="field-error">{stage.errorMessage}</p>}</li>)}</ol></details>
+        {Array.from(new Set(tasks.map(t => t.chapterId))).map(chapter => <section className="outline-chapter" key={chapter}><h3>{tasks.find(t => t.chapterId === chapter)?.chapterTitle}</h3><ol className="preview-tasks">
+          {tasks.filter(t => t.chapterId === chapter).map(task => {
+            const status = session?.plan.find(p => p.id === task.knowledgePointId)?.status || 'NEW'
+            return <li key={task.knowledgePointId}><div className="task-title"><strong>{task.topic}</strong><span className={`priority priority-${task.priority.toLowerCase()}`}>{priorityLabel(task.priority)}</span><span className={`point-progress ${status === 'COMPLETED' ? 'done' : ''}`}>{status === 'COMPLETED' ? '✓ 已完成' : status === 'NEW' ? '未开始' : '学习中'}</span></div>
+              {task.subtopics.length > 0 && <ul className="outline-subtopics">{task.subtopics.map((topic, i) => <li key={i}>{topic}</li>)}</ul>}<p>{task.reason} · 约 {task.estimatedMinutes} 分钟</p>
+              <div className="source-links">{task.sourceChunkIds.map((id, i) => <SourceLink key={id} chunkId={id} label={`课件依据 ${i + 1}`} />)}</div>
+              {plan.result?.emphasis.matches.filter(m => m.knowledgePointId === task.knowledgePointId).map((match, i) => <details key={i}><summary>重点依据</summary><p>习题：“{match.quote}”</p><p>课件：“{match.lessonQuote}”</p><p>{match.reason}</p></details>)}
+            </li>
+          })}</ol></section>)}
+        {!!plan.result?.emphasis.unmatched.length && <details><summary>{plan.result.emphasis.unmatched.length} 条习题内容未匹配到课件</summary>{plan.result.emphasis.unmatched.map((item, i) => <p key={i}>{item.quote} — {item.reason}</p>)}</details>}
+      </div>}
+      {!plan && session && <><h2>{session.learningGoal}</h2><p>此会话的大纲保存在学习记录中。</p><button type="button" onClick={() => void onSession(session)}>继续学习</button><LearningPlan points={session.plan} activeKnowledgePointId={session.activeKnowledgePoint?.id || null} /></>}
+    </div></SourceProvider>
+    </section>
+  </div>
 }

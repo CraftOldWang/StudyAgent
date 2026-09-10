@@ -3,6 +3,8 @@ import { api } from './api'
 import { DocumentPanel } from './components/DocumentPanel'
 import { KnowledgeBaseSidebar } from './components/KnowledgeBaseSidebar'
 import { LearningPanel } from './components/LearningPanel'
+import { LearningHistory } from './components/LearningHistory'
+import { PlanningStart } from './components/PlanningStart'
 import { SearchPanel } from './components/SearchPanel'
 import { isDocumentTerminal } from './status'
 import type { AgentSearchResult, DocumentItem, KnowledgeBase, SearchResult } from './types'
@@ -18,8 +20,12 @@ export default function App() {
   const [searchBusy, setSearchBusy] = useState(false)
   const [searchResult, setSearchResult] = useState<SearchResult | AgentSearchResult | null>(null)
   const [error, setError] = useState('')
-  const [view, setView] = useState<'knowledge' | 'learning'>('knowledge')
+  const [view, setView] = useState<'knowledge' | 'outline' | 'learning'>('knowledge')
   const [learningVisited, setLearningVisited] = useState(false)
+  const [outlineVisited, setOutlineVisited] = useState(false)
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
+  const [showHistory, setShowHistory] = useState(true)
+  const [outlineSessionId, setOutlineSessionId] = useState<string | null>(null)
   const selectedIdRef = useRef<string | null>(selectedId)
   const documentRequestIdRef = useRef(0)
   const searchRequestIdRef = useRef(0)
@@ -84,6 +90,7 @@ export default function App() {
     setDocumentsLoading(false)
     setSearchBusy(false)
     setSelectedId(id)
+    setOutlineSessionId(null)
   }
 
   async function createKnowledgeBase(name: string) {
@@ -146,7 +153,7 @@ export default function App() {
   const hasIndexedDocument = documents.some((document) =>
     isDocumentTerminal(document.pipelineStatus) && document.pipelineStatus.toUpperCase() === 'INDEXED')
 
-  useEffect(() => { document.title = `${view === 'knowledge' ? '资料库' : '学习'} — StudyPilot` }, [view])
+  useEffect(() => { document.title = `${view === 'knowledge' ? '资料库' : view === 'outline' ? '学习大纲' : '学习对话'} — StudyPilot` }, [view])
 
   return (
     <div className="app-shell">
@@ -178,13 +185,15 @@ export default function App() {
               >
                 知识库
               </button>
+              <button aria-current={view === 'outline' ? 'page' : undefined} className={view === 'outline' ? 'active' : ''}
+                onClick={() => { setOutlineVisited(true); setOutlineSessionId(null); setView('outline') }} type="button">学习大纲</button>
               <button
                 aria-current={view === 'learning' ? 'page' : undefined}
                 className={view === 'learning' ? 'active' : ''}
                 onClick={() => { setLearningVisited(true); setView('learning') }}
                 type="button"
               >
-                学习工作台
+                学习对话
               </button>
             </nav>
             <div className="content-grid" hidden={view !== 'knowledge'}>
@@ -203,15 +212,28 @@ export default function App() {
                 result={searchResult}
               />
             </div>
+            <div className="learning-view" hidden={view !== 'outline'}>
+              {outlineVisited && <PlanningStart key={selectedKnowledgeBase.id} knowledgeBase={selectedKnowledgeBase}
+                visible={view === 'outline'} requestedSessionId={outlineSessionId} onSession={async session => {
+                  setActiveSessionId(session.id); setShowHistory(false); setLearningVisited(true); setView('learning')
+                }} />}
+            </div>
             <div className="learning-view" hidden={view !== 'learning'}>
-              {learningVisited && <LearningPanel
-                knowledgeBase={selectedKnowledgeBase}
-                onSessionKnowledgeBase={(knowledgeBaseId) => {
-                  if (knowledgeBases.some((item) => item.id === knowledgeBaseId)) {
-                    selectKnowledgeBase(knowledgeBaseId)
-                  }
-                }}
-              />}
+              {learningVisited && <>
+                <div className="history-view" hidden={!showHistory}>
+                  <LearningHistory knowledgeBaseId={selectedKnowledgeBase.id} visible={view === 'learning' && showHistory}
+                    onSelect={id => { setActiveSessionId(id); setShowHistory(false) }}
+                    onOutline={() => { setOutlineVisited(true); setOutlineSessionId(null); setView('outline') }} />
+                </div>
+                <div className="active-chat-view" hidden={showHistory}>
+                  {activeSessionId && <LearningPanel key={activeSessionId} initialSessionId={activeSessionId}
+                    knowledgeBase={selectedKnowledgeBase} onBack={() => setShowHistory(true)}
+                    onOutline={() => { setOutlineSessionId(activeSessionId); setOutlineVisited(true); setView('outline') }}
+                    onSessionKnowledgeBase={(knowledgeBaseId) => {
+                      if (knowledgeBases.some((item) => item.id === knowledgeBaseId)) selectKnowledgeBase(knowledgeBaseId)
+                    }} />}
+                </div>
+              </>}
             </div>
           </>
         ) : (

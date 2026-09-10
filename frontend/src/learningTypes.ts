@@ -132,3 +132,22 @@ export interface GeneratedCards {
   cards: ReviewCard[]
   session: LearningSession
 }
+
+export interface PlanEntry {
+  id: string
+  knowledgeBaseId: string
+  learningGoal: string
+  status: string
+  sessionId: string | null
+  updatedAt: string
+}
+export interface SessionEntry {
+  id: string
+  knowledgeBaseId: string
+  learningGoal: string
+  status: string
+  updatedAt: string
+  planId: string | null
+  completedPoints: number
+  totalPoints: number
+}

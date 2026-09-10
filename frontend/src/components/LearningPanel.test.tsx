@@ -14,8 +14,6 @@ const session: LearningSession = { id: '9007199254740999', learningGoal: '理解
 const turn: ConversationTurn = { id: '9007199254741001', requestId: 'saved-request', userMessage: '先前问题', assistantMessage: '先前回答',
   status: 'SUCCEEDED', phase: 'COMPLETE', errorMessage: null, artifactJson: null, traceId: 'trace', createdAt: '' }
 async function restore() {
-  fireEvent.change(screen.getByLabelText('学习会话编号'), { target: { value: session.id } })
-  fireEvent.click(screen.getByRole('button', { name: '恢复会话' }))
   await screen.findByRole('heading', { name: session.learningGoal })
 }
 describe('durable learning conversation', () => {
@@ -30,7 +28,7 @@ describe('durable learning conversation', () => {
     mock.streamMessage.mockImplementationOnce(async (_id, message, requestId, onEvent) => {
       onEvent({ event: 'result', data: { session, answer: '新的回答', turn: { ...turn, id: '9007199254741002', requestId, userMessage: message, assistantMessage: '新的回答' } } })
     })
-    render(<LearningPanel knowledgeBase={{ id: '20', name: '课程', createdAt: '', updatedAt: '' }} onSessionKnowledgeBase={vi.fn()} />)
+    render(<LearningPanel initialSessionId={session.id} onBack={vi.fn()} onOutline={vi.fn()} knowledgeBase={{ id: '20', name: '课程', createdAt: '', updatedAt: '' }} onSessionKnowledgeBase={vi.fn()} />)
     await restore()
     expect(screen.getByText('先前问题')).toBeInTheDocument()
     expect(screen.getByText('先前回答')).toBeInTheDocument()
@@ -49,17 +47,15 @@ describe('durable learning conversation', () => {
   })
   it('does not show a failed history read as an empty restored conversation', async () => {
     mock.history.mockRejectedValueOnce(new Error('聊天记录读取失败'))
-    render(<LearningPanel knowledgeBase={{ id: '20', name: '课程', createdAt: '', updatedAt: '' }} onSessionKnowledgeBase={vi.fn()} />)
-    fireEvent.change(screen.getByLabelText('学习会话编号'), { target: { value: session.id } })
-    fireEvent.click(screen.getByRole('button', { name: '恢复会话' }))
-    expect(await screen.findByText('聊天记录读取失败')).toBeInTheDocument()
+    render(<LearningPanel initialSessionId={session.id} onBack={vi.fn()} onOutline={vi.fn()} knowledgeBase={{ id: '20', name: '课程', createdAt: '', updatedAt: '' }} onSessionKnowledgeBase={vi.fn()} />)
+        expect(await screen.findByText('聊天记录读取失败')).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: session.learningGoal })).not.toBeInTheDocument()
   })
   it('keeps the session scope when the sidebar selects another knowledge base', async () => {
     const select = vi.fn()
-    const { rerender } = render(<LearningPanel knowledgeBase={{ id: '20', name: '课程', createdAt: '', updatedAt: '' }} onSessionKnowledgeBase={select} />)
+    const { rerender } = render(<LearningPanel initialSessionId={session.id} onBack={vi.fn()} onOutline={vi.fn()} knowledgeBase={{ id: '20', name: '课程', createdAt: '', updatedAt: '' }} onSessionKnowledgeBase={select} />)
     await restore()
-    rerender(<LearningPanel knowledgeBase={{ id: '99', name: '另一个资料库', createdAt: '', updatedAt: '' }} onSessionKnowledgeBase={select} />)
+    rerender(<LearningPanel initialSessionId={session.id} onBack={vi.fn()} onOutline={vi.fn()} knowledgeBase={{ id: '99', name: '另一个资料库', createdAt: '', updatedAt: '' }} onSessionKnowledgeBase={select} />)
     fireEvent.click(screen.getByRole('button', { name: '切回会话资料库' }))
     await waitFor(() => expect(select).toHaveBeenLastCalledWith('20'))
     expect(screen.getByText('先前回答')).toBeInTheDocument()
