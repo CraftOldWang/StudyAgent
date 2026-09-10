@@ -24,6 +24,13 @@ public class LearningController {
     private final com.studyagent.learning.LearningTurnPersistence turns;
     private final com.studyagent.learning.LearningCardStageService cardStage;
     private final com.studyagent.learning.LearningToolDisplay toolDisplay;
+    private final com.studyagent.learning.LearningCatalog catalog;
+
+    @GetMapping
+    public ApiResponse<java.util.List<com.studyagent.learning.LearningCatalog.SessionEntry>> list(
+            @org.springframework.web.bind.annotation.RequestParam Long knowledgeBaseId) {
+        return ApiResponse.ok(catalog.sessions(currentUserContext.userId(), knowledgeBaseId));
+    }
 
     @GetMapping("/{sessionId}/turns/{turnId}/tools")
     public ApiResponse<?> tools(@PathVariable Long sessionId, @PathVariable Long turnId) {

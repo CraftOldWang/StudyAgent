@@ -87,7 +87,7 @@ public class LearningPlanningService {
             int index = 0;
             for (List<Source> batch : batches(input.lessons())) {
                 String prompt = """
-                        按当前课件片段提取学习知识点，保留概念、算法、前提及关键区别，通常每批 2–6 个点。
+                        按当前课件片段提取学习知识点，保留概念、算法、前提及关键区别，数量由实际内容决定。
                         不把页眉、页码、目录文字单独当作知识点。当前目标仅决定详略，不能静默忽略整段资料。
                         作业提交、预习安排不是知识点；例题练习附属对应概念，不单列“预习作业”教学主题。
                         格式：{"points":[{"topic":"...","subtopics":["..."],"sourceChunkIds":["..."],
@@ -115,7 +115,8 @@ public class LearningPlanningService {
                     但仍保留该候选ID及其教学内容；这些安排既不能作为知识点，也不能作为subtopics。
                     格式：{"points":[{"chapterTitle":"...","topic":"...","subtopics":["..."],
                     "candidateIds":["输入候选id"]}]}。不要嵌套 chapters 数组，服务端按 chapterTitle 分组。
-                    先将全部候选分配到要求数量的最终知识点，再填写子主题，不能把每个候选都独立输出。
+                    合并跨片段重复或同义的候选，保留不同概念、算法和方法的独立学习单元，再填写子主题。
+                    未指定数量时，不要为了减少知识点数量将不同主题强行合并；这是覆盖整门课程的可复用大纲，不是单次学习的任务限额。
                     主题相近的候选也必须把各自 ID 写入同一个 candidateIds，不能因语义已覆盖而省略 ID。
                     输出前核对所有 candidateIds 的并集等于待分配 ID 清单，且没有重复。
                     不要输出自己的教学 ID 或来源 ID，服务端会分配及汇总。

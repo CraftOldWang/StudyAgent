@@ -19,6 +19,12 @@ public class LearningPlanningController {
     private final LearningPersistenceService persistence;
     private final LearningResponseAssembler assembler;
     private final CurrentUserContext user;
+    private final com.studyagent.learning.LearningCatalog catalog;
+
+    @GetMapping
+    public ApiResponse<List<com.studyagent.learning.LearningCatalog.PlanEntry>> list(@RequestParam Long knowledgeBaseId) {
+        return ApiResponse.ok(catalog.plans(user.userId(), knowledgeBaseId));
+    }
 
     @PostMapping
     public ApiResponse<LearningPlanningService.View> create(@Valid @RequestBody Request request) {
